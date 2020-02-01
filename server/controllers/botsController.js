@@ -310,7 +310,7 @@ async function watchdogAction(bot) {
   if (attacked) {
     var ogameUsername = await bot.getOgameUsername();
     await botTelegram.sendTextMessage(
-      bot.telegramId,
+      bot.telegramGroupId,
       "⚠️ <b>" +
         ogameUsername +
         "</b>" +
@@ -323,9 +323,9 @@ async function watchdogAction(bot) {
         shipsDetailMsg += "✔️ " + ship.name + " " + ship.qty + "\n";
       });
       await botTelegram.sendTextMessage(
-        bot.telegramId,
+        bot.telegramGroupId,
         "<b>Detalles</b>:\n" +
-          "✅ *Jugador hostil:* " +
+          "✅ Jugador hostil: " +
           attackDetail.hostilePlayer.name +
           "\n" +
           "✅ <b>Desde:</b> " +

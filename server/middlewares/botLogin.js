@@ -1,18 +1,15 @@
-let loginState = (req, res, next) => {
-  let token = req.query.token ? req.query.token : req.get("token");
-
-  jwt.verify(token, process.env.SEED, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({
-        ok: false,
-        err
-      });
-    }
-    req.usuario = decoded.usuario;
-    next();
-  });
+const bots = require("../classes/Bots");
+let beginState = async (req, res, next) => {
+  let bot = bots.getBot(req.params.id);
+  if (!bot.browser) {
+    console.log("ejecutando middleware");
+    await bot.begin("dev");
+    await bot.login();
+    console.log("se termino de ejecutar el middleware");
+  }
+  next();
 };
 
 module.exports = {
-  loginState
+  beginState
 };

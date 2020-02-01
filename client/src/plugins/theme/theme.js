@@ -7,7 +7,8 @@ export default {
       error: "#C4183C",
       info: "#007BFF",
       success: "#17C671",
-      warning: "#00B8D8"
+      warning: "#00B8D8",
+      background: "#007BFF"
     }
   }
 };

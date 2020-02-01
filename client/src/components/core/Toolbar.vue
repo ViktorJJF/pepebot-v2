@@ -1,93 +1,105 @@
 <template>
-  <v-app-bar
-    dark
-    app
-    :color="$store.state.logiaModule.logia.color || 'primary'"
-  >
-    <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-    <v-toolbar-title>{{ logiaName }}</v-toolbar-title>
-    <!-- <span class="title ml-3 mr-5"></span> -->
-    <v-spacer></v-spacer>
-    <v-menu v-if="$store.state.user" offset-y>
-      <template v-slot:activator="{ on }">
-        <v-btn icon v-on="on">
-          <v-badge color="red" @click>
-            <template v-slot:badge>
-              {{ $store.state.stockAlert.length }}
-            </template>
-            <v-icon>mdi-email</v-icon>
-          </v-badge>
-        </v-btn>
-      </template>
-      <v-list v-for="(alertMessage, i) in $store.state.stockAlert" :key="i">
-        <v-list-item>
-          Tu producto {{ alertMessage.productName }} está por agortarse. (
-          <strong>Stock:</strong>
-          {{ alertMessage.stock }})
-        </v-list-item>
-      </v-list>
-    </v-menu>
-    <!-- <v-btn v-if="!$store.state.user" dark outlined :to="{ name: 'login' }"
-      >Iniciar Sesión</v-btn
-    >-->
-    <v-menu offset-y>
-      <template v-slot:activator="{ on }">
-        <v-btn text color="white" dark v-on="on">
-          admin@gmail.com
-          <v-icon>mdi-menu-down</v-icon>
-        </v-btn>
-      </template>
+  <v-navigation-drawer v-model="drawer" dark app>
+    <template v-slot:img>
+      <v-img src="/images/ship1.jpg" height="100%" class="transparent"></v-img>
+    </template>
+    <div class="drawer-overlay">
+      <v-row column align="center">
+        <v-col class="mt-10 mb-3 text-center">
+          <v-img src="/images/pepebot.png" contain aspect-ratio="1.5"></v-img>
+        </v-col>
+      </v-row>
+      <div class="text-center mb-3">
+        <p class="white--text">{{user}}</p>
+        <p class="white--text">{{email}}</p>
+        <v-btn color="error" small @click="logout">Cerrar sesión</v-btn>
+      </div>
+      <div class="text-center mb-3">
+        <v-btn color="info" small :to="{name:'newBot'}">Configurar bot</v-btn>
+      </div>
+      <v-divider></v-divider>
       <v-list>
-        <v-list-item @click="logout">
-          <v-list-item-title>Cerrar sesión</v-list-item-title>
-        </v-list-item>
-        <v-list-item :to="{ name: 'personalization' }">
-          <v-list-item-title>Ajustes</v-list-item-title>
-        </v-list-item>
-        <v-list-item :to="{ name: 'suscription' }">
-          <v-list-item-title>Suscripción</v-list-item-title>
+        <v-list-item
+          v-for="link in links"
+          :key="link.id"
+          router
+          :to="link.route"
+          active-class="border"
+        >
+          <v-list-item-action>
+            <v-icon>{{ link.icon }}</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>{{ link.text }}</v-list-item-title>
+          </v-list-item-content>
         </v-list-item>
       </v-list>
-    </v-menu>
-  </v-app-bar>
+      <v-flex class="ma-2">
+        <template>
+          <v-carousel cycle dark height="230" hide-delimiter-background show-arrows-on-hover>
+            <v-carousel-item v-for="(slide, i) in slides" :key="i">
+              <v-sheet color="white" height="80%" align="center" tile>
+                <v-row class="fill-height" align="center" justify="center">
+                  <div class="grey--text">
+                    <h4>Bots activos</h4>
+                    <p class="ma-3">{{ slide }}</p>
+                    <v-btn outlined color="indigo">Leer más</v-btn>
+                  </div>
+                </v-row>
+              </v-sheet>
+            </v-carousel-item>
+          </v-carousel>
+        </template>
+      </v-flex>
+    </div>
+  </v-navigation-drawer>
 </template>
 
 <script>
 export default {
-  computed: {
-    drawer: {
-      get() {
-        return this.$store.state.toolbar.drawerIcon;
-      },
-      set(newValue) {
-        this.$store.state.toolbar.drawerIcon = newValue;
-      }
-    },
-    user() {
-      return this.$store.state.user.email;
-    },
-    logiaName() {
-      return this.$store.getters["logiaModule/logiaFullName"];
-    },
-    logiaColor() {
-      return this.$store.state.logiaModule.logia.color;
-    }
+  data() {
+    return {
+      drawer: true,
+      links: [
+        // { icon: "mdi-home", text: "Resumen", route: { name: "overview" } },
+        // { icon: "mdi-home", text: "Escaneo", route: { name: "scan" } },
+        // { icon: "mdi-home", text: "Hunter", route: { name: "hunter" } },
+        { icon: "mdi-cat", text: "WatchDog", route: { name: "watchDog" } }
+      ],
+      slides: [
+        "Este bot esta muy activo !! fwefwe",
+        "Este bot esta muy activo !! fwefwe",
+        "Este bot esta muy activo !! fwefwe"
+      ]
+    };
   },
   methods: {
-    logout() {
-      // this.$store
-      //   .dispatch("logout")
-      //   .then(res => {
-      //     console.log("se pusheara el login");
-      //     this.$router.push({ name: "login" });
-      //   })
-      //   .catch(err => {
-      //     console.log("algo salio mal en logout");
-      //   });
-      this.$router.push({ name: "login" });
+    async logout() {
+      await this.$store.dispatch("authModule/userLogout");
+    }
+  },
+  computed: {
+    user() {
+      return this.$store.getters["authModule/fullname"];
+    },
+    email() {
+      return this.$store.getters["authModule/email"];
     }
   }
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.border {
+  border-left: 4px solid #dc9e47;
+}
+.drawer-bg {
+  background-image: url("/images/ship1.jpg");
+}
+// .drawer-overlay {
+//   background: rgba(226, 106, 106, 0.2);
+// }
+.transparent {
+  opacity: 0.6;
+}
+</style>

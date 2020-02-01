@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <router-view :key="$store.state.componentKey"></router-view>
+    <router-view></router-view>
     <success-message />
     <error-message />
     <loading-screen />

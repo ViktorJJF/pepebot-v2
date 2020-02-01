@@ -1,16 +1,31 @@
 const puppeteer = require("puppeteer");
+const { PuppeteerBlocker } = require("@cliqz/adblocker-puppeteer");
+const fetch = require("cross-fetch"); // required 'fetch'
 const moment = require("moment");
 const { timeout } = require("../utils/utils.js");
+const config = require("../config");
+const uuidv1 = require("uuid/v1");
 
 module.exports = class Bot {
   constructor() {
+    //check mongoose model
     this.BASE_URL = "https://pl.ogame.gameforge.com/";
     this.LOGIN_URL = "https://lobby.ogame.gameforge.com/es_ES/";
+    this._id = null;
+    this.server = null;
+    this.language = null;
+    this.telegramGroupId = null;
+    this.telegramId = null;
+    this.ogameEmail = null;
+    this.ogamePassword = null;
+    this.state = null;
+    this.userId = null;
     this.page = null;
     this.browser = null;
     this.navigationPromise = null;
     this.typingDelay = 50;
     this.currentPage = 0;
+    this.actions = [];
 
     //currentPage
     // 0 -- > mainPage
@@ -18,10 +33,29 @@ module.exports = class Bot {
     // this.HEADERS = [('User-agent', 'Mozilla/5.0 (Windows NT 6.2; WOW64)\
     //  AppleWebKit/537.15 (KHTML, like Gecko) Chrome/24.0.1295.0 Safari/537.15')]
   }
-  async begin(environment) {
+  async initialize(botOjbect) {
+    this._id = botOjbect._id;
+    this.server = botOjbect.server;
+    this.language = botOjbect.language;
+    this.telegramGroupId = botOjbect.telegramGroupId;
+    this.telegramId = botOjbect.telegramId;
+    this.ogameEmail = botOjbect.ogameEmail;
+    this.ogamePassword = botOjbect.ogamePassword;
+    this.state = botOjbect.state;
+    this.userId = botOjbect.userId;
+    this.page = null;
+    this.browser = null;
+    this.navigationPromise = null;
+    this.typingDelay = 50;
+    this.currentPage = 0;
+    this.actions = [];
+  }
+  async begin() {
     console.log("iniciando bot...");
-    if (environment === "dev") {
-      this.browser = await puppeteer.launch({ headless: false });
+    if (config.environment === "dev") {
+      this.browser = await puppeteer.launch({
+        headless: false
+      });
     } else {
       this.browser = await puppeteer.launch({
         args: ["--no-sandbox", "--disable-setuid-sandbox"]
@@ -29,92 +63,158 @@ module.exports = class Bot {
     }
 
     this.page = await this.browser.newPage();
+    this.page.setDefaultTimeout(10000);
+    // await this.page._client.send("Emulation.clearDeviceMetricsOverride");
+    // PuppeteerBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
+    //   blocker.enableBlockingInPage(this.page);
+    // });
     // this.page.on("console", consoleObj => console.log(consoleObj.text())); //enable console.log inside evaluate function
     this.navigationPromise = this.page.waitForNavigation();
 
     await this.page.goto(this.LOGIN_URL);
 
-    // await this.page.setViewport({ width: 1920, height: 937 });
     console.log("se termino el inicio");
   }
-  async login(username, password) {
-    console.log(`Empezando Logeo...`);
-    await this.page.waitForSelector(
-      "div > #loginRegisterTabs > .tabsList > li:nth-child(2) > span"
-    );
-    await this.page.click(
-      "div > #loginRegisterTabs > .tabsList > li:nth-child(2) > span"
-    );
+  async login(ogameEmail, ogamePassword) {
+    try {
+      console.log(`Empezando Logeo...`);
+      //closing add
+      // await this.closeAds();
 
-    await this.page.waitForSelector(
-      "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
-    );
-    await this.page.click(
-      "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
-    );
+      await this.page.waitForSelector(
+        "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
+      );
+      await this.page.click(
+        "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
+      );
 
-    await this.page.waitForSelector(
-      "#loginTab > #loginForm > .inputWrap:nth-child(1) > div > input"
-    );
-    await this.page.click(
-      "#loginTab > #loginForm > .inputWrap:nth-child(1) > div > input"
-    );
-    await this.page.type(
-      "#loginTab > #loginForm > .inputWrap:nth-child(1) > div > input",
-      username,
-      { delay: this.typingDelay }
-    );
+      await this.page.waitForSelector('input[type="email"]');
+      await this.page.click('input[type="email"]');
+      await this.page.type(
+        'input[type="email"]',
+        ogameEmail ? ogameEmail : this.ogameEmail,
+        { delay: this.typingDelay }
+      );
 
-    await this.page.waitForSelector(
-      "#root > #content > div > div > div:nth-child(3)"
-    );
-    await this.page.click("#root > #content > div > div > div:nth-child(3)");
-    await this.page.type(
-      "#root > #content > div > div > div:nth-child(3)",
-      password,
-      { delay: this.typingDelay }
-    );
-    await this.page.waitForSelector(
-      "#loginTab > #loginForm > p > .button-primary > span"
-    );
-    await this.page.click(
-      "#loginTab > #loginForm > p > .button-primary > span"
-    );
+      await this.page.waitForSelector('input[type="password"]');
+      await this.page.click('input[type="password"]');
+      await this.page.type(
+        'input[type="password"]',
+        ogamePassword ? ogamePassword : this.ogamePassword,
+        { delay: this.typingDelay }
+      );
+      await this.page.waitForSelector(
+        "#loginTab > #loginForm > p > .button-primary > span"
+      );
+      await this.page.click(
+        "#loginTab > #loginForm > p > .button-primary > span"
+      );
+      await this.page.waitForSelector("div > #joinGame > a > .button > span", {
+        timeout: 3000
+      });
+      await this.page.click("div > #joinGame > a > .button > span");
 
-    await this.page.waitForSelector("div > #joinGame > a > .button > span");
-    await this.page.click("div > #joinGame > a > .button > span");
+      // await this.page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
+      // await this.page.click(".open > .rt-tr > .rt-td > .btn > span");
 
-    // await this.page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
-    // await this.page.click(".open > .rt-tr > .rt-td > .btn > span");
-
-    await this.page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
-    //main page ogame
-    this.page = await this.clickAndWaitForTarget(
-      ".open > .rt-tr > .rt-td > .btn > span",
-      this.page,
-      this.browser
-    );
-    console.log("Logeo finalizado exitosamente");
+      await this.page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
+      //main page ogame
+      this.page = await this.clickAndWaitForTarget(
+        ".open > .rt-tr > .rt-td > .btn > span",
+        this.page,
+        this.browser
+      );
+      // await this.closeAds();
+      console.log("Logeo finalizado exitosamente");
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
-  async checkAttack() {
-    console.log("verificando ataques...");
-    await this.refreshPage();
-    await this.page.waitForSelector("#attack_alert");
-    var self = this;
-    let notAttacked = await self.page.evaluate(() => {
-      return document.querySelector("#attack_alert.noAttack");
+  async checkLoginStatus(page) {
+    var page = page || this.page;
+    var currentPage = null;
+    currentPage = await page.evaluate(() => {
+      var selector;
+      selector = document.querySelector("div#toolbarcomponent");
+      if (selector) {
+        console.log("se cumplio mainPage");
+        return "mainPage";
+      }
+      selector = document.querySelector("#joinGame>a>button.button");
+      if (selector) {
+        console.log("se cumplio playoage");
+        return "playPage";
+      }
+      selector = document.querySelector(
+        '.rt-td.action-cell>button[type="button"]'
+      );
+      if (selector) {
+        console.log("se cumplio selecUniversePage");
+        return "selectUniversePage";
+      }
     });
-    if (notAttacked) {
-      console.log("no estas siendo atacado");
-    } else {
-      console.log("estas siendo atacado !!");
-      await this.attackDetail();
+    switch (currentPage) {
+      case "mainPage":
+        return 0;
+        break;
+      case "playPage":
+        await page.click("#joinGame>a>button.button");
+        await page.waitForSelector('.rt-td.action-cell>button[type="button"]');
+        this.page = await this.clickAndWaitForTarget(
+          '.rt-td.action-cell>button[type="button"]',
+          this.page,
+          this.browser
+        );
+        return 0;
+        break;
+      case "selectUniversePage":
+        this.page = await this.clickAndWaitForTarget(
+          '.rt-td.action-cell>button[type="button"]',
+          this.page,
+          this.browser
+        );
+        //main page ogame
+
+        return 0;
+        break;
+      default:
+        await this.login();
+        return 0;
+        break;
+    }
+  }
+
+  async watchDog() {
+    try {
+      console.log("verificando ataques...");
+      await this.refreshPage();
+      await this.page.waitForSelector("#attack_alert");
+      var self = this;
+      let notAttacked = await self.page.evaluate(() => {
+        return document.querySelector("#attack_alert.noAttack");
+      });
+      if (notAttacked) {
+        console.log("no estas siendo atacado");
+        return false;
+      } else {
+        console.log("estas siendo atacado !!");
+        return true;
+      }
+    } catch (error) {
+      console.log("se dio un error y verificaremos el login en watchDog");
+      console.log("el error es: ", error);
+      await this.checkLoginStatus();
+      return await this.watchDog();
     }
   }
   async attackDetail() {
+    let enemyMissions = [];
     // await timeout(5000);
     console.log("verificando los detalles del ataque...");
+
+    //Click to overview enemy missions
     await this.page.waitForSelector(
       "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
       { visible: true }
@@ -122,32 +222,98 @@ module.exports = class Bot {
     await this.page.click(
       "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed"
     );
-    await this.page.waitForSelector(
-      'tr[data-mission-type="1"]>td.icon_movement'
-    );
-    await this.page.hover('tr[data-mission-type="1"]>td.icon_movement');
-
+    await this.page.waitForSelector("table#eventContent");
     //checking details
+    await timeout(1000);
     var self = this;
-    let shipsData = await self.page.evaluate(() => {
-      let ships = [];
-      // get the hotel elements
-      let shipsElms = document.querySelectorAll("table.fleetinfo>tbody>tr");
-      // get the planet data
-      shipsElms.forEach(async (ship, position) => {
-        let shipJson = {};
-        try {
-          shipJson.name = ship.querySelector("td").innerText;
-          shipJson.qty = ship.querySelector("td.value").innerText;
-        } catch (exception) {
-          console.log("hubo un error con el scraping del ataque");
-          console.log(exception);
-        }
-        ships.push(shipJson);
-      });
-      return ships;
-    });
-    console.log("te estan atacando con: ", shipsData);
+    let attackDetails = [];
+    let enemyMissionsRows = await this.page.$$("tr.eventFleet");
+    for (const enemyMission of enemyMissionsRows) {
+      var isEnemy = await enemyMission.$("td.countDown>span.hostile");
+      if (isEnemy) {
+        let fleet = await enemyMission.$("td.icon_movement");
+        await fleet.hover();
+        var attackDetail = await enemyMission.evaluate(enemyMission => {
+          var attackDetail = {
+            hostilePlayer: {
+              name: "",
+              origin: { planetName: "", coords: "", type: "" },
+              target: { planetName: "", coords: "", type: "" },
+              impactHour: "",
+              timeRemaining: ""
+            },
+            ships: []
+          };
+          attackDetail.hostilePlayer.origin.coords = enemyMission
+            .querySelector("td.coordsOrigin")
+            .innerText.replace(/[\[\]']+/g, "");
+          let planetPosition = attackDetail.hostilePlayer.origin.coords.split(
+            ":"
+          )[2];
+          attackDetail.hostilePlayer.origin.planetName = enemyMission.querySelector(
+            "td.originFleet"
+          ).innerText;
+          attackDetail.hostilePlayer.origin.type = enemyMission.querySelector(
+            "td.originFleet>figure.moon"
+          )
+            ? "moon"
+            : "planet";
+
+          attackDetail.hostilePlayer.target.coords = enemyMission
+            .querySelector("td.destCoords")
+            .innerText.replace(/[\[\]']+/g, "");
+          attackDetail.hostilePlayer.target.planetName = enemyMission.querySelector(
+            "td.destFleet"
+          ).innerText;
+          attackDetail.hostilePlayer.target.type = enemyMission.querySelector(
+            "td.destFleet>figure.moon"
+          )
+            ? "moon"
+            : "planet";
+          //impacto hour
+          attackDetail.hostilePlayer.impactHour = parseInt(
+            enemyMission.getAttribute("data-arrival-time") * 1000
+          );
+          attackDetail.hostilePlayer.timeRemaining = parseInt(
+            enemyMission.getAttribute("data-arrival-time") * 1000 - Date.now()
+          );
+
+          var shipsRows = document.querySelectorAll("table.fleetinfo>tbody>tr");
+          //get ships
+          shipsRows.forEach(async (ship, index) => {
+            if (index > 0) {
+              var shipJson = {
+                name: "",
+                qty: 0
+              };
+              try {
+                shipJson.name = ship.querySelector("td").innerText;
+                shipJson.qty = ship.querySelector("td.value").innerText;
+                attackDetail.ships.push(shipJson);
+              } catch (exception) {
+                console.log("hubo un error con el scraping del ataque");
+                console.log(exception);
+              }
+            }
+          });
+          console.log("ships es: ", attackDetail.ships);
+          return attackDetail;
+        });
+        //get hostil player name
+        console.log("se termino la evaluacion, empieza hover");
+        await this.page.click("#ingamepage");
+        await timeout(500);
+        let hostilPlayerSelector = await enemyMission.$("td.sendMail");
+        await hostilPlayerSelector.hover();
+        let hostilPlayerName = await enemyMission.evaluate(() => {
+          return document.querySelector(".tpd-tooltip").innerText;
+        });
+        attackDetail.hostilePlayer.name = hostilPlayerName;
+        attackDetails.push(attackDetail);
+      }
+    }
+    console.log("te estan atacando con: ", JSON.stringify(attackDetails));
+    return attackDetails;
   }
 
   async goToSolarSystem(coords) {
@@ -181,6 +347,7 @@ module.exports = class Bot {
   }
 
   async goToPage(pageName) {
+    //closing add
     switch (pageName) {
       case "galaxy":
         this.currentPage = "galaxy";
@@ -197,6 +364,7 @@ module.exports = class Bot {
       default:
         break;
     }
+    // await this.closeAds();
   }
 
   async checkPlanetActivity(coords, type) {
@@ -311,6 +479,37 @@ module.exports = class Bot {
     console.log("los datos son: ", ssData);
   }
 
+  // async closeAds() {
+  //   try {
+  //     await this.page.waitForResponse(
+  //       response => {
+  //         return (
+  //           response.url() ===
+  //             "https://ads-media.gameforge.com/53f75e5be1b5087082575d4181613f27.jpg" &&
+  //           response.status() === 200
+  //         );
+  //       },
+  //       { timeout: 5000 }
+  //     );
+  //     console.log("se termino de esperar la respuesta del ad");
+  //     await timeout(500);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+
+  //   let adState = await this.page.evaluate(() => {
+  //     let ad = document.querySelector(".openX_int_closeButton > a");
+  //     return ad;
+  //   });
+  //   console.log("se encontro este add: ", adState);
+  //   if (adState) {
+  //     console.log("cerrando add en goToPage");
+  //     await this.page.waitForSelector(".openX_int_closeButton > a");
+  //     await this.page.click(".openX_int_closeButton > a");
+  //   }
+  //   return 0;
+  // }
+
   async sendMessageToPlayer(nickname, msg) {
     try {
       await this.page.waitForSelector(
@@ -378,17 +577,43 @@ module.exports = class Bot {
     return newPage;
   }
   async refreshPage() {
-    console.log(
-      "refrescando ogame a las : ",
-      moment().format("MMMM Do YYYY, h:mm:ss a")
-    );
-    await this.page.waitForSelector(
-      "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
-    );
-    await this.page.click(
-      "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
-    );
-    await this.navigationPromise;
+    try {
+      console.log(
+        "refrescando ogame a las : ",
+        moment().format("MMMM Do YYYY, h:mm:ss a")
+      );
+      await this.page.waitForSelector(
+        "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
+      );
+      await this.page.click(
+        "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
+      );
+      await this.navigationPromise;
+    } catch (error) {
+      console.log("se dio un error y verificaremos el login en refresh");
+      await this.checkLoginStatus();
+      await this.refreshPage();
+    }
+  }
+
+  async getOgameUsername(page) {
+    try {
+      var page = page || this.page;
+      let username = "";
+      await this.page.waitForSelector("li#playerName");
+      username = await this.page.evaluate(() => {
+        console.log("estoy en esta pagina");
+        var username = document.querySelector("li#playerName>span>a").innerText;
+        return username;
+      });
+      return username;
+    } catch (error) {
+      console.log(
+        "se dio un error y verificaremos el login en getOgameUsername"
+      );
+      console.log("el error es: ", error);
+      await this.checkLoginStatus();
+    }
   }
 
   async hunter(playerInfo) {
@@ -399,5 +624,44 @@ module.exports = class Bot {
     }
     console.log("info: ", JSON.stringify(playerInfo));
     return playerInfo;
+  }
+  async stop() {
+    this.actions.forEach(action => {
+      clearInterval(action.action);
+    });
+    this.actions = [];
+    await this.browser.close();
+  }
+  getActions() {
+    let result = [];
+    this.actions.forEach(action => {
+      result.push({
+        actionId: action.actionId,
+        type: action.type,
+        milliseconds: action.milliseconds,
+        payload: action.payload
+      });
+    });
+    return result;
+  }
+  addAction(action, type, milliseconds, payload = {}) {
+    console.log("se recibio este action:", action);
+    let actionId = uuidv1();
+    this.actions.push({ actionId, action, type, milliseconds, payload });
+    return actionId;
+  }
+  async stopAction(actionId) {
+    try {
+      console.log("se dentendra este action:", actionId);
+      console.log("antes actions era: ", this.actions);
+      let index = this.actions.findIndex(action => action.actionId == actionId);
+      clearInterval(this.actions[index].action);
+      this.actions.splice(this.actions[index], 1);
+      console.log("ahora actions es: ", this.actions);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 };

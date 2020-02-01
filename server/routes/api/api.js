@@ -3,8 +3,36 @@ const router = express.Router();
 const bots = require("../../classes/Bots.js");
 const Bot = require("../../classes/Bot");
 const telegramBot = require("../../chatbot/Telegram/telegramBot");
-const {} = require("../../middlewares/botLogin.js");
+const { beginState } = require("../../middlewares/botLogin.js");
 const ogameApi = require("../../services/ogameApi");
+
+//Controllers
+const usersController = require("../../controllers/usersController.js");
+const botsController = require("../../controllers/botsController.js");
+
+//CRUD USERS
+router.get("/users/list", usersController.list);
+router.post("/users/create", usersController.create);
+router.put("/users/update/:id", usersController.update);
+router.delete("/users/delete/:id", usersController.deletes);
+router.post("/login", usersController.login);
+router.post("/users/logged", usersController.getUser);
+router.get("/logout", usersController.logout);
+
+//CRUD BOTS
+router.get("/bots", botsController.list);
+router.get("/bots/self", botsController.listByUser);
+router.post("/bots", botsController.create);
+router.get("/bots/:id", botsController.getOne);
+router.put("/bots/:id", botsController.update);
+router.delete("/bots/:id", botsController.deletes);
+//actions
+router.post("/bots/test", botsController.testOgameLogin);
+router.get("/bots/:id/begin", botsController.begin);
+router.get("/bots/:id/stop", botsController.stop);
+router.get("/bots/:id/actions", beginState, botsController.listActions);
+router.post("/bots/:id/actions", beginState, botsController.actions);
+router.get("/bots/:id/stop-action/:actionid", botsController.stopAction);
 
 //tools
 const dateTools = require("../../tools/dateTools.js");
@@ -38,12 +66,12 @@ router.post("/login-bot", async (req, res) => {
   let user_id = -339549424;
   let bot = new Bot();
   await bot.begin("dev");
-  bots.addBot(user_id, bot);
+  bots.addBot(bot);
 
-  telegramBot.sendTextMessage(
-    user_id,
-    "Iniciando sesión en ogame con: " + email
-  );
+  // telegramBot.sendTextMessage(
+  //   user_id,
+  //   "Iniciando sesión en ogame con: " + email
+  // );
   try {
     await bot.login(email, password);
     telegramBot.sendTextMessage(user_id, "Sesión iniciada con éxito!");
@@ -100,7 +128,7 @@ router.get("/hunter", async (req, res) => {
     console.log(error);
     telegramBot.sendTextMessage(
       user_id,
-      "Al parecer esas coordenadas no existen"
+      "Al parecer ese jugador no existe no existen"
     );
     res.json({ ok: true, msg: "algo salió mal" });
   }
@@ -134,11 +162,6 @@ router.get("/check-activity", async (req, res) => {
     );
     res.json({ ok: true, msg: "algo salió mal" });
   }
-});
-
-router.get("/", (req, res) => {
-  console.log("se ingreso al webhook");
-  console.log(req);
 });
 
 router.post("/webhook/", (req, res) => {

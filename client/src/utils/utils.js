@@ -65,52 +65,36 @@ export const buildPayloadPagination = (pagination, search) => {
 };
 
 // Catches error connection or any other error (checks if error.response exists)
-export const handleError = (error, commit, reject) => {
+export const handleError = (err, commit) => {
   let errMsg = "";
   // Resets errors in store
-  console.log("se entro al error");
+  console.log("hubo un error en la llamada a la api");
+  console.log(err);
   commit("loadingModule/showLoading", false, { root: true });
-  // commit(types.ERROR, null);
 
-  // Checks if unauthorized
-  // if (error.response.status === 401) {
-  //   store.dispatch("userLogout");
-  // } else {
-  //   // Any other error
-  //   errMsg = error.response
-  //     ? error.response.data.errors.msg
-  //     : "SERVER_TIMEOUT_CONNECTION_ERROR";
-  //   setTimeout(() => {
-  //     return errMsg
-  //       ? commit(types.ERROR, errMsg)
-  //       : commit(types.SHOW_ERROR, false);
-  //   }, 0);
-  // }
-  let msg = "Algo salio mal";
-  commit("errorModule/showError", msg, {
-    root: true
-  });
-  reject(error);
+  if (err.code === "ECONNABORTED") {
+    // se excedio limite de tiempo
+    console.log("se excedio el tiempo limite");
+    errMsg = "Se excedió el límite de tiempo";
+    commit("errorModule/showError", errMsg, {
+      root: true
+    });
+  } else {
+    errMsg = err.response.data.err
+      ? err.response.data.err.errors.language.message
+      : err.response.data.message;
+    commit("errorModule/showError", errMsg, {
+      root: true
+    });
+    console.error(err);
+  }
 };
 
-export const buildSuccess = (
-  msg,
-  commit,
-  resolve,
-  resolveParam = undefined
-) => {
+export const buildSuccess = (msg, commit) => {
   commit("loadingModule/showLoading", false, { root: true });
   commit("successModule/showSuccess", msg, {
     root: true
   });
-  //   commit(types.SUCCESS, null, { root: true });
-  //   setTimeout(() => {
-  //     return msg
-  //       ? commit(types.SUCCESS, msg, { root: true })
-  //       : commit(types.SHOW_SUCCESS, false, { root: true });
-  //   }, 0);
-  //   commit(types.ERROR, null);
-  resolve(resolveParam);
 };
 
 // Checks if tokenExpiration in localstorage date is past, if so then trigger an update

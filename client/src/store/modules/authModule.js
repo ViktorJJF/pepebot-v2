@@ -6,8 +6,11 @@ import { addMinutes, format } from "date-fns";
 
 const MINUTES_TO_CHECK_FOR_TOKEN_REFRESH = 1440;
 
+const namespaced = true;
 const getters = {
-  user: state => state.user,
+  fullname: state =>
+    state.user ? state.user.first_name + " " + state.user.last_name : null,
+  email: state => (state.user ? state.user.email : null),
   token: state => state.token,
   isTokenSet: state => state.isTokenSet
 };
@@ -15,37 +18,22 @@ const getters = {
 const actions = {
   userLogin({ commit }, payload) {
     return new Promise((resolve, reject) => {
-      commit(types.SHOW_LOADING, true);
+      console.log("se mandaran estos datos: ", payload);
       api
-        .userLogin(payload)
+        .login(payload)
         .then(response => {
           if (response.status === 200) {
-            window.localStorage.setItem(
-              "user",
-              JSON.stringify(response.data.user)
-            );
-            window.localStorage.setItem(
-              "token",
-              JSON.stringify(response.data.token)
-            );
-            window.localStorage.setItem(
-              "tokenExpiration",
-              JSON.stringify(
-                format(
-                  addMinutes(new Date(), MINUTES_TO_CHECK_FOR_TOKEN_REFRESH),
-                  "X"
-                )
-              )
-            );
-            commit(types.SAVE_USER, response.data.user);
-            commit(types.SAVE_TOKEN, response.data.token);
-            commit(types.EMAIL_VERIFIED, response.data.user.verified);
+            console.log("se inicio sesion correctamente");
+            console.log("se comiteara: ", response.data.user);
+            // commit("userLogin", response.data.user);
+            // commit(types.SAVE_TOKEN, response.data.token);
+            // commit(types.EMAIL_VERIFIED, response.data.user.verified);
             buildSuccess(
-              null,
+              "A experimentar!",
               commit,
               resolve,
               router.push({
-                name: "home"
+                name: "authLayout"
               })
             );
           }
@@ -55,61 +43,45 @@ const actions = {
         });
     });
   },
-  refreshToken({ commit }) {
+  userLogout({ commit }) {
     return new Promise((resolve, reject) => {
       api
-        .refreshToken()
+        .logout()
         .then(response => {
           if (response.status === 200) {
-            window.localStorage.setItem(
-              "token",
-              JSON.stringify(response.data.token)
+            console.log("se cerro sesion correctamente");
+            commit("userLogout");
+            // commit(types.SAVE_TOKEN, response.data.token);
+            // commit(types.EMAIL_VERIFIED, response.data.user.verified);
+            console.log("antes del buildsuccess");
+            commit("loadingModule/showLoading", true, { root: true });
+            buildSuccess(
+              "Cerraste sesión",
+              commit,
+              resolve,
+              router.push({
+                name: "login"
+              })
             );
-            window.localStorage.setItem(
-              "tokenExpiration",
-              JSON.stringify(
-                format(
-                  addMinutes(new Date(), MINUTES_TO_CHECK_FOR_TOKEN_REFRESH),
-                  "X"
-                )
-              )
-            );
-            commit(types.SAVE_TOKEN, response.data.token);
-            resolve();
           }
         })
         .catch(error => {
+          console.log("se dio un error cerrando sesion");
           handleError(error, commit, reject);
         });
-    });
-  },
-  autoLogin({ commit }) {
-    const user = JSON.parse(localStorage.getItem("user"));
-    commit(types.SAVE_USER, user);
-    commit(types.SAVE_TOKEN, JSON.parse(localStorage.getItem("token")));
-    commit(types.SET_LOCALE, JSON.parse(localStorage.getItem("locale")));
-    commit(types.EMAIL_VERIFIED, user.verified);
-  },
-  userLogout({ commit }) {
-    window.localStorage.removeItem("token");
-    window.localStorage.removeItem("tokenExpiration");
-    window.localStorage.removeItem("user");
-    commit(types.LOGOUT);
-    router.push({
-      name: "login"
     });
   }
 };
 
 const mutations = {
-  [types.SAVE_TOKEN](state, token) {
-    state.token = token;
-    state.isTokenSet = true;
-  },
-  [types.LOGOUT](state) {
+  // userLogin(payload) {
+  //   console.log("se colocara este payload: ", payload);
+  //   state.user = payload;
+  // },
+  userLogout(state) {
     state.user = null;
-    state.token = null;
-    state.isTokenSet = false;
+    // state.token = null;
+    // state.isTokenSet = false;
   },
   [types.SAVE_USER](state, user) {
     state.user = user;
@@ -123,6 +95,7 @@ const state = {
 };
 
 export default {
+  namespaced,
   state,
   getters,
   actions,

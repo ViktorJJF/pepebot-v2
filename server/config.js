@@ -3,6 +3,8 @@
 // ========================
 
 module.exports = {
+  environment: (process.env.NODE_ENV = process.env.NODE_ENV || "dev"),
+  port: (process.env.PORT = process.env.PORT || 3000),
   FB_PAGE_TOKEN:
     "EAAFeWyKYN50BAGde7NOFEsLCgIZCzN5k3JD24XO4CqOTCaY506P7oi2a8Ai1qWhhS9zOs53VFWVTMbRJ6E5b5VY4SV5cNZBpatSvCtsZBuxp6AW9sHkUw2dzDOWv9eZC4tvRiUreQlyNKebALzKDoAZCLrRkHwIDuWwWTxZCsAUwZAUgoSCS8Mx",
   SERVER_URL: "https://48791559.ngrok.io",
@@ -15,7 +17,7 @@ module.exports = {
     __dirname + "/chatbot/credentialspepitobot-ksksls-02f6c18bdc1c.json", //credenciales
   //database
   dbString:
-    "mongodb+srv://VictorJJF:Sed4cfv52309$@fullteccluster-nyugx.mongodb.net/fulltecDB",
+    "mongodb+srv://VictorJJF:Sed4cfv52309$@cluster0-ceisv.mongodb.net/pepebot",
   //hash
   saltRounds: 10,
   //JWT

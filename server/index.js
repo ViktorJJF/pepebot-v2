@@ -76,6 +76,26 @@ passport.deserializeUser(function(user_id, done) {
 require("./chatbot/Telegram/telegramBot");
 app.use("", require("./routes/api/telegram.js"));
 
+//creando instancias
+const BotModel = require("./models/Bots.js");
+const Bot = require("./classes/Bot");
+const bots = require("./classes/Bots.js");
+BotModel.find().exec((err, payload) => {
+  if (err) {
+    console.log(err);
+  }
+  payload.forEach(async element => {
+    console.log(element);
+    let bot = new Bot();
+    bot.initialize(element);
+    bots.addBot(bot);
+    if (bot.state) {
+      await bot.begin(config.env);
+      await bot.login(element.ogameEmail, element.ogamePassword);
+    }
+  });
+});
+
 const routes = require("./routes/api/api.js");
 app.use("/api", routes);
 
@@ -88,7 +108,7 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(__dirname + "/public/index.html");
   });
 }
-process.env.PORT = process.env.PORT || 3000;
+process.env.PORT = config.port;
 app.listen(process.env.PORT, () => {
   console.log(`Server starting on port ${process.env.PORT}`);
 });

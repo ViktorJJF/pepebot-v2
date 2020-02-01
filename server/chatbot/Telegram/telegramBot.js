@@ -10,13 +10,18 @@ var api = new telegram({
 });
 
 api.setWebhook("https://48791559.ngrok.io/api/webhook");
-
-// sendTextMessage(-339549424, "hola");
+// sendTextMessage(
+//   624818317,
+//   '<pre><code class="language-python">pre-formatted fixed-width code block written in the Python programming language</code></pre> '
+// );
+// console.log("enviando mensaje de telegram");
 
 api.on("message", async message => {
   let sender = message.chat.id;
   let msg = message.text;
-  console.log("se recibio el mensaj1e:", msg, " de: ", sender);
+  console.log("mensaje completo: ", message);
+  console.log("se recibio el mensaj1e:", msg, ".");
+  console.log("de ", sender);
   sendTypingOn(sender); //typing on
   let result = await dialogflow.sendToDialogFlow(sender, msg);
   handleDialogFlowResponse(sender, result);
@@ -206,7 +211,11 @@ function handleQuickReply(senderID, quickReply, messageId) {
 
 async function sendTextMessage(recipientId, text) {
   console.log("se enviara la respuesta: ", text);
-  await api.sendMessage({ chat_id: recipientId, text: text });
+  await api.sendMessage({
+    chat_id: recipientId,
+    text: text,
+    parse_mode: "html"
+  });
 }
 
 function sendImageMessage(recipientId, imageUrl) {

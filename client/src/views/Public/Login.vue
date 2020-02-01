@@ -1,5 +1,6 @@
 <template>
   <v-container fluid class="fill-height pa-3">
+    {{$store.state.authModule.user}}
     <v-row align="center" justify="center" dense>
       <v-card class="elevation-12">
         <v-window v-model="step">
@@ -28,18 +29,20 @@
                       prepend-icon="mdi-email"
                       type="text"
                       color="primary"
+                      v-model="user.email"
                     ></v-text-field>
                     <v-text-field
                       label="Contraseña"
                       prepend-icon="mdi-lock"
                       type="password"
                       color="primary"
+                      v-model="user.password"
                     ></v-text-field>
                   </v-form>
                   <h3 class="text-center mt-3">Olvidaste tu contraseña?</h3>
                 </v-card-text>
                 <div class="text-center mt-3">
-                  <v-btn rounded color="primary" dark>Iniciar sesión</v-btn>
+                  <v-btn rounded color="primary" dark @click="login()">Iniciar sesión</v-btn>
                 </div>
               </v-col>
               <v-col cols="12" sm="4" class="primary">
@@ -50,6 +53,7 @@
                 <div class="text-center">
                   <v-btn rounded outlined dark @click="step++">Ir a registro</v-btn>
                 </div>
+                <v-img src="/images/pepebot.png" aspect-ratio="2.7" contain class="mt-6"></v-img>
               </v-col>
             </v-row>
           </v-window-item>
@@ -64,7 +68,7 @@
                   >Para mantenerte conectado, por favor ingresa con tu información personal</h5>-->
                 </v-card-text>
                 <div class="text-center">
-                  <v-btn rounded outlined dark @click="step--">Iniciar sesión</v-btn>
+                  <v-btn rounded outlined dark @click="step--">Ir a Iniciar sesión</v-btn>
                 </div>
               </v-col>
               <v-col cols="12" sm="8">
@@ -119,10 +123,21 @@
 export default {
   data() {
     return {
-      step: 0
+      step: 0,
+      user: {
+        email: "",
+        password: ""
+      }
     };
   },
-  methods: {}
+  methods: {
+    async login() {
+      await this.$store.dispatch("authModule/userLogin", {
+        email: this.user.email,
+        password: this.user.password
+      });
+    }
+  }
 };
 </script>
 

@@ -1,12 +1,29 @@
 class Bots {
-  constructor() {
-    this.bots = new Map();
+  constructor(bots = []) {
+    this.bots = bots;
   }
-  addBot(id, bot) {
-    this.bots.set(id, bot);
+  addBot(newBot) {
+    this.bots.push(newBot);
   }
-  getBot(id) {
-    return this.bots.get(id);
+  deleteBot(id) {
+    let index = this.bots.findIndex(bot => bot._id == id);
+    this.bots.splice(index, 1);
+  }
+  getBot(id, msg) {
+    console.log("vengo de : ", msg);
+    console.log("se recibio este id: ", id);
+    console.log("se buscara dentro de esto: ", this.bots.length);
+    return this.bots.find(bot => {
+      console.log(
+        "primera vuelta: ",
+        typeof bot._id,
+        bot._id,
+        typeof id,
+        id,
+        bot._id == id
+      );
+      return bot._id == id;
+    });
   }
 }
 

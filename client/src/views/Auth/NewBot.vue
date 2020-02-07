@@ -21,7 +21,7 @@
                   dense
                   width="100"
                   hide-details
-                  placeholder="s166"
+                  placeholder="s167"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -46,6 +46,7 @@
                   hide-details
                   placeholder="-339549424"
                 ></v-text-field>
+                <v-btn small color="info" @click="testTelegramId(bot.telegramId)">Probar</v-btn>
               </v-col>
             </v-row>
             <v-row align="center">
@@ -60,6 +61,22 @@
                   width="100"
                   hide-details
                   placeholder="-339549424"
+                ></v-text-field>
+                <v-btn small color="info" @click="testTelegramGroupId(bot.telegramGroupId)">Probar</v-btn>
+              </v-col>
+            </v-row>
+            <v-row align="center">
+              <v-col cols="12" sm="2">
+                <b class="mr-3">Proxy:</b>
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-text-field
+                  v-model="bot.proxy"
+                  outlined
+                  dense
+                  width="100"
+                  hide-details
+                  placeholder="159.203.163.19:3128"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -119,7 +136,8 @@
           </v-col>
           <v-col cols="12" sm="6">
             <h2 class="display-1">Listado de bots</h2>
-            <v-row>
+            <v-alert type="error" v-if="bots.length==0">Aún no cuentas con bots creados</v-alert>
+            <v-row v-else>
               <v-col cols="12">
                 <v-card>
                   <v-list>
@@ -164,13 +182,14 @@ export default {
       dialog: false,
       bot: {
         _id: null,
-        server: "s166",
+        server: "s167",
         language: "es",
         telegramId: null,
         telegramGroupId: "-339549424",
-        ogameEmail: "vj.jimenez96@gmail.com",
-        ogamePassword: "Sed4cfv52309$",
-        state: null
+        ogameEmail: "",
+        ogamePassword: "",
+        state: null,
+        proxy: null
       },
       ogameLoginLoading: false,
       ogameLoginState: null,
@@ -183,6 +202,27 @@ export default {
     this.initialData();
   },
   methods: {
+    testTelegramGroupId(sender) {
+      axios
+        .post("/api/bots/telegram", { sender })
+        .then(res => {
+          console.log(res.data);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    testTelegramId(sender) {
+      console.log("se enviara este sender: ", sender);
+      axios
+        .post("/api/bots/telegram", { sender })
+        .then(res => {
+          console.log(res.data);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
     async initialData() {
       this.bots = this.$store.state.botsModule.bots;
       console.log("los bots: ", this.bots);
@@ -197,6 +237,7 @@ export default {
         telegramGroupId: this.bot.telegramGroupId,
         ogameEmail: this.bot.ogameEmail,
         ogamePassword: this.bot.ogamePassword,
+        proxy: this.bot.proxy,
         state: true
       };
       if (this.bots.length == 0) {
@@ -234,7 +275,8 @@ export default {
       axios
         .post("/api/bots/test", {
           ogameEmail: this.bot.ogameEmail,
-          password: this.bot.ogamePassword
+          password: this.bot.ogamePassword,
+          proxy: this.bot.proxy
         })
         .then(res => {
           console.log(res.data);

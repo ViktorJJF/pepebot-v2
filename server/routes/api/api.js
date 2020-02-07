@@ -33,6 +33,7 @@ router.get("/bots/:id/stop", botsController.stop);
 router.get("/bots/:id/actions", beginState, botsController.listActions);
 router.post("/bots/:id/actions", beginState, botsController.actions);
 router.get("/bots/:id/stop-action/:actionid", botsController.stopAction);
+router.post("/bots/telegram", botsController.testTelegram);
 
 //tools
 const dateTools = require("../../tools/dateTools.js");

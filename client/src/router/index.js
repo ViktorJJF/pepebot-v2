@@ -54,6 +54,11 @@ let routes = [
         path: "overview",
         component: require("@/views/Auth/Overview").default,
         name: "overview"
+      },
+      {
+        path: "expediciones",
+        component: require("@/views/Auth/Expeditions").default,
+        name: "expeditions"
       }
     ]
   },

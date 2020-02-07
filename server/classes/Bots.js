@@ -25,6 +25,9 @@ class Bots {
       return bot._id == id;
     });
   }
+  getBotByTelegramId(telegramId) {
+    return this.bots.find(bot => bot.telegramId == telegramId);
+  }
 }
 
 let bots = new Bots();

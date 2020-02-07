@@ -4,9 +4,11 @@ const bots = require("../classes/Bots.js");
 const config = require("../config.js");
 const dateTools = require("../tools/dateTools.js");
 const ogameApi = require("../services/ogameApi");
-const botTelegram = require("../chatbot/Telegram/telegramBot.js");
 const { msToTime } = require("../utils/utils");
 const moment = require("moment");
+const beginExpeditions = require("../ogameScripts/expeditions");
+const watchDog = require("../ogameScripts/watchDog");
+const botTelegram = require("../chatbot//Telegram/telegramBot");
 moment.locale("es");
 const list = (req, res) => {
   Bot.find().exec((err, payload) => {
@@ -23,7 +25,7 @@ const list = (req, res) => {
   });
 };
 const listByUser = (req, res) => {
-  Bot.find({ userId: req.query.userId }).exec((err, payload) => {
+  Bot.find({ userId: req.user._id }).exec((err, payload) => {
     if (err) {
       return res.status(400).json({
         ok: false,
@@ -60,8 +62,12 @@ const create = async (req, res) => {
     ogameEmail: body.ogameEmail,
     ogamePassword: body.ogamePassword,
     state: body.state,
-    userId: body.userId
+    userId: req.user._id,
+    proxy: body.proxy
   });
+
+  console.log("el user id es: ", req.user._id);
+
   console.log("se creara el bot con la siguiente info:", bot);
 
   bot.save((err, payload) => {
@@ -103,7 +109,8 @@ const update = async (req, res) => {
       ogameEmail: body.ogameEmail,
       ogamePassword: body.ogamePassword,
       state: body.state,
-      userId: req.user._id
+      userId: req.user._id,
+      proxy: body.proxy
     },
     {
       new: true
@@ -201,16 +208,16 @@ const begin = async (req, res) => {
 const actions = async (req, res) => {
   let action = req.body.action;
   let botId = req.params.id;
+  let bot = bots.getBot(botId);
+  if (!bot)
+    return res.json({
+      ok: false,
+      msg: "Hay un bot creado con ese id de usuario"
+    });
   switch (action) {
     case "scan":
       console.log("ejecutando scan");
       let username = req.body.payload.username;
-      var bot = bots.getBot(botId);
-      if (!bot)
-        return res.json({
-          ok: false,
-          msg: "Hay un bot creado con ese id de usuario"
-        });
       try {
         let playerInfo = await ogameApi.getPlayerInfo(username); //return object
         for (const [index, planet] of playerInfo.planets.entries()) {
@@ -229,21 +236,24 @@ const actions = async (req, res) => {
     case "watchDog":
       console.log("ejecutando watchDog");
       let milliseconds = req.body.payload.milliseconds;
-      var bot = bots.getBot(botId);
-      if (!bot)
-        return res.json({
-          ok: false,
-          msg: "No hay un bot creado con ese id"
-        });
-      //first ejecution
-      await watchdogAction(bot);
-      let action = setInterval(async () => {
-        await watchdogAction(bot);
-      }, milliseconds);
-      //stack action
-      let actionId = bot.addAction(action, "watchDog", milliseconds);
+      var actionId = bot.addAction("watchDog");
+      watchDog(bot);
       res.json({ ok: true, msg: "Empezando watchdog...", actionId });
       console.log("ahora las acciones del bot son: ", bot.actions);
+      break;
+    case "expeditions":
+      console.log("ejecutando expediciones");
+      // let ships = req.body.payload.ships;
+      let origin = req.body.payload.origin;
+      // let page = await bot.createNewPage();
+      //first ejecution
+      var actionId = bot.addAction("expeditions");
+      var ships = [
+        { id: 1, qty: 5 },
+        { id: 9, qty: 10 }
+      ];
+      beginExpeditions(origin, ships, bot);
+      res.json({ ok: true, msg: "Empezando a hacer expediciones", actionId });
       break;
     default:
       break;
@@ -252,15 +262,21 @@ const actions = async (req, res) => {
 
 const stopAction = async (req, res) => {
   let botId = req.params.id;
-  let actionId = req.params.actionid;
+  let type = req.params.type;
   let bot = bots.getBot(botId);
-  let state = bot.stopAction(actionId);
+  console.log("el parametro a eliminar: ", type);
+  let state = bot.stopAction(type);
   if (state) {
     res.json({ ok: true, msg: "Acción detenida con éxito" });
   }
-  console.log("llegaron estos id: ", botId, actionId);
 };
 
+const testTelegram = async (req, res) => {
+  let sender = req.body.sender;
+  console.log("se enviara al destino: ", sender);
+  botTelegram.sendTextMessage(sender, "TESTEANDO");
+  res.json({ ok: true, msg: "mensaje enviado con éxito" });
+};
 const listActions = async (req, res) => {
   let botId = req.params.id;
   let bot = bots.getBot(botId);
@@ -271,8 +287,9 @@ const listActions = async (req, res) => {
 const testOgameLogin = async (req, res) => {
   let ogameEmail = req.body.ogameEmail;
   let ogamePassword = req.body.password;
+  let proxy = req.body.proxy;
   let bot = new Botclass();
-  await bot.begin();
+  await bot.begin(proxy);
   let loginStatus = await bot.login(ogameEmail, ogamePassword);
   if (loginStatus)
     res.json({
@@ -299,64 +316,8 @@ module.exports = {
   stop,
   stopAction,
   listActions,
-  testOgameLogin
+  testOgameLogin,
+  testTelegram
 };
 
 //action functions
-async function watchdogAction(bot) {
-  let attacked = await bot.watchDog();
-  console.log("al fin! estuve esperando prro: ", attacked);
-  console.log(attacked);
-  if (attacked) {
-    var ogameUsername = await bot.getOgameUsername();
-    await botTelegram.sendTextMessage(
-      bot.telegramGroupId,
-      "⚠️ <b>" +
-        ogameUsername +
-        "</b>" +
-        " te están atacando ⚠️\nverificando detalles..."
-    );
-    var attackDetails = await bot.attackDetail();
-    attackDetails.forEach(async attackDetail => {
-      let shipsDetailMsg = "";
-      attackDetail.ships.forEach(ship => {
-        shipsDetailMsg += "✔️ " + ship.name + " " + ship.qty + "\n";
-      });
-      await botTelegram.sendTextMessage(
-        bot.telegramGroupId,
-        "<b>Detalles</b>:\n" +
-          "✅ Jugador hostil: " +
-          attackDetail.hostilePlayer.name +
-          "\n" +
-          "✅ <b>Desde:</b> " +
-          attackDetail.hostilePlayer.origin.planetName +
-          " (" +
-          attackDetail.hostilePlayer.origin.coords +
-          ") (" +
-          (attackDetail.hostilePlayer.origin.type == "moon"
-            ? "luna"
-            : "planeta") +
-          ")\n" +
-          "✅ <b>A tu planeta:</b> " +
-          attackDetail.hostilePlayer.target.planetName +
-          " (" +
-          attackDetail.hostilePlayer.target.coords +
-          ") (" +
-          (attackDetail.hostilePlayer.target.type == "moon"
-            ? "luna"
-            : "planeta") +
-          ")\n" +
-          "🕜 <b>Hora de impacto:</b> " +
-          moment(attackDetail.hostilePlayer.impactHour)
-            .format("DD MMM YYYY hh:mm a")
-            .replace(".", ".") +
-          "\n" +
-          "🕜 <b>Tiempo restante:</b> " +
-          msToTime(attackDetail.hostilePlayer.timeRemaining) +
-          "\n" +
-          "📝 <b>Detalle de Naves:</b>\n" +
-          shipsDetailMsg
-      );
-    });
-  }
-}

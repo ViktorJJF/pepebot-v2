@@ -1,6 +1,9 @@
 const telegram = require("telegram-bot-api");
 const dialogflow = require("../Dialogflow");
 const axios = require("../../utils/axios");
+const bots = require("../../classes/Bots.js");
+const beginExpeditions = require("../../ogameScripts/expeditions");
+const watchDog = require("../../ogameScripts/watchDog");
 
 var api = new telegram({
   token: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
@@ -9,16 +12,13 @@ var api = new telegram({
   }
 });
 
-api.setWebhook("https://48791559.ngrok.io/api/webhook");
-// sendTextMessage(
-//   624818317,
-//   '<pre><code class="language-python">pre-formatted fixed-width code block written in the Python programming language</code></pre> '
-// );
+// api.setWebhook("https://48791559.ngrok.io/api/webhook");
+// sendTextMessage(624818317, "aea");
 // console.log("enviando mensaje de telegram");
 
 api.on("message", async message => {
-  let sender = message.chat.id;
-  let msg = message.text;
+  let sender = message.from.id;
+  let msg = message.text.replace("/", "");
   console.log("mensaje completo: ", message);
   console.log("se recibio el mensaj1e:", msg, ".");
   console.log("de ", sender);
@@ -63,6 +63,16 @@ async function handleDialogFlowAction(
   contexts,
   parameters
 ) {
+  //select the bot
+  let bot = bots.getBotByTelegramId(sender);
+  console.log("el id es: ", sender);
+  //begin actions
+  if (!bot) {
+    return sendTextMessage(
+      sender,
+      "Lo siento pero aun no creaste una instancia mía 😅 debes entrar a mi web"
+    );
+  }
   switch (action) {
     case "checkPlayerActivitiesAction":
       axios
@@ -97,7 +107,65 @@ async function handleDialogFlowAction(
       }
       handleMessages(messages, sender);
       break;
-
+    case "listActionsAction":
+      let actions = bot.getActions();
+      console.log("las acciones son estas: ", actions);
+      if (actions.length > 0) {
+        await sendTextMessage(sender, "actualmente estoy haciendo esto");
+        let msg = "";
+        actions.forEach((action, index) => {
+          msg += "<b>" + (index + 1) + " - </b>" + action.type;
+        });
+        sendTextMessage(sender, msg);
+      } else {
+        sendTextMessage(sender, "estoy de vago sin hacer nada 🤔");
+      }
+      break;
+    case "beginExpeditionsAction":
+      console.log("entrando a expediciones...");
+      if (parameters.fields.cooords.listValue.values[0]) {
+        var coords = parameters.fields.cooords.listValue.values[0].stringValue;
+      }
+      if (coords) {
+        sendTextMessage(
+          sender,
+          "Ok, empezare a hacer expediciones en " + coords
+        );
+        bot.addAction("expeditions");
+        var ships = [
+          { id: 1, qty: 5 },
+          { id: 9, qty: 10 }
+        ];
+        beginExpeditions(coords, ships, bot);
+      }
+      handleMessages(messages, sender);
+      break;
+    case "stopExpeditionsAction":
+      sendTextMessage(sender, "Ok, dejare de hacer expediciones");
+      var state = bot.stopAction("expeditions");
+      if (state) {
+        await sendTextMessage(sender, "expediciones desactivadas con éxito...");
+      } else {
+        await sendTextMessage(
+          sender,
+          "algo salió mal y no pude detener las expediciones..."
+        );
+      }
+      break;
+    case "beginWatchDogAction":
+      sendTextMessage(sender, "Ok, empezare a vigilar tu cuenta");
+      var actionId = bot.addAction("watchDog");
+      watchDog(bot);
+      break;
+    case "stopWatchDogAction":
+      await sendTextMessage(sender, "Ok, entonces entrarás a la cuenta 😆");
+      var state = bot.stopAction("watchDog");
+      if (state) {
+        await sendTextMessage(sender, "watchDog desactivado con éxito...");
+      } else {
+        await sendTextMessage(sender, "algo salió mal y no pude detenerme...");
+      }
+      break;
     default:
       //unhandled action, just send back the text
       console.log(
@@ -210,9 +278,11 @@ function handleQuickReply(senderID, quickReply, messageId) {
 }
 
 async function sendTextMessage(recipientId, text) {
+  console.log("llego este recipient: ", recipientId);
+  let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
   console.log("se enviara la respuesta: ", text);
   await api.sendMessage({
-    chat_id: recipientId,
+    chat_id: bot.telegramGroupId,
     text: text,
     parse_mode: "html"
   });
@@ -387,4 +457,4 @@ function isDefined(obj) {
   return obj != null;
 }
 
-module.exports = { sendTextMessage };
+module.exports = { sendTextMessage, api };

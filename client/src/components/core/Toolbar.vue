@@ -64,7 +64,12 @@ export default {
         // { icon: "mdi-home", text: "Resumen", route: { name: "overview" } },
         // { icon: "mdi-home", text: "Escaneo", route: { name: "scan" } },
         // { icon: "mdi-home", text: "Hunter", route: { name: "hunter" } },
-        { icon: "mdi-cat", text: "WatchDog", route: { name: "watchDog" } }
+        { icon: "mdi-cat", text: "WatchDog", route: { name: "watchDog" } },
+        {
+          icon: "mdi-cat",
+          text: "Expediciones",
+          route: { name: "expeditions" }
+        }
       ],
       slides: [
         "Este bot esta muy activo !! fwefwe",

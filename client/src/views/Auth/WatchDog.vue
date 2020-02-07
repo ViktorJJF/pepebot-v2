@@ -23,7 +23,7 @@
             v-else
             block
             color="error"
-            @click="stopWatchDog(watchDogAction.actionId) "
+            @click="stopWatchDog(watchDogAction.type) "
             large
             :loading="loadingButton"
           >Desactivar</v-btn>
@@ -90,13 +90,13 @@ export default {
           this.loadingButton = false;
         });
     },
-    stopWatchDog(actionId) {
+    stopWatchDog(type) {
       this.loadingButton = true;
       axios
-        .get(`/api/bots/${this.getBotId}/stop-action/${actionId}`)
+        .get(`/api/bots/${this.getBotId}/stop-action/${type}`)
         .then(res => {
           console.log(res.data);
-          this.watchDogAction.actionId = null;
+          // this.watchDogAction.actionId = null;
           this.watchDogAction.milliseconds = null;
         })
         .catch(err => {

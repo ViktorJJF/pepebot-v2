@@ -34,6 +34,9 @@ let botsSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "Users"
+    },
+    proxy: {
+      type: String
     }
   },
   {

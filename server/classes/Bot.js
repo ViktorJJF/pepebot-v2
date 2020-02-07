@@ -43,6 +43,7 @@ module.exports = class Bot {
     this.ogamePassword = botOjbect.ogamePassword;
     this.state = botOjbect.state;
     this.userId = botOjbect.userId;
+    this.proxy = botOjbect.proxy;
     this.page = null;
     this.browser = null;
     this.navigationPromise = null;
@@ -50,20 +51,28 @@ module.exports = class Bot {
     this.currentPage = 0;
     this.actions = [];
   }
-  async begin() {
+  async begin(proxy) {
     console.log("iniciando bot...");
+    console.log("estamos en desarrollo con este proxy: ", this.proxy);
+    var proxy = proxy || this.proxy;
     if (config.environment === "dev") {
       this.browser = await puppeteer.launch({
-        headless: false
+        headless: false,
+        args: [`--proxy-server=${proxy}`]
       });
     } else {
+      console.log("estamos en produccion con este proxy: ", proxy);
       this.browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          `--proxy-server=${this.proxy}`
+        ]
       });
     }
 
     this.page = await this.browser.newPage();
-    this.page.setDefaultTimeout(10000);
+    this.page.setDefaultTimeout(80000);
     // await this.page._client.send("Emulation.clearDeviceMetricsOverride");
     // PuppeteerBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
     //   blocker.enableBlockingInPage(this.page);
@@ -75,53 +84,52 @@ module.exports = class Bot {
 
     console.log("se termino el inicio");
   }
-  async login(ogameEmail, ogamePassword) {
+  async login(ogameEmail, ogamePassword, page) {
     try {
+      var page = page || this.page;
       console.log(`Empezando Logeo...`);
       //closing add
       // await this.closeAds();
 
-      await this.page.waitForSelector(
+      await page.waitForSelector(
         "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
       );
-      await this.page.click(
+      await page.click(
         "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
       );
 
-      await this.page.waitForSelector('input[type="email"]');
-      await this.page.click('input[type="email"]');
-      await this.page.type(
+      await page.waitForSelector('input[type="email"]');
+      await page.click('input[type="email"]');
+      await page.type(
         'input[type="email"]',
         ogameEmail ? ogameEmail : this.ogameEmail,
         { delay: this.typingDelay }
       );
 
-      await this.page.waitForSelector('input[type="password"]');
-      await this.page.click('input[type="password"]');
-      await this.page.type(
+      await page.waitForSelector('input[type="password"]');
+      await page.click('input[type="password"]');
+      await page.type(
         'input[type="password"]',
         ogamePassword ? ogamePassword : this.ogamePassword,
         { delay: this.typingDelay }
       );
-      await this.page.waitForSelector(
+      await page.waitForSelector(
         "#loginTab > #loginForm > p > .button-primary > span"
       );
-      await this.page.click(
-        "#loginTab > #loginForm > p > .button-primary > span"
-      );
-      await this.page.waitForSelector("div > #joinGame > a > .button > span", {
+      await page.click("#loginTab > #loginForm > p > .button-primary > span");
+      await page.waitForSelector("div > #joinGame > a > .button > span", {
         timeout: 3000
       });
-      await this.page.click("div > #joinGame > a > .button > span");
+      await page.click("div > #joinGame > a > .button > span");
 
-      // await this.page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
-      // await this.page.click(".open > .rt-tr > .rt-td > .btn > span");
+      // await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
+      // await page.click(".open > .rt-tr > .rt-td > .btn > span");
 
-      await this.page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
+      await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
       //main page ogame
-      this.page = await this.clickAndWaitForTarget(
+      page = await this.clickAndWaitForTarget(
         ".open > .rt-tr > .rt-td > .btn > span",
-        this.page,
+        page,
         this.browser
       );
       // await this.closeAds();
@@ -130,6 +138,15 @@ module.exports = class Bot {
     } catch (error) {
       return false;
     }
+  }
+
+  async createNewPage() {
+    let mainMenuUrl =
+      "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
+    let page = await this.browser.newPage();
+    page.setDefaultTimeout(80000);
+    await page.goto(mainMenuUrl, { waitUntil: "networkidle0", timeout: 0 });
+    return page;
   }
 
   async checkLoginStatus(page) {
@@ -162,17 +179,17 @@ module.exports = class Bot {
       case "playPage":
         await page.click("#joinGame>a>button.button");
         await page.waitForSelector('.rt-td.action-cell>button[type="button"]');
-        this.page = await this.clickAndWaitForTarget(
+        page = await this.clickAndWaitForTarget(
           '.rt-td.action-cell>button[type="button"]',
-          this.page,
+          page,
           this.browser
         );
         return 0;
         break;
       case "selectUniversePage":
-        this.page = await this.clickAndWaitForTarget(
+        page = await this.clickAndWaitForTarget(
           '.rt-td.action-cell>button[type="button"]',
-          this.page,
+          page,
           this.browser
         );
         //main page ogame
@@ -180,19 +197,19 @@ module.exports = class Bot {
         return 0;
         break;
       default:
-        await this.login();
+        await this.login(null, null, page);
         return 0;
         break;
     }
   }
 
-  async watchDog() {
+  async watchDog(page) {
     try {
+      var page = page || this.page;
       console.log("verificando ataques...");
-      await this.refreshPage();
-      await this.page.waitForSelector("#attack_alert");
-      var self = this;
-      let notAttacked = await self.page.evaluate(() => {
+      await this.refreshPage(page);
+      await page.waitForSelector("#attack_alert");
+      let notAttacked = await page.evaluate(() => {
         return document.querySelector("#attack_alert.noAttack");
       });
       if (notAttacked) {
@@ -205,29 +222,30 @@ module.exports = class Bot {
     } catch (error) {
       console.log("se dio un error y verificaremos el login en watchDog");
       console.log("el error es: ", error);
-      await this.checkLoginStatus();
-      return await this.watchDog();
+      await this.checkLoginStatus(page);
+      return await this.watchDog(page);
     }
   }
-  async attackDetail() {
+  async attackDetail(page) {
+    var page = page || this.page;
     let enemyMissions = [];
     // await timeout(5000);
     console.log("verificando los detalles del ataque...");
 
     //Click to overview enemy missions
-    await this.page.waitForSelector(
+    await page.waitForSelector(
       "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
       { visible: true }
     );
-    await this.page.click(
+    await page.click(
       "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed"
     );
-    await this.page.waitForSelector("table#eventContent");
+    await page.waitForSelector("table#eventContent");
     //checking details
     await timeout(1000);
     var self = this;
     let attackDetails = [];
-    let enemyMissionsRows = await this.page.$$("tr.eventFleet");
+    let enemyMissionsRows = await page.$$("tr.eventFleet");
     for (const enemyMission of enemyMissionsRows) {
       var isEnemy = await enemyMission.$("td.countDown>span.hostile");
       if (isEnemy) {
@@ -301,7 +319,7 @@ module.exports = class Bot {
         });
         //get hostil player name
         console.log("se termino la evaluacion, empieza hover");
-        await this.page.click("#ingamepage");
+        await page.click("#ingamepage");
         await timeout(500);
         let hostilPlayerSelector = await enemyMission.$("td.sendMail");
         await hostilPlayerSelector.hover();
@@ -346,19 +364,38 @@ module.exports = class Bot {
     await this.page.waitForSelector("tr.row");
   }
 
-  async goToPage(pageName) {
+  async goToPage(pageName, page) {
+    var page = page || this.page;
     //closing add
     switch (pageName) {
       case "galaxy":
         this.currentPage = "galaxy";
         console.log("yendo a vista galaxias");
-        await this.page.waitForSelector(
+        await page.waitForSelector(
           "#toolbarcomponent > #links > #menuTable > li:nth-child(10) > .menubutton"
         );
-        await this.page.click(
+        await page.click(
           "#toolbarcomponent > #links > #menuTable > li:nth-child(10) > .menubutton"
         );
         // await navigationPromise
+        break;
+      case "fleet":
+        console.log("yendo a vista flota");
+        await page.waitForSelector(
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
+        );
+        await page.click(
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
+        );
+        break;
+      case "fleetMovement":
+        console.log("yendo a vista flota");
+        await page.waitForSelector(
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(9)>span.menu_icon>a"
+        );
+        await page.click(
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(9)>span.menu_icon>a"
+        );
         break;
 
       default:
@@ -379,7 +416,7 @@ module.exports = class Bot {
       await this.page.waitForResponse(response => {
         return (
           response.url() ===
-            "https://s166-es.ogame.gameforge.com/game/index.php?page=ingame&component=galaxyContent&ajax=1" &&
+            "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
           response.status() === 200
         );
       });
@@ -432,7 +469,7 @@ module.exports = class Bot {
       await this.page.waitForResponse(response => {
         return (
           response.url() ===
-            "https://s166-es.ogame.gameforge.com/game/index.php?page=ingame&component=galaxyContent&ajax=1" &&
+            "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
           response.status() === 200
         );
       });
@@ -576,24 +613,98 @@ module.exports = class Bot {
     // newPage.on("console", consoleObj => console.log(consoleObj.text()));
     return newPage;
   }
-  async refreshPage() {
+  async refreshPage(page) {
     try {
+      var page = page || this.page;
       console.log(
         "refrescando ogame a las : ",
         moment().format("MMMM Do YYYY, h:mm:ss a")
       );
-      await this.page.waitForSelector(
+      await page.waitForSelector(
         "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
       );
-      await this.page.click(
+      await page.click(
         "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
       );
-      await this.navigationPromise;
+      // await this.navigationPromise;
     } catch (error) {
       console.log("se dio un error y verificaremos el login en refresh");
       await this.checkLoginStatus();
-      await this.refreshPage();
+      await this.refreshPage(page);
     }
+  }
+
+  async getFleets(page) {
+    var page = page || this.page;
+    let fleetDetails = {
+      fleets: [],
+      slots: {
+        expTotal: null,
+        expInUse: null,
+        all: null,
+        current: null
+      }
+    };
+    //go to fleet view
+    await this.goToPage("fleet", page);
+    // await timeout(5000);
+    //Click to overview missions
+    //check fleets
+    let fleetOverviewButton = await page.$("p.event_list");
+    if (fleetOverviewButton) {
+      await page.waitForSelector(
+        "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
+        { visible: true }
+      );
+      await page.click(
+        "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed"
+      );
+      await page.waitForSelector("table#eventContent");
+    }
+
+    //checking fleet details
+    await timeout(1000);
+    fleetDetails = await page.evaluate(() => {
+      var fleets = [];
+      var slots = {
+        expTotal: null,
+        expInUse: null,
+        all: null,
+        current: null
+      };
+      var fleetEvents = document.querySelectorAll("tr.eventFleet");
+      console.log("fleet events es de tamaño: ", fleetEvents.length);
+      fleetEvents.forEach(fleetEvent => {
+        fleets.push({
+          missionType: fleetEvent.getAttribute("data-mission-type"),
+          return: fleetEvent.getAttribute("data-return-flight"),
+          arrivalTime: fleetEvent.getAttribute("data-arrival-time")
+        });
+      });
+
+      slots.current = parseInt(
+        document
+          .querySelector("#slots>.fleft>span")
+          .innerText.match(/([0-9])/)[0]
+      );
+      slots.all = parseInt(
+        document
+          .querySelector("#slots>.fleft>span")
+          .innerText.match(/([^\/]+$)/)[0]
+      );
+      slots.expInUse = parseInt(
+        document
+          .querySelector("#slots>.fleft:nth-child(2)>span")
+          .innerText.match(/([0-9])/)[0]
+      );
+      slots.expTotal = parseInt(
+        document
+          .querySelector("#slots>.fleft:nth-child(2)>span")
+          .innerText.match(/([^\/]+$)/)[0]
+      );
+      return { fleets, slots };
+    });
+    return fleetDetails;
   }
 
   async getOgameUsername(page) {
@@ -632,30 +743,33 @@ module.exports = class Bot {
     this.actions = [];
     await this.browser.close();
   }
+  hasAction(actionType) {
+    //expeditions - watchdog - hunter
+    let actionIndex = this.actions.findIndex(
+      action => action.type == actionType
+    );
+    return actionIndex > -1 ? true : false;
+  }
   getActions() {
     let result = [];
     this.actions.forEach(action => {
       result.push({
         actionId: action.actionId,
         type: action.type,
-        milliseconds: action.milliseconds,
         payload: action.payload
       });
     });
     return result;
   }
-  addAction(action, type, milliseconds, payload = {}) {
-    console.log("se recibio este action:", action);
+  addAction(type, payload = {}) {
+    console.log("se recibio este action:", type);
     let actionId = uuidv1();
-    this.actions.push({ actionId, action, type, milliseconds, payload });
+    this.actions.push({ actionId, type, payload });
     return actionId;
   }
-  async stopAction(actionId) {
+  async stopAction(type) {
     try {
-      console.log("se dentendra este action:", actionId);
-      console.log("antes actions era: ", this.actions);
-      let index = this.actions.findIndex(action => action.actionId == actionId);
-      clearInterval(this.actions[index].action);
+      let index = this.actions.findIndex(action => action.type == type);
       this.actions.splice(this.actions[index], 1);
       console.log("ahora actions es: ", this.actions);
       return true;

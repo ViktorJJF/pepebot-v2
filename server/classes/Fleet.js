@@ -193,14 +193,14 @@ class Fleet {
       return [
         {
           id: "202",
-          qty: parseInt((navePequenaDeCargaTotal * 0.95) / freeExpSlots)
+          qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
         },
         {
           id: "203",
-          qty: parseInt((naveGrandeDeCargaTotal * 0.95) / freeExpSlots)
+          qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots)
         },
-        { id: "210", qty: 15 },
-        { id: "219", qty: 9 },
+        { id: "210", qty: 25 },
+        { id: "219", qty: 24 },
         {
           id: lastBattleShipId,
           qty: 1
@@ -211,8 +211,11 @@ class Fleet {
       this.ships[this.ships.findIndex(ship => ship.id == localShip.id)].qty =
         localShip.qty;
     });
+
+    let shipsToSend = []; // return
     for (const ship of this.ships) {
       if (ship.qty > 0) {
+        shipsToSend.push(ship);
         console.log(
           "se colocara esta nave: ",
           ship.name,
@@ -226,6 +229,7 @@ class Fleet {
     }
     await this.page.click("a#continueToFleet2");
     let [galaxy, system, planet] = this.destination.split(":");
+    // await timeout(1500);
     await this.page.waitForSelector("input#galaxy", { visible: true });
     await this.page.click("input#galaxy");
     await this.page.type("input#galaxy", galaxy);
@@ -251,6 +255,7 @@ class Fleet {
         break;
     }
     console.log("mandando la flota...");
+    return shipsToSend;
   }
 }
 

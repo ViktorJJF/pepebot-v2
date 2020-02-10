@@ -11,6 +11,7 @@ const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
 
 const { Random, timeout, msToTime } = require("../utils/utils");
+const watchDog = require("./watchDog.js");
 
 async function beginExpeditions(
   origin,
@@ -20,8 +21,10 @@ async function beginExpeditions(
   expeditionDuration = 1
 ) {
   const botTelegram = require("../chatbot/Telegram/telegramBot");
-  console.log("empezando a refrescar");
-  let page = await bot.createNewPage();
+  var page = await bot.createNewPage();
+  //quitar este watchdog luego
+  // bot.addAction("watchDog");
+  // watchDog(bot, page); // mientras arreglo el problema de headless no funciona bien
   async function sendExpedition() {
     // if(activateRandomSystem) let randomSystem = Random(minSystem, maxSystem)
     let [galaxy, system, planet] = origin.split(":");
@@ -42,47 +45,64 @@ async function beginExpeditions(
   }
 
   while (bot.hasAction("expeditions")) {
-    let { fleets, slots } = await bot.getFleets(page);
-    let bigNum = 999999999;
-    let minSecs = bigNum;
-    fleets.forEach(fleet => {
-      if (fleet.missionType == "15" && fleet.return == "true") {
-        minSecs = Math.min(fleet.arrivalTime * 1000 - Date.now(), minSecs);
+    try {
+      let { fleets, slots } = await bot.getFleets(page);
+      let bigNum = 999999999;
+      let minSecs = bigNum;
+      fleets.forEach(fleet => {
+        if (fleet.missionType == "15" && fleet.return == "true") {
+          minSecs = Math.min(fleet.arrivalTime * 1000 - Date.now(), minSecs);
+        }
+      });
+      // Sends new expeditions
+      let expeditionsPossible = slots.expTotal - slots.expInUse;
+      var ogameUsername = await bot.getOgameUsername(page);
+
+      if (expeditionsPossible > 0)
+        await botTelegram.sendTextMessage(
+          bot.telegramId,
+          `<b>${ogameUsername}</b> estoy empezando a mandar las expediciones...`
+        );
+
+      var expeditionNumber = 1;
+      while (expeditionsPossible > 0) {
+        let shipsToSend = await sendExpedition();
+        let msg = `<b>Expedición nro ${expeditionNumber}\n</b>`;
+        shipsToSend.forEach(shipToSend => {
+          msg += "✔️<b>" + shipToSend.name + ":</b> " + shipToSend.qty + "\n";
+        });
+        console.log("mandando expedicion...");
+        console.log(
+          "las expediciones posibles son: ",
+          expeditionsPossible,
+          " y se restara -1"
+        );
+        expeditionsPossible--;
+        botTelegram.sendTextMessage(bot.telegramId, msg);
+        expeditionNumber++;
+        await timeout(Random(10000, 20000));
       }
-    });
-    // Sends new expeditions
-    let expeditionsPossible = slots.expTotal - slots.expInUse;
-    while (expeditionsPossible > 0) {
-      await sendExpedition();
-      console.log("mandando expedicion...");
-      console.log(
-        "las expediciones posibles son: ",
-        expeditionsPossible,
-        " y se restara -1"
-      );
-      expeditionsPossible--;
+
+      // If we didn't found any expedition fleet and didn't create any, let's wait 5min
+      if (minSecs == bigNum) {
+        minSecs = 5 * 60;
+      }
       await botTelegram.sendTextMessage(
         bot.telegramId,
-        `${bot.ogameEmail} estoy mandando una nueva expedición...`
+        `<b>${ogameUsername}</b> acabo de completar todas las expediciones ... esperare a que la siguiente expedición vuelva dentro de ${msToTime(
+          minSecs + 15
+        )} `
       );
-      await timeout(Random(10000, 20000));
+      console.log(`me activare dentro de: <b>${msToTime(minSecs + 15)}</b>`);
+      await timeout(minSecs + 15); // Sleep until one of the expedition fleet come back
+    } catch (error) {
+      console.log("se dio un error en watchdog..probablemente el logeo");
+      console.log("el error es: ", error);
+      await bot.checkLoginStatus(page);
+      page = await bot.createNewPage();
     }
-
-    // If we didn't found any expedition fleet and didn't create any, let's wait 5min
-    if (minSecs == bigNum) {
-      minSecs = 5 * 60;
-    }
-    await botTelegram.sendTextMessage(
-      bot.telegramId,
-      `${
-        bot.ogameEmail
-      } estoy esperando que regresen las expediciones ... me despertaré dentro de ${msToTime(
-        minSecs + 15
-      )} `
-    );
-    console.log("me activare dentro de: ", msToTime(minSecs + 15));
-    await timeout(minSecs + 15); // Sleep until one of the expedition fleet come back
   }
+  page.close();
 }
 
 module.exports = beginExpeditions;

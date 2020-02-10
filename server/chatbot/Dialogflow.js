@@ -50,6 +50,7 @@ async function sendToDialogFlow(sender, msg, params) {
     };
     const responses = await sessionClient.detectIntent(request);
     const result = responses[0].queryResult;
+    console.log("el resultado es: ", result);
     let defaultResponses = [];
     result.fulfillmentMessages.forEach(element => {
       if (element.platform == "PLATFORM_UNSPECIFIED") {

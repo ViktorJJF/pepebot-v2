@@ -207,6 +207,7 @@ function handleMessages(messages, sender) {
 
 async function handleMessage(message, sender) {
   console.log("se entro a handleMessage");
+  console.log("mensaje: ", message);
   console.log("switch: ", message.message);
   console.log("texto: ", message.text);
   switch (message.message) {

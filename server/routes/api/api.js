@@ -85,9 +85,10 @@ router.post("/login-bot", async (req, res) => {
 
 router.get("/hunter", async (req, res) => {
   // let user_id = req.query.user_id;
-  let user_id = -339549424;
+  let user_id = 624818317;
   let nickname = req.query.nickname;
-  let bot = bots.getBot(user_id);
+  let bot = bots.getBotByTelegramId(user_id);
+  let page = await bot.createNewPage();
   if (!bot)
     return res.json({
       ok: false,
@@ -100,7 +101,11 @@ router.get("/hunter", async (req, res) => {
     );
     let playerInfo = await ogameApi.getPlayerInfo(nickname); //return object
     for (const [index, planet] of playerInfo.planets.entries()) {
-      let activity = await bot.checkPlanetActivity(planet.coords, planet.type);
+      let activity = await bot.checkPlanetActivity(
+        planet.coords,
+        planet.type,
+        page
+      );
       telegramBot.sendTextMessage(
         user_id,
         planet.name +
@@ -127,10 +132,7 @@ router.get("/hunter", async (req, res) => {
     res.json({ ok: true, msg: "accion terminada" });
   } catch (error) {
     console.log(error);
-    telegramBot.sendTextMessage(
-      user_id,
-      "Al parecer ese jugador no existe no existen"
-    );
+    telegramBot.sendTextMessage(user_id, "Al parecer ese jugador no existe");
     res.json({ ok: true, msg: "algo salió mal" });
   }
 });

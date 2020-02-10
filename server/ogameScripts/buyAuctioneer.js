@@ -2,14 +2,22 @@
 var times = [];
 var msg = "aprox. 10m";
 var interval = setInterval(() => {
-  document.querySelector("p.auction_info>span").innerText;
-}, 800);
+  console.log("ejecutando intervalo...");
+  if (msg !== document.querySelector("p.auction_info>span").innerText) {
+    console.log("pasaron 5 min...");
+    times.push(Date.now());
+    console.log("times ahora es: ", times);
+    msg = document.querySelector("p.auction_info>span").innerText;
+  }
+}, 900);
 
 var buyInterval = setInterval(() => {
   if (document.querySelector("a.currentPlayer").innerText != "Jose Cuervo") {
-    document.querySelector("a.js_sliderCrystalMax").click();
-    document.querySelector("a.pay").click();
-    console.log("no eres el mejor postor y pagaremos mas");
+    document.querySelector("a.js_sliderMetalMax").click();
+    if (document.querySelector("a.pay")) {
+      document.querySelector("a.pay").click();
+      console.log("no eres el mejor postor y pagaremos mas");
+    }
   }
 }, 100);
 

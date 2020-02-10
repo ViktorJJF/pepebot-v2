@@ -53,20 +53,32 @@ module.exports = class Bot {
   }
   async begin(proxy) {
     console.log("iniciando bot...");
-    console.log("estamos en desarrollo con este proxy: ", this.proxy);
     var proxy = proxy || this.proxy;
     if (config.environment === "dev") {
-      this.browser = await puppeteer.launch({
-        headless: false,
-        args: [`--proxy-server=${proxy}`]
-      });
+      console.log("estamos en desarrollo con este proxy: ", this.proxy);
+      const pathToExtension =
+        "C:\\Users\\JIMENEZ\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions\\ookhnhpkphagefgdiemllfajmkdkcaim\\2.14.4_0";
+      if (this.ogameEmail != "vj.jimenez96@gmail.com") {
+        this.browser = await puppeteer.launch({
+          headless: false,
+          args: [
+            `--disable-extensions-except=${pathToExtension}`,
+            `--load-extension=${pathToExtension}`
+          ]
+          // args: [`--proxy-server=${proxy}`]
+        });
+      } else {
+        this.browser = await puppeteer.launch({
+          headless: false
+        });
+      }
     } else {
       console.log("estamos en produccion con este proxy: ", proxy);
       this.browser = await puppeteer.launch({
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
-          `--proxy-server=${this.proxy}`
+          `--proxy-server=${proxy}`
         ]
       });
     }
@@ -126,12 +138,15 @@ module.exports = class Bot {
       // await page.click(".open > .rt-tr > .rt-td > .btn > span");
 
       await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
+      let pageToClose = page;
       //main page ogame
       page = await this.clickAndWaitForTarget(
         ".open > .rt-tr > .rt-td > .btn > span",
         page,
         this.browser
       );
+      await pageToClose.close();
+      await page.close();
       // await this.closeAds();
       console.log("Logeo finalizado exitosamente");
       return true;
@@ -144,7 +159,7 @@ module.exports = class Bot {
     let mainMenuUrl =
       "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
     let page = await this.browser.newPage();
-    page.setDefaultTimeout(80000);
+    page.setDefaultTimeout(30000);
     await page.goto(mainMenuUrl, { waitUntil: "networkidle0", timeout: 0 });
     return page;
   }
@@ -172,11 +187,13 @@ module.exports = class Bot {
         return "selectUniversePage";
       }
     });
+    console.log("se verificara en que pagina estamos...");
     switch (currentPage) {
       case "mainPage":
-        return 0;
+        console.log("no paso nada.. seguimos normal");
         break;
       case "playPage":
+        console.log("nos encontramos en vista playPage");
         await page.click("#joinGame>a>button.button");
         await page.waitForSelector('.rt-td.action-cell>button[type="button"]');
         page = await this.clickAndWaitForTarget(
@@ -184,46 +201,44 @@ module.exports = class Bot {
           page,
           this.browser
         );
-        return 0;
         break;
       case "selectUniversePage":
+        console.log("nos encontramos en vista universo");
+        console.log("empezaremos el clickAndwait");
         page = await this.clickAndWaitForTarget(
           '.rt-td.action-cell>button[type="button"]',
           page,
           this.browser
         );
+        console.log("se termino el click and wait");
         //main page ogame
-
-        return 0;
         break;
       default:
+        console.log("el caso default: a logearse");
         await this.login(null, null, page);
-        return 0;
+        console.log("cambiamos de pagina");
         break;
     }
+    console.log("se retornara la pagina cerrada");
+    // await page.close();
+    return 0;
   }
 
   async watchDog(page) {
-    try {
-      var page = page || this.page;
-      console.log("verificando ataques...");
-      await this.refreshPage(page);
-      await page.waitForSelector("#attack_alert");
-      let notAttacked = await page.evaluate(() => {
-        return document.querySelector("#attack_alert.noAttack");
-      });
-      if (notAttacked) {
-        console.log("no estas siendo atacado");
-        return false;
-      } else {
-        console.log("estas siendo atacado !!");
-        return true;
-      }
-    } catch (error) {
-      console.log("se dio un error y verificaremos el login en watchDog");
-      console.log("el error es: ", error);
-      await this.checkLoginStatus(page);
-      return await this.watchDog(page);
+    console.log("empezando watchdog");
+    var page = page || this.page;
+    console.log("verificando ataques...");
+    await this.refreshPage(page);
+    await page.waitForSelector("#attack_alert");
+    let notAttacked = await page.evaluate(() => {
+      return document.querySelector("#attack_alert.noAttack");
+    });
+    if (notAttacked) {
+      console.log("no estas siendo atacado");
+      return false;
+    } else {
+      console.log("estas siendo atacado !!");
+      return true;
     }
   }
   async attackDetail(page) {
@@ -334,34 +349,35 @@ module.exports = class Bot {
     return attackDetails;
   }
 
-  async goToSolarSystem(coords) {
+  async goToSolarSystem(coords, page) {
     console.log("Dirigiendo bot al sistema solar: ", coords);
+    var page = page || this.page;
     let [galaxy, system, planet] = coords.split(":");
     if (this.currentPage !== "galaxy") {
-      await this.goToPage("galaxy");
+      await this.goToPage("galaxy", page);
     }
     let galaxyInputSelector = "#galaxy_input";
-    await this.page.waitForSelector(galaxyInputSelector);
-    await this.page.click(galaxyInputSelector);
-    await this.page.type(galaxyInputSelector, galaxy, {
+    await page.waitForSelector(galaxyInputSelector);
+    await page.click(galaxyInputSelector);
+    await page.type(galaxyInputSelector, galaxy, {
       delay: this.typingDelay
     });
     let systemInputSelector =
       "#galaxycomponent > #inhalt > #galaxyHeader #system_input";
-    await this.page.waitForSelector(systemInputSelector);
-    await this.page.click(systemInputSelector);
-    await this.page.type(systemInputSelector, system, {
+    await page.waitForSelector(systemInputSelector);
+    await page.click(systemInputSelector);
+    await page.type(systemInputSelector, system, {
       delay: this.typingDelay
     });
     //click !vamos!
-    await this.page.waitForSelector(
+    await page.waitForSelector(
       "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
     );
     await timeout(1000);
-    await this.page.click(
+    await page.click(
       "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
     );
-    await this.page.waitForSelector("tr.row");
+    await page.waitForSelector("tr.row");
   }
 
   async goToPage(pageName, page) {
@@ -404,16 +420,17 @@ module.exports = class Bot {
     // await this.closeAds();
   }
 
-  async checkPlanetActivity(coords, type) {
+  async checkPlanetActivity(coords, type, page) {
     //type = moon || planet
+    var page = page || this.page;
     var [galaxy, system, planet] = coords.split(":");
-    await this.goToSolarSystem(coords);
+    await this.goToSolarSystem(coords, page);
     type == "planet"
       ? console.log("Empezando a escanear planeta: ", coords)
       : console.log("Empezando a escanear luna: ", coords);
     // await timeout(5000);
     try {
-      await this.page.waitForResponse(response => {
+      await page.waitForResponse(response => {
         return (
           response.url() ===
             "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
@@ -422,7 +439,7 @@ module.exports = class Bot {
       });
       await timeout(500);
     } catch (error) {
-      this.goToPage("galaxy"); //refresh page
+      goToPage("galaxy"); //refresh page
       console.log(error);
     }
     var planetActivity = {
@@ -431,7 +448,7 @@ module.exports = class Bot {
     };
 
     try {
-      planetActivity.lastActivity = await this.page.evaluate(
+      planetActivity.lastActivity = await page.evaluate(
         ({ planet, type }) => {
           var lastActivity = "off";
           let planetSelector = document.querySelector(
@@ -614,24 +631,18 @@ module.exports = class Bot {
     return newPage;
   }
   async refreshPage(page) {
-    try {
-      var page = page || this.page;
-      console.log(
-        "refrescando ogame a las : ",
-        moment().format("MMMM Do YYYY, h:mm:ss a")
-      );
-      await page.waitForSelector(
-        "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
-      );
-      await page.click(
-        "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
-      );
-      // await this.navigationPromise;
-    } catch (error) {
-      console.log("se dio un error y verificaremos el login en refresh");
-      await this.checkLoginStatus();
-      await this.refreshPage(page);
-    }
+    var page = page || this.page;
+    console.log(
+      "refrescando ogame a las : ",
+      moment().format("MMMM Do YYYY, h:mm:ss a")
+    );
+    await page.waitForSelector(
+      "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
+    );
+    await page.click(
+      "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
+    );
+    // await this.navigationPromise;
   }
 
   async getFleets(page) {
@@ -708,23 +719,15 @@ module.exports = class Bot {
   }
 
   async getOgameUsername(page) {
-    try {
-      var page = page || this.page;
-      let username = "";
-      await this.page.waitForSelector("li#playerName");
-      username = await this.page.evaluate(() => {
-        console.log("estoy en esta pagina");
-        var username = document.querySelector("li#playerName>span>a").innerText;
-        return username;
-      });
+    var page = page || this.page;
+    let username = "";
+    await page.waitForSelector("li#playerName");
+    username = await page.evaluate(() => {
+      console.log("estoy en esta pagina");
+      var username = document.querySelector("li#playerName>span>a").innerText;
       return username;
-    } catch (error) {
-      console.log(
-        "se dio un error y verificaremos el login en getOgameUsername"
-      );
-      console.log("el error es: ", error);
-      await this.checkLoginStatus();
-    }
+    });
+    return username;
   }
 
   async hunter(playerInfo) {

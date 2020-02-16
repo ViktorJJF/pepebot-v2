@@ -3,13 +3,14 @@ const moment = require("moment");
 moment.locale("es");
 
 async function watchDog(bot, page) {
+  // await timeout(1 * 60 * 1000);
   const botTelegram = require("../chatbot/Telegram/telegramBot.js");
-  //   botTelegram.sendTextMessage(
-  //     bot.telegramId,
-  //     bot.ogameEmail +
-  //       " empezare a cuidar tu cuenta, para desactivar dime algo como 'pepebot ya no cuides mi cuenta'"
-  //   );
-  // var page = page || (await bot.createNewPage());
+  botTelegram.sendTextMessage(
+    bot.telegramId,
+    bot.ogameEmail +
+      " empezare a cuidar tu cuenta, para desactivar dime algo como 'pepebot ya no cuides mi cuenta'"
+  );
+  var page = page || (await bot.createNewPage());
   while (bot.hasAction("watchDog")) {
     try {
       console.log("se encontro la accion watchDog");
@@ -72,12 +73,12 @@ async function watchDog(bot, page) {
       // await timeout(Random(3000, 6000));
     } catch (error) {
       // console.log("se dio un error en watchdog..probablemente el logeo");
-      // await bot.checkLoginStatus(page);
-      // console.log("creando una nueva pagina");
-      // page = await bot.createNewPage();
+      await bot.checkLoginStatus(page);
+      console.log("creando una nueva pagina");
+      page = await bot.createNewPage();
     }
   }
-  // page.close();
+  page.close();
 }
 
 module.exports = watchDog;

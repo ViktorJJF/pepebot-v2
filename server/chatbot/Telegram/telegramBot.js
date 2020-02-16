@@ -114,7 +114,10 @@ async function handleDialogFlowAction(
         await sendTextMessage(sender, "actualmente estoy haciendo esto");
         let msg = "";
         actions.forEach((action, index) => {
-          msg += "<b>" + (index + 1) + " - </b>" + action.type;
+          msg +=
+            (action.type == "expeditions"
+              ? "✔️ Expediciones automáticas"
+              : "✔️ Vigilando cuenta") + "\n";
         });
         sendTextMessage(sender, msg);
       } else {
@@ -123,20 +126,27 @@ async function handleDialogFlowAction(
       break;
     case "beginExpeditionsAction":
       console.log("entrando a expediciones...");
-      if (parameters.fields.cooords.listValue.values[0]) {
-        var coords = parameters.fields.cooords.listValue.values[0].stringValue;
+      console.log(
+        "los parametros son estos: ",
+        JSON.stringify(parameters.fields)
+      );
+      if (parameters.fields.cooords.stringValue) {
+        var coords = parameters.fields.cooords.stringValue;
       }
       if (coords) {
         sendTextMessage(
           sender,
-          "Ok, empezare a hacer expediciones en " + coords
+          "Ok, empezare a hacer expediciones en tu luna de " + coords
         );
-        bot.addAction("expeditions");
         var ships = [
           { id: 1, qty: 5 },
           { id: 9, qty: 10 }
         ];
-        beginExpeditions(coords, ships, bot);
+        // var coords = "9:999:9";
+        if (!bot.hasAction("expeditions")) {
+          beginExpeditions(coords, ships, bot);
+          bot.addAction("expeditions");
+        }
       }
       handleMessages(messages, sender);
       break;
@@ -154,8 +164,10 @@ async function handleDialogFlowAction(
       break;
     case "beginWatchDogAction":
       sendTextMessage(sender, "Ok, empezare a vigilar tu cuenta");
-      var actionId = bot.addAction("watchDog");
-      watchDog(bot);
+      if (!bot.hasAction("watchDog")) {
+        watchDog(bot);
+        bot.addAction("watchDog");
+      }
       break;
     case "stopWatchDogAction":
       await sendTextMessage(sender, "Ok, entonces entrarás a la cuenta 😆");

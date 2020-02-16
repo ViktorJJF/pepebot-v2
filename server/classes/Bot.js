@@ -73,13 +73,8 @@ module.exports = class Bot {
         });
       }
     } else {
-      console.log("estamos en produccion con este proxy: ", proxy);
       this.browser = await puppeteer.launch({
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          `--proxy-server=${proxy}`
-        ]
+        args: ["--no-sandbox", "--disable-setuid-sandbox"]
       });
     }
 
@@ -674,7 +669,8 @@ module.exports = class Bot {
     }
 
     //checking fleet details
-    await timeout(1000);
+    await timeout(5000);
+    await page.screenshot({ path: "fleetBot.png" });
     fleetDetails = await page.evaluate(() => {
       var fleets = [];
       var slots = {
@@ -767,7 +763,7 @@ module.exports = class Bot {
   addAction(type, payload = {}) {
     console.log("se recibio este action:", type);
     let actionId = uuidv1();
-    this.actions.push({ actionId, type, payload });
+    if (!this.hasAction(type)) this.actions.push({ actionId, type, payload });
     return actionId;
   }
   async stopAction(type) {

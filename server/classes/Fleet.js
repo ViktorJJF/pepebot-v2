@@ -126,17 +126,24 @@ class Fleet {
     console.log("yendo al origen");
     await this.page.waitForSelector("span.planet-koords");
     await this.page.evaluate(origin => {
-      var planetCoords = document.querySelectorAll("span.planet-koords");
+      var planetCoords = document.querySelectorAll(".smallplanet.smaller");
       for (let i = 0; i < planetCoords.length; i++) {
-        console.log("la coordenada es: ", planetCoords[i].innerText);
-        var planetCoordsText = planetCoords[i].innerText.replace(
-          /[\[\]']+/g,
-          ""
+        console.log(
+          "la coordenada es: ",
+          planetCoords[i].querySelector("span.planet-koords").innerText
         );
+        var planetCoordsText = planetCoords[i]
+          .querySelector("span.planet-koords")
+          .innerText.replace(/[\[\]']+/g, "");
         console.log("ahora planet coords es: ", planetCoords[i]);
         if (planetCoordsText == origin) {
-          console.log("se clickeara : ", planetCoords[i].innerText);
-          planetCoords[i].click();
+          console.log(
+            "se clickeara : ",
+            planetCoords[i].querySelector("span.planet-koords").innerText
+          );
+          if (planetCoords[i].querySelector(".moonlink"))
+            planetCoords[i].querySelector(".moonlink").click();
+          else planetCoords[i].querySelector("span.planet-koords").click();
         }
       }
     }, this.origin);
@@ -199,11 +206,11 @@ class Fleet {
           id: "203",
           qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots)
         },
-        { id: "210", qty: 25 },
-        { id: "219", qty: 24 },
+        { id: "210", qty: 15 },
+        { id: "219", qty: 27 },
         {
           id: lastBattleShipId,
-          qty: 1
+          qty: 3
         }
       ];
     });
@@ -227,18 +234,35 @@ class Fleet {
         await timeout(800);
       }
     }
-    await this.page.click("a#continueToFleet2");
+    await timeout(5000);
+    await this.page.evaluate(() => {
+      document
+        .querySelector(
+          ".content > #allornone > .allornonewrap > #continueToFleet2.continue.on > span"
+        )
+        .click();
+    });
+    // await this.page.waitForSelector(
+    //   ".content > #allornone > .allornonewrap > #continueToFleet2.continue.on > span"
+    // );
+    // await this.page.click(
+    //   ".content > #allornone > .allornonewrap > #continueToFleet2.continue.on > span"
+    // );
     let [galaxy, system, planet] = this.destination.split(":");
-    // await timeout(1500);
-    await this.page.waitForSelector("input#galaxy", { visible: true });
+    // await timeout(7500);
+    await this.page.screenshot({ path: "fleet.png" });
+    await this.page.waitForSelector("tbody #galaxy", { visible: true });
     await this.page.click("input#galaxy");
     await this.page.type("input#galaxy", galaxy);
+    await this.page.click("input#system");
     await this.page.type("input#system", system);
+    await this.page.click("input#position");
     await this.page.type("input#position", planet);
     await this.page.waitForSelector("a#continueToFleet3.continue.on", {
       visible: true
     });
-    await this.page.click("a#continueToFleet3");
+    await this.page.waitForSelector("a#continueToFleet3.continue.on");
+    await this.page.click("a#continueToFleet3.continue.on");
 
     switch (this.mission) {
       case "expedition":

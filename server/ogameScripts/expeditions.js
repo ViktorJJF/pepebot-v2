@@ -90,11 +90,13 @@ async function beginExpeditions(
       await botTelegram.sendTextMessage(
         bot.telegramId,
         `<b>${ogameUsername}</b> acabo de completar todas las expediciones ... esperare a que la siguiente expedición vuelva dentro de ${msToTime(
-          minSecs + 15
+          minSecs + 0.55 * 60 * 1000
         )} `
       );
-      console.log(`me activare dentro de: <b>${msToTime(minSecs + 15)}</b>`);
-      await timeout(minSecs + 15); // Sleep until one of the expedition fleet come back
+      console.log(
+        `me activare dentro de: <b>${msToTime(minSecs + 5 * 60 * 1000)}</b>`
+      );
+      await timeout(minSecs + 0.5 * 6 * 1000); // Sleep until one of the expedition fleet come back
     } catch (error) {
       console.log("se dio un error en watchdog..probablemente el logeo");
       console.log("el error es: ", error);

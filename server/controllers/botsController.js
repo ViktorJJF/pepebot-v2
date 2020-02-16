@@ -236,8 +236,11 @@ const actions = async (req, res) => {
     case "watchDog":
       console.log("ejecutando watchDog");
       let milliseconds = req.body.payload.milliseconds;
-      var actionId = bot.addAction("watchDog");
-      watchDog(bot);
+      var actionId;
+      if (!bot.hasAction("watchDog")) {
+        watchDog(bot);
+        actionId = bot.addAction("watchDog");
+      }
       res.json({ ok: true, msg: "Empezando watchdog...", actionId });
       console.log("ahora las acciones del bot son: ", bot.actions);
       break;
@@ -247,12 +250,15 @@ const actions = async (req, res) => {
       let origin = req.body.payload.origin;
       // let page = await bot.createNewPage();
       //first ejecution
-      var actionId = bot.addAction("expeditions");
+      var actionId;
+      if (!bot.hasAction("expeditions")) {
+        beginExpeditions(origin, ships, bot);
+        actionId = bot.addAction("expeditions");
+      }
       var ships = [
         { id: 1, qty: 5 },
         { id: 9, qty: 10 }
       ];
-      beginExpeditions(origin, ships, bot);
       res.json({ ok: true, msg: "Empezando a hacer expediciones", actionId });
       break;
     default:

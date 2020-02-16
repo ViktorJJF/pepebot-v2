@@ -1,6 +1,6 @@
 //get time changed
 var times = [];
-var msg = "aprox. 10m";
+var msg = document.querySelector("p.auction_info>span").innerText;
 var interval = setInterval(() => {
   console.log("ejecutando intervalo...");
   if (msg !== document.querySelector("p.auction_info>span").innerText) {
@@ -19,6 +19,6 @@ var buyInterval = setInterval(() => {
       console.log("no eres el mejor postor y pagaremos mas");
     }
   }
-}, 100);
+}, 500);
 
 // clearInterval(buyInterval);

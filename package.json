@@ -13,7 +13,6 @@
         "@cliqz/adblocker-puppeteer": "^1.5.0",
         "apexcharts": "^3.8.6",
         "axios": "^0.19.1",
-        "bcrypt": "^3.0.6",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.0",
         "connect-mongo": "^3.0.0",

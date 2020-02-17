@@ -100,14 +100,14 @@ const routes = require("./routes/api/api.js");
 app.use("/api", routes);
 
 //Handle Production
-if (process.env.NODE_ENV === "production") {
-  //static folder
-  app.use(express.static(__dirname + "/public"));
-  //Handle SPA
-  app.get(/.*/, (req, res) => {
-    res.sendFile(__dirname + "/public/index.html");
-  });
-}
+// if (process.env.NODE_ENV === "production") {
+//static folder
+app.use(express.static(__dirname + "/public"));
+//Handle SPA
+app.get(/.*/, (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
+// }
 process.env.PORT = config.port;
 app.listen(process.env.PORT, () => {
   console.log(`Server starting on port ${process.env.PORT}`);

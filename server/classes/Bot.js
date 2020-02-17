@@ -670,7 +670,6 @@ module.exports = class Bot {
 
     //checking fleet details
     await timeout(5000);
-    await page.screenshot({ path: "fleetBot.png" });
     fleetDetails = await page.evaluate(() => {
       var fleets = [];
       var slots = {

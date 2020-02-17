@@ -250,7 +250,6 @@ class Fleet {
     // );
     let [galaxy, system, planet] = this.destination.split(":");
     // await timeout(7500);
-    await this.page.screenshot({ path: "fleet.png" });
     await this.page.waitForSelector("tbody #galaxy", { visible: true });
     await this.page.click("input#galaxy");
     await this.page.type("input#galaxy", galaxy);

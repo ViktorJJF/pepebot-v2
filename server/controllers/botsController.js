@@ -238,8 +238,8 @@ const actions = async (req, res) => {
       let milliseconds = req.body.payload.milliseconds;
       var actionId;
       if (!bot.hasAction("watchDog")) {
-        watchDog(bot);
         actionId = bot.addAction("watchDog");
+        watchDog(bot);
       }
       res.json({ ok: true, msg: "Empezando watchdog...", actionId });
       console.log("ahora las acciones del bot son: ", bot.actions);
@@ -252,8 +252,8 @@ const actions = async (req, res) => {
       //first ejecution
       var actionId;
       if (!bot.hasAction("expeditions")) {
-        beginExpeditions(origin, ships, bot);
         actionId = bot.addAction("expeditions");
+        beginExpeditions(origin, ships, bot);
       }
       var ships = [
         { id: 1, qty: 5 },

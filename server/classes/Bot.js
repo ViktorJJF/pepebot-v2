@@ -252,13 +252,23 @@ module.exports = class Bot {
     );
     await page.waitForSelector("table#eventContent");
     //checking details
-    await timeout(1000);
-    var self = this;
-    let attackDetails = [];
+    await timeout(3000);
+    let attackDetails = { normal: [], sac: [] };
     let enemyMissionsRows = await page.$$("tr.eventFleet");
+    for (let i = 0; i < enemyMissionsRows.length; i++) {
+      let isSac = await enemyMissionsRows[i].evaluate(mission => {
+        return !mission.getAttribute("id").includes("eventRow");
+      });
+      if (isSac) {
+        console.log("se cortara la mision", i, " con valor: ", isSac);
+        enemyMissionsRows.splice(i, 1);
+        i = 0;
+      }
+    }
     for (const enemyMission of enemyMissionsRows) {
       var isEnemy = await enemyMission.$("td.countDown>span.hostile");
       if (isEnemy) {
+        // await page.waitForSelector("td.icon_movement", { visible: true });
         let fleet = await enemyMission.$("td.icon_movement");
         await fleet.hover();
         var attackDetail = await enemyMission.evaluate(enemyMission => {
@@ -337,8 +347,12 @@ module.exports = class Bot {
           return document.querySelector(".tpd-tooltip").innerText;
         });
         attackDetail.hostilePlayer.name = hostilPlayerName;
-        attackDetails.push(attackDetail);
+        attackDetails.normal.push(attackDetail);
       }
+    }
+    let sacs = await page.$$(".allianceAttack");
+    for (const sac of sacs) {
+      attackDetails.sac.push(true); //to modify
     }
     console.log("te estan atacando con: ", JSON.stringify(attackDetails));
     return attackDetails;

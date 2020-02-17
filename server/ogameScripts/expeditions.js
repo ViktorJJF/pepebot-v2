@@ -21,7 +21,7 @@ async function beginExpeditions(
   expeditionDuration = 1
 ) {
   const botTelegram = require("../chatbot/Telegram/telegramBot");
-  var page = await bot.createNewPage();
+
   //quitar este watchdog luego
   // bot.addAction("watchDog");
   // watchDog(bot, page); // mientras arreglo el problema de headless no funciona bien
@@ -46,6 +46,7 @@ async function beginExpeditions(
 
   while (bot.hasAction("expeditions")) {
     try {
+      var page = await bot.createNewPage();
       let { fleets, slots } = await bot.getFleets(page);
       let bigNum = 999999999;
       let minSecs = bigNum;
@@ -96,15 +97,14 @@ async function beginExpeditions(
       console.log(
         `me activare dentro de: <b>${msToTime(minSecs + 5 * 60 * 1000)}</b>`
       );
+      page.close();
       await timeout(minSecs + 0.5 * 6 * 1000); // Sleep until one of the expedition fleet come back
     } catch (error) {
-      console.log("se dio un error en watchdog..probablemente el logeo");
+      console.log("se dio un error en expeditions..probablemente el logeo");
       console.log("el error es: ", error);
       await bot.checkLoginStatus(page);
-      page = await bot.createNewPage();
     }
   }
-  page.close();
 }
 
 module.exports = beginExpeditions;

@@ -144,8 +144,8 @@ async function handleDialogFlowAction(
         ];
         // var coords = "9:999:9";
         if (!bot.hasAction("expeditions")) {
-          beginExpeditions(coords, ships, bot);
           bot.addAction("expeditions");
+          beginExpeditions(coords, ships, bot);
         }
       }
       handleMessages(messages, sender);
@@ -165,8 +165,11 @@ async function handleDialogFlowAction(
     case "beginWatchDogAction":
       sendTextMessage(sender, "Ok, empezare a vigilar tu cuenta");
       if (!bot.hasAction("watchDog")) {
-        watchDog(bot);
+        console.log("se entro al watchdog de telegram");
         bot.addAction("watchDog");
+        watchDog(bot);
+      } else {
+        console.log(" no se entro al watchdog");
       }
       break;
     case "stopWatchDogAction":

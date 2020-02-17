@@ -35,6 +35,12 @@ router.post("/bots/:id/actions", beginState, botsController.actions);
 router.get("/bots/:id/stop-action/:actionid", botsController.stopAction);
 router.post("/bots/telegram", botsController.testTelegram);
 
+router.get("/memory", (req, res) => {
+  let mem = process.memoryUsage().heapUsed / 1024 / 1024;
+  console.log("el uso de memoria es: ", mem);
+  res.sendStatus(200);
+});
+
 //tools
 const dateTools = require("../../tools/dateTools.js");
 

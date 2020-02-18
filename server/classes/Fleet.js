@@ -200,11 +200,11 @@ class Fleet {
       return [
         {
           id: "202",
-          qty: parseInt((navePequenaDeCargaTotal * 9) / freeExpSlots)
+          qty: parseInt((navePequenaDeCargaTotal * 0.8) / freeExpSlots)
         },
         {
           id: "203",
-          qty: parseInt((naveGrandeDeCargaTotal * 9) / freeExpSlots)
+          qty: parseInt((naveGrandeDeCargaTotal * 0.8) / freeExpSlots)
         },
         { id: "210", qty: 15 },
         { id: "215", qty: 6 },

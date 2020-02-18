@@ -15,7 +15,6 @@ async function watchDog(bot, page) {
       var page = await bot.createNewPage();
       console.log("se encontro la accion watchDog");
       let attacked = await bot.watchDog(page);
-      console.log("al fin! estuve esperando prro: ", attacked);
       console.log(attacked);
       if (attacked) {
         var ogameUsername = await bot.getOgameUsername(page);
@@ -95,8 +94,8 @@ async function watchDog(bot, page) {
         }
       }
       await page.close();
-      // await timeout(Random(15 * 60 * 1000, 25 * 60 * 1000));
-      await timeout(Random(3000, 6000));
+      await timeout(Random(15 * 60 * 1000, 25 * 60 * 1000));
+      // await timeout(Random(3000, 6000));
     } catch (error) {
       console.log(
         "se dio un error en watchdog..probablemente el logeo, el error es este: ",

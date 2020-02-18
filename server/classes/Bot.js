@@ -154,7 +154,7 @@ module.exports = class Bot {
     let mainMenuUrl =
       "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
     let page = await this.browser.newPage();
-    page.setDefaultTimeout(10000);
+    page.setDefaultTimeout(30000);
     await page.goto(mainMenuUrl, { waitUntil: "networkidle0", timeout: 0 });
     return page;
   }

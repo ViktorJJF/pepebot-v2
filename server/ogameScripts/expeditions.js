@@ -104,6 +104,7 @@ async function beginExpeditions(
       console.log("se dio un error en expeditions..probablemente el logeo");
       console.log("el error es: ", error);
       await bot.checkLoginStatus(page);
+      console.log("terminado el error de expeditions");
     }
   }
 }

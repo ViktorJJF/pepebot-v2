@@ -46,6 +46,7 @@ async function beginExpeditions(
 
   while (bot.hasAction("expeditions")) {
     try {
+      console.log("empezando nueva expedicion");
       var page = await bot.createNewPage();
       let { fleets, slots } = await bot.getFleets(page);
       let bigNum = 999999999;
@@ -103,7 +104,6 @@ async function beginExpeditions(
       console.log("se dio un error en expeditions..probablemente el logeo");
       console.log("el error es: ", error);
       await bot.checkLoginStatus(page);
-      if (page) await page.close();
     }
   }
 }

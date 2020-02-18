@@ -94,16 +94,15 @@ async function watchDog(bot, page) {
           );
         }
       }
-      await timeout(Random(15 * 60 * 1000, 25 * 60 * 1000));
       await page.close();
-      // await timeout(Random(3000, 6000));
+      // await timeout(Random(15 * 60 * 1000, 25 * 60 * 1000));
+      await timeout(Random(3000, 6000));
     } catch (error) {
       console.log(
         "se dio un error en watchdog..probablemente el logeo, el error es este: ",
         error
       );
       await bot.checkLoginStatus(page);
-      if (page) await page.close();
     }
   }
 }

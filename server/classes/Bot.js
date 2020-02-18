@@ -154,7 +154,7 @@ module.exports = class Bot {
     let mainMenuUrl =
       "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
     let page = await this.browser.newPage();
-    page.setDefaultTimeout(30000);
+    page.setDefaultTimeout(10000);
     await page.goto(mainMenuUrl, { waitUntil: "networkidle0", timeout: 0 });
     return page;
   }
@@ -186,6 +186,7 @@ module.exports = class Bot {
     switch (currentPage) {
       case "mainPage":
         console.log("no paso nada.. seguimos normal");
+        await page.close();
         break;
       case "playPage":
         console.log("nos encontramos en vista playPage");
@@ -196,6 +197,7 @@ module.exports = class Bot {
           page,
           this.browser
         );
+        await page.close();
         break;
       case "selectUniversePage":
         console.log("nos encontramos en vista universo");
@@ -205,6 +207,7 @@ module.exports = class Bot {
           page,
           this.browser
         );
+        await page.close();
         console.log("se termino el click and wait");
         //main page ogame
         break;
@@ -215,7 +218,6 @@ module.exports = class Bot {
         break;
     }
     console.log("se retornara la pagina cerrada");
-    // await page.close();
     return 0;
   }
 
@@ -256,15 +258,20 @@ module.exports = class Bot {
     let attackDetails = { normal: [], sac: [] };
     let enemyMissionsRows = await page.$$("tr.eventFleet");
     for (let i = 0; i < enemyMissionsRows.length; i++) {
+      console.log("el tamaño de misiones es: ", enemyMissionsRows.length);
       let isSac = await enemyMissionsRows[i].evaluate(mission => {
         return !mission.getAttribute("id").includes("eventRow");
       });
       if (isSac) {
         console.log("se cortara la mision", i, " con valor: ", isSac);
         enemyMissionsRows.splice(i, 1);
-        i = 0;
+        i = -1;
       }
     }
+    console.log(
+      "finalmente, las misiones que quedan: ",
+      enemyMissionsRows.length
+    );
     for (const enemyMission of enemyMissionsRows) {
       var isEnemy = await enemyMission.$("td.countDown>span.hostile");
       if (isEnemy) {

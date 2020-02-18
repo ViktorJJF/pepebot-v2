@@ -200,13 +200,14 @@ class Fleet {
       return [
         {
           id: "202",
-          qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
+          qty: parseInt((navePequenaDeCargaTotal * 9) / freeExpSlots)
         },
         {
           id: "203",
-          qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots)
+          qty: parseInt((naveGrandeDeCargaTotal * 9) / freeExpSlots)
         },
         { id: "210", qty: 15 },
+        { id: "215", qty: 6 },
         { id: "219", qty: 27 },
         {
           id: lastBattleShipId,

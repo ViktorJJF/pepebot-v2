@@ -4,32 +4,38 @@ const axios = require("../../utils/axios");
 const bots = require("../../classes/Bots.js");
 const beginExpeditions = require("../../ogameScripts/expeditions");
 const watchDog = require("../../ogameScripts/watchDog");
+const { timeout } = require("../../utils/utils.js");
 
-var api = new telegram({
-  token: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
-  updates: {
-    enabled: true
-  }
-});
+try {
+  var api = new telegram({
+    token: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
+    updates: {
+      enabled: true
+    }
+  });
 
-// api.setWebhook("https://48791559.ngrok.io/api/webhook");
-// sendTextMessage(624818317, "aea");
-// console.log("enviando mensaje de telegram");
+  // api.setWebhook("https://48791559.ngrok.io/api/webhook");
+  // sendTextMessage(624818317, "aea");
+  // console.log("enviando mensaje de telegram");
 
-api.on("message", async message => {
-  let sender = message.from.id;
-  let msg = message.text.replace("/", "");
-  console.log("mensaje completo: ", message);
-  console.log("se recibio el mensaj1e:", msg, ".");
-  console.log("de ", sender);
-  sendTypingOn(sender); //typing on
-  let result = await dialogflow.sendToDialogFlow(sender, msg);
-  handleDialogFlowResponse(sender, result);
-  // console.log("respuestas recibidas: ", responses);
-  // for (const response of responses) {
-  //   await sendTextMessage(sender, response);
-  // }
-});
+  api.on("message", async message => {
+    let sender = message.from.id;
+    let msg = message.text.replace("/", "");
+    console.log("mensaje completo: ", message);
+    console.log("se recibio el mensaj1e:", msg, ".");
+    console.log("de ", sender);
+    sendTypingOn(sender); //typing on
+    let result = await dialogflow.sendToDialogFlow(sender, msg);
+    handleDialogFlowResponse(sender, result);
+    // console.log("respuestas recibidas: ", responses);
+    // for (const response of responses) {
+    //   await sendTextMessage(sender, response);
+    // }
+  });
+} catch (error) {
+  console.log("algo salio mal en telegram...");
+  console.log("el error es: ", error);
+}
 
 async function handleDialogFlowResponse(sender, response) {
   let responseText = response.fulfillmentMessages.fulfillmentText;
@@ -74,22 +80,6 @@ async function handleDialogFlowAction(
     );
   }
   switch (action) {
-    case "checkPlayerActivitiesAction":
-      axios
-        .get("/api/hunter", {
-          params: {
-            user_id: sender,
-            nickname: parameters.fields.nickname.stringValue
-          }
-        })
-        .then(res => {
-          console.log(res);
-        })
-        .catch(err => {
-          console.error(err);
-        });
-      // handleMessages(messages, sender);
-      break;
     case "loginOgameBotAction":
       console.log("se entro al action login");
       console.log("los parametros son:", parameters);
@@ -171,6 +161,52 @@ async function handleDialogFlowAction(
       } else {
         console.log(" no se entro al watchdog");
       }
+      break;
+    case "checkPlayerActivitiesAction":
+      console.log("llego este parametro: ", JSON.stringify(parameters.fields));
+      if (parameters.fields.player.stringValue) {
+        var player = parameters.fields.player.stringValue;
+        await timeout(1000);
+        sendTextMessage(
+          sender,
+          "Empezando a escanear a <b>" + player + "</b>..."
+        );
+      }
+      if (player) {
+        console.log("se entro al scan");
+        bot.addAction("watchDog");
+        axios
+          .get("https://pepehunter.herokuapp.com/api/scan?nickname=" + player)
+          .then(res => {
+            let playerInfo = res.data.playerInfo;
+            if (!playerInfo.hasOwnProperty("planets"))
+              return sendTextMessage(sender, "Ese jugador no existe");
+            let msg = `<b>Información de ${playerInfo.nickname}</b>\n`;
+            playerInfo.planets.forEach((planet, idx) => {
+              msg +=
+                "<b>" +
+                planet.name +
+                "</b> " +
+                "(" +
+                planet.coords +
+                ")" +
+                (planet.planetType == "planet"
+                  ? idx == 0
+                    ? "(planeta principal)"
+                    : "(planeta)"
+                  : "(luna)") +
+                ": " +
+                planet.activities[0].lastActivity +
+                "\n";
+            });
+            sendTextMessage(sender, msg);
+          })
+          .catch(err => {
+            console.log("algo salio mal...");
+            console.error(err);
+          });
+      }
+      handleMessages(messages, sender);
       break;
     case "stopWatchDogAction":
       await sendTextMessage(sender, "Ok, entonces entrarás a la cuenta 😆");

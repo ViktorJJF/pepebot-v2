@@ -162,8 +162,50 @@ async function handleDialogFlowAction(
         console.log(" no se entro al watchdog");
       }
       break;
+    case "offNotifyAction":
+      if (parameters.fields.player.stringValue) {
+        var player = parameters.fields.player.stringValue;
+        await timeout(1000);
+        sendTextMessage(
+          sender,
+          "Empezando a escanear a <b>" + player + "</b>..."
+        );
+      }
+      if (player) {
+        sendTextMessage(
+          sender,
+          "vale, te avisaré cuando <b>" + player + "</b> se quede off..."
+        );
+        let playerOff = false;
+        while (!playerOff) {
+          try {
+            const res = await axios(
+              "https://pepehunter.herokuapp.com/api/scan?nickname=" + player
+            );
+            let playerInfo = res.data.playerInfo;
+            if (!playerInfo.hasOwnProperty("planets")) {
+              return sendTextMessage(sender, "Ese jugador no existe");
+            }
+            playerInfo.planets.forEach(planet => {
+              if (planet.activities[0].lastActivity == "on") {
+                return 0;
+              } else {
+                playerOff = true;
+              }
+            });
+          } catch (error) {
+            console.log("algo salio mal en offNotify:", error);
+          }
+          playerInfo = null;
+          await timeout(1 * 1000); //1min
+        }
+        if (playerOff)
+          sendTextMessage("<b>" + player + "</b> se quedó <b>off</b>!");
+      }
+      handleMessages(messages, sender);
+      break;
+
     case "checkPlayerActivitiesAction":
-      console.log("llego este parametro: ", JSON.stringify(parameters.fields));
       if (parameters.fields.player.stringValue) {
         var player = parameters.fields.player.stringValue;
         await timeout(1000);
@@ -174,7 +216,8 @@ async function handleDialogFlowAction(
       }
       if (player) {
         console.log("se entro al scan");
-        bot.addAction("watchDog");
+        // bot.addAction("watchDog");
+        sendTypingOn(sender);
         axios
           .get("https://pepehunter.herokuapp.com/api/scan?nickname=" + player)
           .then(res => {
@@ -492,7 +535,8 @@ function sendQuickReply(recipientId, text, replies, metadata) {
 }
 
 function sendTypingOn(recipientId) {
-  api.sendChatAction({ chat_id: recipientId, action: "typing" });
+  let bot = bots.getBotByTelegramId(recipientId);
+  api.sendChatAction({ chat_id: bot.telegramGroupId, action: "typing" });
 }
 
 function isDefined(obj) {

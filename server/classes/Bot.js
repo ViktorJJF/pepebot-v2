@@ -96,15 +96,17 @@ module.exports = class Bot {
       var page = page || this.page;
       console.log(`Empezando Logeo...`);
       //closing add
-      // await this.closeAds();
+      await this.closeAds();
 
       await page.waitForSelector(
         "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
       );
-      await page.click(
-        "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
-      );
-
+      await page.evaluate(() => {
+        document.querySelector(".tabsList>li:nth-child(1)").click();
+      });
+      // await page.click(
+      //   "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
+      // );
       await page.waitForSelector('input[type="email"]');
       await page.click('input[type="email"]');
       await page.type(
@@ -123,11 +125,18 @@ module.exports = class Bot {
       await page.waitForSelector(
         "#loginTab > #loginForm > p > .button-primary > span"
       );
-      await page.click("#loginTab > #loginForm > p > .button-primary > span");
+      await page.evaluate(() => {
+        document.querySelector("button[type='submit']").click();
+      });
+
+      // await page.click("#loginTab > #loginForm > p > .button-primary > span");
       await page.waitForSelector("div > #joinGame > a > .button > span", {
         timeout: 3000
       });
-      await page.click("div > #joinGame > a > .button > span");
+      await page.evaluate(() => {
+        document.querySelector("div > #joinGame > a > .button > span").click();
+      });
+      // await page.click("div > #joinGame > a > .button > span");
 
       // await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
       // await page.click(".open > .rt-tr > .rt-td > .btn > span");
@@ -549,36 +558,36 @@ module.exports = class Bot {
     console.log("los datos son: ", ssData);
   }
 
-  // async closeAds() {
-  //   try {
-  //     await this.page.waitForResponse(
-  //       response => {
-  //         return (
-  //           response.url() ===
-  //             "https://ads-media.gameforge.com/53f75e5be1b5087082575d4181613f27.jpg" &&
-  //           response.status() === 200
-  //         );
-  //       },
-  //       { timeout: 5000 }
-  //     );
-  //     console.log("se termino de esperar la respuesta del ad");
-  //     await timeout(500);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-
-  //   let adState = await this.page.evaluate(() => {
-  //     let ad = document.querySelector(".openX_int_closeButton > a");
-  //     return ad;
-  //   });
-  //   console.log("se encontro este add: ", adState);
-  //   if (adState) {
-  //     console.log("cerrando add en goToPage");
-  //     await this.page.waitForSelector(".openX_int_closeButton > a");
-  //     await this.page.click(".openX_int_closeButton > a");
-  //   }
-  //   return 0;
-  // }
+  async closeAds() {
+    // try {
+    //   await this.page.waitForResponse(
+    //     response => {
+    //       return (
+    //         response.url() ===
+    //           "https://ads-media.gameforge.com/53f75e5be1b5087082575d4181613f27.jpg" &&
+    //         response.status() === 200
+    //       );
+    //     },
+    //     { timeout: 5000 }
+    //   );
+    //   console.log("se termino de esperar la respuesta del ad");
+    //   await timeout(500);
+    // } catch (error) {
+    //   console.log(error);
+    // }
+    await timeout(2700);
+    let adState = await this.page.evaluate(() => {
+      let ad = document.querySelector(".openX_int_closeButton > a");
+      return ad;
+    });
+    console.log("se encontro este add: ", adState);
+    if (adState) {
+      console.log("cerrando add en goToPage");
+      await this.page.waitForSelector(".openX_int_closeButton > a");
+      await this.page.click(".openX_int_closeButton > a");
+    }
+    return 0;
+  }
 
   async sendMessageToPlayer(nickname, msg) {
     try {

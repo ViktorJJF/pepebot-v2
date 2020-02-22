@@ -89,10 +89,10 @@ BotModel.find().exec((err, payload) => {
     let bot = new Bot();
     bot.initialize(element);
     bots.addBot(bot);
-    // if (bot.ogameEmail == "vj.jimenez96@gmail.com") {
-    await bot.begin();
-    await bot.login(element.ogameEmail, element.ogamePassword);
-    // }
+    if (bot.ogameEmail == "vj.jimenez96@gmail.com") {
+      await bot.begin();
+      await bot.login(element.ogameEmail, element.ogamePassword);
+    }
   });
 });
 

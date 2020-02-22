@@ -239,7 +239,9 @@ async function handleDialogFlowAction(
                     : "(planeta)"
                   : "(luna)") +
                 ": " +
-                planet.activities[0].lastActivity +
+                (planet.activities.length > 0
+                  ? planet.activities[0].lastActivity
+                  : "Planeta destruido") +
                 "\n";
             });
             sendTextMessage(sender, msg);

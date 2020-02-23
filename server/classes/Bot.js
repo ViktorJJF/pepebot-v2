@@ -96,8 +96,8 @@ module.exports = class Bot {
       var page = page || this.page;
       console.log(`Empezando Logeo...`);
       //closing add
-      await this.closeAds();
-
+      await this.closeAds(page);
+      console.log("se termino de pasar por closeAds");
       await page.waitForSelector(
         "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
       );
@@ -558,7 +558,9 @@ module.exports = class Bot {
     console.log("los datos son: ", ssData);
   }
 
-  async closeAds() {
+  async closeAds(page) {
+    console.log("entrando a closeAds");
+    var page = page || this.page;
     // try {
     //   await this.page.waitForResponse(
     //     response => {
@@ -576,7 +578,7 @@ module.exports = class Bot {
     //   console.log(error);
     // }
     await timeout(2700);
-    let adState = await this.page.evaluate(() => {
+    let adState = await page.evaluate(() => {
       let ad = document.querySelector(".openX_int_closeButton > a");
       return ad;
     });

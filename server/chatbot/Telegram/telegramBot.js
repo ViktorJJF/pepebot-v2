@@ -6,6 +6,10 @@ const beginExpeditions = require("../../ogameScripts/expeditions");
 const watchDog = require("../../ogameScripts/watchDog");
 const { timeout } = require("../../utils/utils.js");
 
+process.on("uncaughtException", err => {
+  console.log("un error probablemente en telegram: ", err);
+});
+
 try {
   var api = new telegram({
     token: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",

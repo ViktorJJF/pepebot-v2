@@ -219,17 +219,38 @@ async function handleDialogFlowAction(
         );
       }
       if (player) {
-        console.log("se entro al scan");
-        // bot.addAction("watchDog");
+        let percents = { on: 0, off: 0, minutes: 0 };
         sendTypingOn(sender);
         axios
           .get("https://pepehunter.herokuapp.com/api/scan?nickname=" + player)
-          .then(res => {
+          .then(async res => {
             let playerInfo = res.data.playerInfo;
             if (!playerInfo.hasOwnProperty("planets"))
               return sendTextMessage(sender, "Ese jugador no existe");
             let msg = `<b>Información de ${playerInfo.nickname}</b>\n`;
             playerInfo.planets.forEach((planet, idx) => {
+              //calculating percents
+              console.log(
+                "la ultima actividad: ",
+                planet.activities[0].lastActivity
+              );
+              switch (planet.activities[0].lastActivity) {
+                case "on":
+                  console.log("se entro a on");
+                  percents.on += 1;
+                  break;
+                case "off":
+                  console.log("se entro a off");
+
+                  percents.off += 1;
+                  break;
+                default:
+                  console.log("se entro a minutero");
+
+                  percents.minutes += 1;
+                  break;
+              }
+              //message
               msg +=
                 "<b>" +
                 planet.name +
@@ -248,7 +269,23 @@ async function handleDialogFlowAction(
                   : "Planeta destruido") +
                 "\n";
             });
+            //calculating percents
+            msg +=
+              "📈<b>Resumen</b>\n" +
+              " 🗹<b>On:</b>" +
+              percents.on +
+              " 🗹<b>Off:</b>" +
+              percents.off +
+              " 🗹<b>Minuteros:</b>" +
+              percents.minutes;
             sendTextMessage(sender, msg);
+            if (percents.on === 0) {
+              await timeout(1000);
+              sendTextMessage(
+                sender,
+                "<b>" + player + "</b> no tiene actividad por ningún lado!"
+              );
+            }
           })
           .catch(err => {
             console.log("algo salio mal...");

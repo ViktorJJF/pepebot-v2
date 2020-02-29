@@ -92,14 +92,14 @@ async function beginExpeditions(
       await botTelegram.sendTextMessage(
         bot.telegramId,
         `<b>${ogameUsername}</b> acabo de completar todas las expediciones ... esperare a que la siguiente expedición vuelva dentro de ${msToTime(
-          minSecs + 0.55 * 60 * 1000
+          minSecs + 0.1 * 60 * 1000
         )} `
       );
       console.log(
         `me activare dentro de: <b>${msToTime(minSecs + 5 * 60 * 1000)}</b>`
       );
       page.close();
-      await timeout(minSecs + 0.5 * 6 * 1000); // Sleep until one of the expedition fleet come back
+      await timeout(minSecs + 0.1 * 6 * 1000); // Sleep until one of the expedition fleet come back
     } catch (error) {
       console.log("se dio un error en expeditions..probablemente el logeo");
       console.log("el error es: ", error);

@@ -94,7 +94,7 @@ async function watchDog(bot, page) {
         }
       }
       await page.close();
-      await timeout(Random(15 * 60 * 1000, 25 * 60 * 1000));
+      await timeout(Random(15 * 60 * 1000, 20 * 60 * 1000));
       // await timeout(Random(3000, 6000));
     } catch (error) {
       console.log(

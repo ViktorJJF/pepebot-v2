@@ -260,9 +260,9 @@ async function handleDialogFlowAction(
                 ")" +
                 (planet.planetType == "planet"
                   ? idx == 0
-                    ? "(planeta principal)"
-                    : "(planeta)"
-                  : "(luna)") +
+                    ? "(planeta principal🌎)"
+                    : "(planeta🌎)"
+                  : "(luna🌘)") +
                 ": " +
                 (planet.activities.length > 0
                   ? planet.activities[0].lastActivity

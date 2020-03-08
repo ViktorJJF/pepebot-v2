@@ -26,6 +26,7 @@ module.exports = class Bot {
     this.typingDelay = 50;
     this.currentPage = 0;
     this.actions = [];
+    this.playerId = null;
 
     //currentPage
     // 0 -- > mainPage
@@ -50,6 +51,7 @@ module.exports = class Bot {
     this.typingDelay = 50;
     this.currentPage = 0;
     this.actions = [];
+    this.playerId = botOjbect.playerId;
   }
   async begin(proxy) {
     console.log("iniciando bot...");

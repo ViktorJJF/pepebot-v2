@@ -37,7 +37,8 @@ let botsSchema = new Schema(
     },
     proxy: {
       type: String
-    }
+    },
+    playerId: String
   },
   {
     timestamps: true

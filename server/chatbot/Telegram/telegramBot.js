@@ -5,21 +5,50 @@ const bots = require("../../classes/Bots.js");
 const beginExpeditions = require("../../ogameScripts/expeditions");
 const watchDog = require("../../ogameScripts/watchDog");
 const { timeout } = require("../../utils/utils.js");
+const config = require("../../config.js");
 
 process.on("uncaughtException", err => {
   console.log("un error probablemente en telegram: ", err);
 });
 
+let token;
+// if (config.environment === "prod")
+//   token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
+// else token = "1107562973:AAGpbcw8rPs2lxllhdiA__kRIKDFYKX2XvA";
+token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
 try {
   var api = new telegram({
-    token: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
+    token,
     updates: {
       enabled: true
     }
   });
 
   // api.setWebhook("https://48791559.ngrok.io/api/webhook");
-  // sendTextMessage(624818317, "aea");
+  // sendTextMessage(624818317, "Selecciona tu luna");
+  // sendQuickReply(624818317, "Selecciona tu luna", [
+  //   "1:122:1",
+  //   "1:122:2",
+  //   "1:122:3",
+  //   "1:122:4",
+  //   "1:122:5",
+  //   "1:122:6",
+  //   "1:122:7"
+  // ]);
+
+  // setPersistentMenu(["Expediciones", "Watchdog", "Scan", "Fleet Save"]);
+  api.sendMessage({
+    chat_id: -339549424,
+    text: "Opciones",
+    reply_markup: JSON.stringify({
+      keyboard: [
+        ["🚀 Expediciones", "🚀❌ Cancelar"],
+        ["🐶 Watchdog", "🐶❌ Cancelar"],
+        ["🔍 Scan", "💤 Fleet Save"]
+      ],
+      resize_keyboard: true
+    })
+  });
   // console.log("enviando mensaje de telegram");
 
   api.on("message", async message => {
@@ -141,8 +170,22 @@ async function handleDialogFlowAction(
           bot.addAction("expeditions");
           beginExpeditions(coords, ships, bot);
         }
+      } else {
+        handleMessages(messages, sender);
+        let playerId = bot.playerId;
+        console.log("el playerId es: ", playerId);
+        const res = await axios(
+          "https://pepehunter.herokuapp.com/api/players/" + playerId
+        );
+        let playerInfo = res.data.playerInfo;
+        console.log("informacion de planetas: ", playerInfo);
+        let planets = [];
+        playerInfo.planets.forEach(planet => {
+          if (planet.planetType === "moon") planets.push("" + planet.coords);
+        });
+        sendQuickReply(sender, "Selecciona coordenadas:", planets);
       }
-      handleMessages(messages, sender);
+
       break;
     case "stopExpeditionsAction":
       sendTextMessage(sender, "Ok, dejare de hacer expediciones");
@@ -255,14 +298,14 @@ async function handleDialogFlowAction(
                 "<b>" +
                 planet.name +
                 "</b> " +
-                "(" +
+                "[" +
                 planet.coords +
-                ")" +
+                "]" +
                 (planet.planetType == "planet"
                   ? idx == 0
-                    ? "(planeta principal🌎)"
-                    : "(planeta🌎)"
-                  : "(luna🌘)") +
+                    ? "(principal🌎)"
+                    : "(🌎)"
+                  : "(🌘)") +
                 ": " +
                 (planet.activities.length > 0
                   ? planet.activities[0].lastActivity
@@ -420,9 +463,45 @@ async function sendTextMessage(recipientId, text) {
   let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
   console.log("se enviara la respuesta: ", text);
   await api.sendMessage({
-    chat_id: bot.telegramGroupId,
+    chat_id: config.environment === "dev" ? recipientId : bot.telegramGroupId,
     text: text,
     parse_mode: "html"
+  });
+}
+
+async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
+  console.log("llego este recipient: ", recipientId);
+  let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
+  console.log("se enviara la respuesta: ", text);
+  let inline_keyboard = [],
+    i = 0;
+  let row = [];
+  console.log(replies);
+  replies.forEach((reply, idx) => {
+    console.log("indice: ", idx);
+    if (i < maxColumns) {
+      console.log("dentro de if ", idx);
+      row.push({
+        text: "🌘 " + reply,
+        switch_inline_query_current_chat: reply
+      });
+      i++;
+    }
+    if (i === maxColumns || replies.length + 1 - idx < maxColumns) {
+      console.log("dentro de else ", idx);
+      i = 0;
+      inline_keyboard.push(row);
+      row = [];
+    }
+  });
+  console.log(inline_keyboard);
+  await api.sendMessage({
+    chat_id: config.environment === "dev" ? recipientId : bot.telegramGroupId,
+    text: text,
+    parse_mode: "html",
+    reply_markup: JSON.stringify({
+      inline_keyboard
+    })
   });
 }
 
@@ -562,24 +641,12 @@ function sendGenericMessage(recipientId, elements) {
   callSendAPI(messageData);
 }
 
-function sendQuickReply(recipientId, text, replies, metadata) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      text: text,
-      metadata: isDefined(metadata) ? metadata : "",
-      quick_replies: replies
-    }
-  };
-
-  callSendAPI(messageData);
-}
-
 function sendTypingOn(recipientId) {
   let bot = bots.getBotByTelegramId(recipientId);
-  api.sendChatAction({ chat_id: bot.telegramGroupId, action: "typing" });
+  api.sendChatAction({
+    chat_id: config.environment === "dev" ? recipientId : bot.telegramGroupId,
+    action: "typing"
+  });
 }
 
 function isDefined(obj) {

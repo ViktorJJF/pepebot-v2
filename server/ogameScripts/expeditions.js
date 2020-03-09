@@ -98,7 +98,7 @@ async function beginExpeditions(
       console.log(
         `me activare dentro de: <b>${msToTime(minSecs + 5 * 60 * 1000)}</b>`
       );
-      page.close();
+      await bot.closePage(page);
       await timeout(minSecs + 0.1 * 6 * 1000); // Sleep until one of the expedition fleet come back
     } catch (error) {
       console.log("se dio un error en expeditions..probablemente el logeo");

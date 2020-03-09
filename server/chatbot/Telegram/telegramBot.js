@@ -483,7 +483,7 @@ async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
       console.log("dentro de if ", idx);
       row.push({
         text: "🌘 " + reply,
-        switch_inline_query_current_chat: reply
+        switch_inline_query_current_chat: "/" + reply
       });
       i++;
     }

@@ -151,8 +151,8 @@ module.exports = class Bot {
         page,
         this.browser
       );
-      await pageToClose.close();
-      await page.close();
+      await this.closePage(pageToClose);
+      await this.closePage(page);
       // await this.closeAds();
       console.log("Logeo finalizado exitosamente");
       return true;
@@ -197,7 +197,7 @@ module.exports = class Bot {
     switch (currentPage) {
       case "mainPage":
         console.log("no paso nada.. seguimos normal");
-        await page.close();
+        await this.closePage(page);
         break;
       case "playPage":
         console.log("nos encontramos en vista playPage");
@@ -208,7 +208,7 @@ module.exports = class Bot {
           page,
           this.browser
         );
-        await page.close();
+        await this.closePage(page);
         break;
       case "selectUniversePage":
         console.log("nos encontramos en vista universo");
@@ -218,7 +218,7 @@ module.exports = class Bot {
           page,
           this.browser
         );
-        await page.close();
+        await this.closePage(page);
         console.log("se termino el click and wait");
         //main page ogame
         break;
@@ -591,6 +591,11 @@ module.exports = class Bot {
       await this.page.click(".openX_int_closeButton > a");
     }
     return 0;
+  }
+
+  async closePage(page) {
+    await page.goto("about:blank");
+    await page.close();
   }
 
   async sendMessageToPlayer(nickname, msg) {

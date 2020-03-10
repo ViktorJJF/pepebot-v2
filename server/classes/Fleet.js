@@ -21,7 +21,7 @@ class Fleet {
         qty: 0
       },
       {
-        id: 3,
+        id: "204",
         name: "Cazador Ligero",
         type: "fighterLight",
         qty: 0
@@ -175,6 +175,11 @@ class Fleet {
           .querySelector("span.transporterLarge>span")
           .getAttribute("data-value")
       );
+      var cazadorLigeroTotal = parseInt(
+        document
+          .querySelector("span.fighterLight>span")
+          .getAttribute("data-value")
+      );
       var navePequenaDeCargaTotal = parseInt(
         document
           .querySelector("span.transporterSmall>span")
@@ -199,16 +204,20 @@ class Fleet {
       }
       return [
         {
-          id: "202",
-          qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
+          id: "204",
+          qty: parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
         },
+        // {
+        //   id: "202",
+        //   qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
+        // },
         {
           id: "203",
-          qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots)
+          qty: 700
         },
-        { id: "210", qty: 15 },
-        { id: "215", qty: 6 },
-        { id: "219", qty: 27 },
+        { id: "210", qty: 1 },
+        { id: "215", qty: 1 },
+        { id: "219", qty: 1 },
         {
           id: lastBattleShipId,
           qty: 3
@@ -216,8 +225,9 @@ class Fleet {
       ];
     });
     ships.forEach(localShip => {
-      this.ships[this.ships.findIndex(ship => ship.id == localShip.id)].qty =
-        localShip.qty;
+      let shipIndex = this.ships.findIndex(ship => ship.id == localShip.id);
+      if (this.ships[shipIndex].id !== "214")
+        this.ships[shipIndex].qty = localShip.qty;
     });
 
     let shipsToSend = []; // return
@@ -235,7 +245,6 @@ class Fleet {
         await timeout(800);
       }
     }
-    await timeout(5000);
     await this.page.evaluate(() => {
       document
         .querySelector(

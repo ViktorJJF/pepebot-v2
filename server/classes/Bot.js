@@ -76,7 +76,12 @@ module.exports = class Bot {
       }
     } else {
       this.browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--single-process"
+        ]
       });
     }
 
@@ -151,10 +156,14 @@ module.exports = class Bot {
         page,
         this.browser
       );
+      const used = process.memoryUsage().heapUsed / 1024 / 1024;
+      console.log(`The script 1 uses approximately ${used} MB`);
       await this.closePage(pageToClose);
       await this.closePage(page);
       // await this.closeAds();
       console.log("Logeo finalizado exitosamente");
+      const used2 = process.memoryUsage().heapUsed / 1024 / 1024;
+      console.log(`The script 2 uses approximately ${used2} MB`);
       return true;
     } catch (error) {
       return false;

@@ -12,10 +12,10 @@ process.on("uncaughtException", err => {
 });
 
 let token;
-// if (config.environment === "prod")
-//   token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
-// else token = "1107562973:AAGpbcw8rPs2lxllhdiA__kRIKDFYKX2XvA";
-token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
+if (config.environment === "dev")
+  token = "1107562973:AAGpbcw8rPs2lxllhdiA__kRIKDFYKX2XvA";
+else token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
+// token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
 try {
   var api = new telegram({
     token,

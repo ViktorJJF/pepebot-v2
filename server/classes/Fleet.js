@@ -7,6 +7,8 @@ class Fleet {
     this.speed = null; //0.10 - 1
     this.mission = null; //EXPEDITION - ATTACK - TRANSPORT
     this.duration = null; //
+    this.allResources = null;
+    this.allShips = null;
     this.ships = [
       {
         id: "202",
@@ -121,6 +123,12 @@ class Fleet {
   addShips(shipId, qty) {
     this[shipId] = qty;
   }
+  SetAllResources() {
+    this.allResources = true;
+  }
+  SetAllShips() {
+    this.allShips = true;
+  }
   async sendNow() {
     //select origin
     console.log("yendo al origen");
@@ -155,96 +163,113 @@ class Fleet {
       "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
     );
     await timeout(1500);
+    await this.page.waitForSelector("#planet.planet-header");
+    //check if exists ships
+    let existsShips = await this.page.evaluate(e =>
+      document.querySelector("#warning") ? false : true
+    );
+    if (!existsShips) return null;
     await this.page.waitForSelector("#slots>.fleft:nth-child(2)");
-    let ships = await this.page.evaluate(() => {
-      //get max expeditions
-      var expMax = parseInt(
-        document
-          .querySelector("#slots>.fleft:nth-child(2)")
-          .innerText.match(/([^\/]+$)/)[0]
-      );
-      var expInUse = parseInt(
-        document
-          .querySelector("#slots>.fleft:nth-child(2)")
-          .innerText.match(/[0-9]/)[0]
-      );
-      var freeExpSlots = expMax - expInUse;
-      console.log("las expediciones restantes son: ", freeExpSlots);
-      var naveGrandeDeCargaTotal = parseInt(
-        document
-          .querySelector("span.transporterLarge>span")
-          .getAttribute("data-value")
-      );
-      var cazadorLigeroTotal = parseInt(
-        document
-          .querySelector("span.fighterLight>span")
-          .getAttribute("data-value")
-      );
-      var navePequenaDeCargaTotal = parseInt(
-        document
-          .querySelector("span.transporterSmall>span")
-          .getAttribute("data-value")
-      );
-      var sondaTotal = parseInt(
-        document
-          .querySelector("span.espionageProbe>span")
-          .getAttribute("data-value")
-      );
-      var battleShips = document.querySelectorAll(
-        "#battleships>ul#military>li"
-      );
-      for (let i = battleShips.length - 2; i > -1; i--) {
-        let lastBattleShipQty = parseInt(
-          battleShips[i].querySelector("span>span").getAttribute("data-value")
+    if (this.mission === "expedition") {
+      let ships = await this.page.evaluate(() => {
+        //get max expeditions
+        var expMax = parseInt(
+          document
+            .querySelector("#slots>.fleft:nth-child(2)")
+            .innerText.match(/([^\/]+$)/)[0]
         );
-        if (lastBattleShipQty > 0) {
-          var lastBattleShipId = battleShips[i].getAttribute("data-technology");
-          i = -1;
+        var expInUse = parseInt(
+          document
+            .querySelector("#slots>.fleft:nth-child(2)")
+            .innerText.match(/[0-9]/)[0]
+        );
+        var freeExpSlots = expMax - expInUse;
+        console.log("las expediciones restantes son: ", freeExpSlots);
+        var naveGrandeDeCargaTotal = parseInt(
+          document
+            .querySelector("span.transporterLarge>span")
+            .getAttribute("data-value")
+        );
+        var cazadorLigeroTotal = parseInt(
+          document
+            .querySelector("span.fighterLight>span")
+            .getAttribute("data-value")
+        );
+        var navePequenaDeCargaTotal = parseInt(
+          document
+            .querySelector("span.transporterSmall>span")
+            .getAttribute("data-value")
+        );
+        var sondaTotal = parseInt(
+          document
+            .querySelector("span.espionageProbe>span")
+            .getAttribute("data-value")
+        );
+        var battleShips = document.querySelectorAll(
+          "#battleships>ul#military>li"
+        );
+        for (let i = battleShips.length - 2; i > -1; i--) {
+          let lastBattleShipQty = parseInt(
+            battleShips[i].querySelector("span>span").getAttribute("data-value")
+          );
+          if (lastBattleShipQty > 0) {
+            var lastBattleShipId = battleShips[i].getAttribute(
+              "data-technology"
+            );
+            i = -1;
+          }
         }
-      }
-      return [
-        {
-          id: "204",
-          qty: parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
-        },
-        // {
-        //   id: "202",
-        //   qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
-        // },
-        {
-          id: "203",
-          qty: 700
-        },
-        { id: "210", qty: 1 },
-        { id: "215", qty: 1 },
-        { id: "219", qty: 1 },
-        {
-          id: lastBattleShipId,
-          qty: 3
-        }
-      ];
-    });
-    ships.forEach(localShip => {
-      let shipIndex = this.ships.findIndex(ship => ship.id == localShip.id);
-      if (this.ships[shipIndex].id !== "214")
-        this.ships[shipIndex].qty = localShip.qty;
-    });
+        return [
+          {
+            id: "204",
+            qty: parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
+          },
+          // {
+          //   id: "202",
+          //   qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
+          // },
+          {
+            id: "203",
+            qty: 700
+          },
+          { id: "210", qty: 1 },
+          { id: "215", qty: 1 },
+          { id: "219", qty: 1 },
+          {
+            id: lastBattleShipId,
+            qty: 3
+          }
+        ];
+      });
+      ships.forEach(localShip => {
+        let shipIndex = this.ships.findIndex(ship => ship.id == localShip.id);
+        if (this.ships[shipIndex].id !== "214")
+          this.ships[shipIndex].qty = localShip.qty;
+      });
+    }
 
     let shipsToSend = []; // return
-    for (const ship of this.ships) {
-      if (ship.qty > 0) {
-        shipsToSend.push(ship);
-        console.log(
-          "se colocara esta nave: ",
-          ship.name,
-          " - ",
-          String(ship.qty)
-        );
-        await this.page.click(`li.${ship.type}>input`);
-        await this.page.type(`li.${ship.type}>input`, String(ship.qty));
-        await timeout(800);
+    if (this.allShips) {
+      await this.page.waitForSelector("a#sendall");
+      await this.page.click("a#sendall");
+      await timeout(500);
+    } else {
+      for (const ship of this.ships) {
+        if (ship.qty > 0 || this.allShips) {
+          shipsToSend.push(ship);
+          console.log(
+            "se colocara esta nave: ",
+            ship.name,
+            " - ",
+            String(ship.qty)
+          );
+          await this.page.click(`li.${ship.type}>input`);
+          await this.page.type(`li.${ship.type}>input`, String(ship.qty));
+          await timeout(800);
+        }
       }
     }
+
     await this.page.evaluate(() => {
       document
         .querySelector(
@@ -267,12 +292,14 @@ class Fleet {
     await this.page.type("input#system", system);
     await this.page.click("input#position");
     await this.page.type("input#position", planet);
+    //seting speed
+    await this.page.click(`.step:nth-child(${this.speed * 10})`);
+    //go to next page
     await this.page.waitForSelector("a#continueToFleet3.continue.on", {
       visible: true
     });
     await this.page.waitForSelector("a#continueToFleet3.continue.on");
     await this.page.click("a#continueToFleet3.continue.on");
-
     switch (this.mission) {
       case "expedition":
         console.log("se escogio expedicion");
@@ -280,14 +307,25 @@ class Fleet {
           visible: true
         });
         await this.page.click("li#button15>a#missionButton15");
-        await this.page.waitForSelector("a#sendFleet.start.on");
-        await this.page.click("a#sendFleet.start.on");
         break;
-
+      case "espionage":
+        console.log("se escogio espionaje");
+        await this.page.waitForSelector("li#button6>a#missionButton6", {
+          visible: true
+        });
+        await this.page.click("li#button6>a#missionButton6");
+        break;
       default:
         break;
     }
+    //if all resources true
+    if (this.allResources) {
+      await this.page.waitForSelector("a#allresources>img");
+      await this.page.click("a#allresources>img");
+    }
     console.log("mandando la flota...");
+    await this.page.waitForSelector("a#sendFleet.start.on");
+    await this.page.click("a#sendFleet.start.on");
     return shipsToSend;
   }
 }

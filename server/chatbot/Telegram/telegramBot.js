@@ -4,6 +4,7 @@ const axios = require("../../utils/axios");
 const bots = require("../../classes/Bots.js");
 const beginExpeditions = require("../../ogameScripts/expeditions");
 const watchDog = require("../../ogameScripts/watchDog");
+const fleetSave = require("../../ogameScripts/fleetSave");
 const { timeout } = require("../../utils/utils.js");
 const config = require("../../config.js");
 
@@ -208,6 +209,10 @@ async function handleDialogFlowAction(
       } else {
         console.log(" no se entro al watchdog");
       }
+      break;
+    case "fleetSaveAction":
+      sendTextMessage(sender, "Empezando fleet save...");
+      fleetSave(bot);
       break;
     case "offNotifyAction":
       if (parameters.fields.player.stringValue) {

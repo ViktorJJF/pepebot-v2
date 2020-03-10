@@ -1,6 +1,5 @@
 const { Random, timeout, msToTime } = require("../utils/utils");
-const moment = require("moment");
-moment.locale("es");
+const formatISO9075 = require("date-fns/formatISO9075");
 
 async function watchDog(bot, page) {
   // await timeout(1 * 60 * 1000);
@@ -51,7 +50,7 @@ async function watchDog(bot, page) {
             await botTelegram.sendTextMessage(
               bot.telegramId,
               "<b>Detalles</b>:\n" +
-                "✅ Jugador hostil: " +
+                "✅ <b>Jugador hostil:</b> " +
                 attackDetail.hostilePlayer.name +
                 "\n" +
                 "✅ <b>Desde:</b> " +
@@ -73,9 +72,7 @@ async function watchDog(bot, page) {
                   : "planeta") +
                 ")\n" +
                 "🕜 <b>Hora de impacto:</b> " +
-                moment(attackDetail.hostilePlayer.impactHour)
-                  .format("DD MMM YYYY hh:mm a")
-                  .replace(".", ".") +
+                formatISO9075(attackDetail.hostilePlayer.impactHour) +
                 "\n" +
                 "🕜 <b>Tiempo restante:</b> " +
                 msToTime(attackDetail.hostilePlayer.timeRemaining) +

@@ -10,6 +10,8 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
+const beginDailyFleetSave = require("./ogameScripts/dailyFleetSave");
+
 //Middleware
 
 // parse application/x-www-form-urlencoded
@@ -87,13 +89,19 @@ BotModel.find().exec((err, payload) => {
   payload.forEach(async element => {
     console.log(element);
     let bot = new Bot();
+
     bot.initialize(element);
     bots.addBot(bot);
-    // if (bot.ogameEmail == "vj.jimenez96@gmail.com") {
+    // if (
+    //   bot.ogameEmail == "vj.jimenez96@gmail.com" ||
+    //   config.environment !== "dev"
+    // ) {
     await bot.begin();
     await bot.login(element.ogameEmail, element.ogamePassword);
+    //daily rutine
     // }
   });
+  beginDailyFleetSave(bots.bots);
 });
 
 const routes = require("./routes/api/api.js");

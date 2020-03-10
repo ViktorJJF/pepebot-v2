@@ -1,7 +1,5 @@
 const puppeteer = require("puppeteer");
-const { PuppeteerBlocker } = require("@cliqz/adblocker-puppeteer");
-const fetch = require("cross-fetch"); // required 'fetch'
-const moment = require("moment");
+const formatISO9075 = require("date-fns/formatISO9075");
 const { timeout } = require("../utils/utils.js");
 const config = require("../config");
 const uuidv1 = require("uuid/v1");
@@ -57,23 +55,9 @@ module.exports = class Bot {
     console.log("iniciando bot...");
     var proxy = proxy || this.proxy;
     if (config.environment === "dev") {
-      console.log("estamos en desarrollo con este proxy: ", this.proxy);
-      const pathToExtension =
-        "C:\\Users\\JIMENEZ\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions\\ookhnhpkphagefgdiemllfajmkdkcaim\\2.14.4_0";
-      if (this.ogameEmail != "vj.jimenez96@gmail.com") {
-        this.browser = await puppeteer.launch({
-          headless: false,
-          args: [
-            `--disable-extensions-except=${pathToExtension}`,
-            `--load-extension=${pathToExtension}`
-          ]
-          // args: [`--proxy-server=${proxy}`]
-        });
-      } else {
-        this.browser = await puppeteer.launch({
-          headless: false
-        });
-      }
+      this.browser = await puppeteer.launch({
+        headless: false
+      });
     } else {
       this.browser = await puppeteer.launch({
         args: [
@@ -670,10 +654,7 @@ module.exports = class Bot {
   }
   async refreshPage(page) {
     var page = page || this.page;
-    console.log(
-      "refrescando ogame a las : ",
-      moment().format("MMMM Do YYYY, h:mm:ss a")
-    );
+    console.log("refrescando ogame a las : ", formatISO9075(new Date()));
     await page.waitForSelector(
       "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
     );

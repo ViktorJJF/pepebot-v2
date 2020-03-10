@@ -5,11 +5,9 @@ const config = require("../config.js");
 const dateTools = require("../tools/dateTools.js");
 const ogameApi = require("../services/ogameApi");
 const { msToTime } = require("../utils/utils");
-const moment = require("moment");
 const beginExpeditions = require("../ogameScripts/expeditions");
 const watchDog = require("../ogameScripts/watchDog");
 const botTelegram = require("../chatbot//Telegram/telegramBot");
-moment.locale("es");
 const list = (req, res) => {
   Bot.find().exec((err, payload) => {
     if (err) {

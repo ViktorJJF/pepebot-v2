@@ -243,7 +243,7 @@ class Fleet {
           { id: "219", qty: 1 },
           {
             id: lastBattleShipId,
-            qty: 3
+            qty: 1
           }
         ];
       });
@@ -299,33 +299,38 @@ class Fleet {
     await this.page.click("input#position");
     await this.page.type("input#position", planet);
 
-    let speeds = [];
-    let speedSelectors = await this.page.$$(".step");
-    for (const speedSelector of speedSelectors) {
-      await timeout(1000);
-      await speedSelector.hover();
-      await timeout(500);
-      let currentSpeed = await this.page.evaluate(() => {
-        return document
-          .querySelector("span#duration")
-          .innerText.replace(" h", "");
-      });
-      speeds.push(currentSpeed);
+    if (this.duration) {
+      let speeds = [];
+      let speedSelectors = await this.page.$$(".step");
+      for (const speedSelector of speedSelectors) {
+        await timeout(1000);
+        await speedSelector.hover();
+        await timeout(500);
+        let currentSpeed = await this.page.evaluate(() => {
+          return document
+            .querySelector("span#duration")
+            .innerText.replace(" h", "");
+        });
+        speeds.push(currentSpeed);
+      }
+      console.log("las velocidades son: ", speeds);
+      speeds = speeds.map(e => timeTomiliseconds(e));
+      let closerDurationIndex = getCloserDurationIndex(
+        speeds,
+        timeTomiliseconds2(this.duration)
+      );
+      console.log(
+        "lo mejor para ",
+        this.duration,
+        " es : ",
+        speeds[closerDurationIndex]
+      );
+      //seting speed
+      await this.page.click(`.step:nth-child(${closerDurationIndex})`);
+    } else {
+      //seting speed
+      await this.page.click(`.step:nth-child(10)`);
     }
-    console.log("las velocidades son: ", speeds);
-    speeds = speeds.map(e => timeTomiliseconds(e));
-    let closerDurationIndex = getCloserDurationIndex(
-      speeds,
-      timeTomiliseconds2(this.duration)
-    );
-    console.log(
-      "lo mejor para ",
-      this.duration,
-      " es : ",
-      speeds[closerDurationIndex]
-    );
-    //seting speed
-    await this.page.click(`.step:nth-child(${closerDurationIndex})`);
     //go to next page
     await this.page.waitForSelector("a#continueToFleet3.continue.on", {
       visible: true

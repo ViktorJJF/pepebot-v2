@@ -5,7 +5,7 @@ const bots = require("../../classes/Bots.js");
 const beginExpeditions = require("../../ogameScripts/expeditions");
 const watchDog = require("../../ogameScripts/watchDog");
 const fleetSave = require("../../ogameScripts/fleetSave");
-const { timeout } = require("../../utils/utils.js");
+const { timeout, timeTomiliseconds2 } = require("../../utils/utils.js");
 const config = require("../../config.js");
 
 process.on("uncaughtException", err => {
@@ -211,8 +211,41 @@ async function handleDialogFlowAction(
       }
       break;
     case "fleetSaveAction":
-      sendTextMessage(sender, "Empezando fleet save...");
-      fleetSave(bot);
+      if (
+        parameters.fields.duration.stringValue &&
+        parameters.fields.beginAfter.stringValue
+      ) {
+        var duration = parameters.fields.duration.stringValue;
+        var beginAfter = parameters.fields.beginAfter.stringValue;
+      }
+      console.log(
+        "los parametros son: ",
+        JSON.stringify(parameters.fields, null, " ")
+      );
+      if (duration && beginAfter) {
+        await sendTextMessage(
+          sender,
+          "vale, haré fleetSave, en tus lunas, dentro de <b>" +
+            beginAfter +
+            "</b> y tu flota estará en vuelo aproximadamente <b>" +
+            duration +
+            "</b>"
+        );
+        console.log("begin after: ", timeTomiliseconds2(beginAfter));
+        console.log("duration: ", timeTomiliseconds2(duration));
+        if (
+          isDefined(timeTomiliseconds2(beginAfter)) &&
+          isDefined(timeTomiliseconds2(duration))
+        )
+          fleetSave(bot, beginAfter, duration);
+        else
+          sendTextMessage(
+            sender,
+            "Colocaste mal el formato de horas. Acepto valores como: \n<b>1h:3min</b> (horas y minutos)\n<b>3h</b> (solo horas)\n<b>6min</b> (solo minutos)"
+          );
+      } else {
+        handleMessages(messages, sender);
+      }
       break;
     case "offNotifyAction":
       if (parameters.fields.player.stringValue) {
@@ -655,17 +688,14 @@ function sendTypingOn(recipientId) {
 }
 
 function isDefined(obj) {
-  if (typeof obj == "undefined") {
+  if (obj === undefined) {
     return false;
   }
 
-  if (!obj) {
+  if (obj === null) {
     return false;
   }
-  if (obj == "") {
-    return false;
-  }
-  return obj != null;
+  return true;
 }
 
 module.exports = { sendTextMessage, api };

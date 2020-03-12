@@ -4,10 +4,16 @@ const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
 const watchDog = require("./watchDog.js");
 
-const { Random, timeout, msToTime } = require("../utils/utils");
+const {
+  Random,
+  timeout,
+  msToTime,
+  timeTomiliseconds2
+} = require("../utils/utils");
 
-async function beginFleetSave(bot) {
+async function beginFleetSave(bot, beginAfter, duration) {
   const botTelegram = require("../chatbot/Telegram/telegramBot");
+  await timeout(timeTomiliseconds2(beginAfter));
   var page = await bot.createNewPage();
   let playerId = bot.playerId;
   console.log("el playerId es: ", playerId);
@@ -22,7 +28,7 @@ async function beginFleetSave(bot) {
       try {
         if (!page) page = await bot.createNewPage();
         let ogameUsername = await bot.getOgameUsername(page);
-        let shipsToSend = await sendFleetSave(planet.coords, page);
+        let shipsToSend = await sendFleetSave(planet.coords, page, duration);
         console.log("naves para enviar es: ", shipsToSend);
         if (shipsToSend)
           await botTelegram.sendTextMessage(
@@ -74,9 +80,15 @@ async function beginFleetSave(bot) {
   await botTelegram.sendTextMessage(
     bot.telegramId,
     `<b>vigilaré tu cuenta</b> cuando tu primer fleet vuelva, dentro de ${msToTime(
-      minSecs + 0.2 * 60 * 1000
+      minSecs + 0.1 * 60 * 1000
     )} `
   );
+  activateWatchdog(minSecs, bot);
+  console.log("se termino el fleetsave");
+  return;
+}
+
+async function activateWatchdog(minSecs, bot) {
   await timeout(minSecs + 0.1 * 6 * 1000); // Sleep until one of the expedition fleet come back
   if (!bot.hasAction("watchDog")) {
     bot.addAction("watchDog");
@@ -84,10 +96,9 @@ async function beginFleetSave(bot) {
   } else {
     console.log(" no se entro al watchdog");
   }
-  return;
 }
 
-async function sendFleetSave(origin, page, speed = 1) {
+async function sendFleetSave(origin, page, duration, speed = 1) {
   let [galaxy, system, planet] = origin.split(":");
   let destination = new Coordinate(galaxy, system, 16);
   let fleet = new Fleet();
@@ -96,7 +107,7 @@ async function sendFleetSave(origin, page, speed = 1) {
   fleet.setPage(page);
   fleet.setOrigin(origin);
   fleet.setDestination(destination.generateCoords());
-  fleet.setSpeed(0.2);
+  fleet.setDuration(duration);
   fleet.setMission("espionage");
   fleet.SetAllResources();
   fleet.SetAllShips();

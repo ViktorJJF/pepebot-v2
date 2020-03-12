@@ -92,14 +92,14 @@ BotModel.find().exec((err, payload) => {
 
     bot.initialize(element);
     bots.addBot(bot);
-    // if (
-    //   bot.ogameEmail == "vj.jimenez96@gmail.com" ||
-    //   config.environment !== "dev"
-    // ) {
-    await bot.begin();
-    await bot.login(element.ogameEmail, element.ogamePassword);
-    //daily rutine
-    // }
+    if (
+      bot.ogameEmail == "vj.jimenez96@gmail.com" ||
+      config.environment !== "dev"
+    ) {
+      await bot.begin();
+      await bot.login(element.ogameEmail, element.ogamePassword);
+      //daily rutine
+    }
   });
   beginDailyFleetSave(bots.bots);
 });

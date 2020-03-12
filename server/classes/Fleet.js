@@ -1,4 +1,10 @@
-const { timeout } = require("../utils/utils.js");
+const {
+  timeout,
+  Random,
+  timeTomiliseconds,
+  timeTomiliseconds2,
+  getCloserDurationIndex
+} = require("../utils/utils.js");
 class Fleet {
   constructor() {
     this.page = null; // puppeteer page
@@ -6,7 +12,7 @@ class Fleet {
     this.destination = null; //1:241:4
     this.speed = null; //0.10 - 1
     this.mission = null; //EXPEDITION - ATTACK - TRANSPORT
-    this.duration = null; //
+    this.duration = null; //1h 2h 1h:30min 40min etc
     this.allResources = null;
     this.allShips = null;
     this.ships = [
@@ -292,8 +298,34 @@ class Fleet {
     await this.page.type("input#system", system);
     await this.page.click("input#position");
     await this.page.type("input#position", planet);
+
+    let speeds = [];
+    let speedSelectors = await this.page.$$(".step");
+    for (const speedSelector of speedSelectors) {
+      await timeout(1000);
+      await speedSelector.hover();
+      await timeout(500);
+      let currentSpeed = await this.page.evaluate(() => {
+        return document
+          .querySelector("span#duration")
+          .innerText.replace(" h", "");
+      });
+      speeds.push(currentSpeed);
+    }
+    console.log("las velocidades son: ", speeds);
+    speeds = speeds.map(e => timeTomiliseconds(e));
+    let closerDurationIndex = getCloserDurationIndex(
+      speeds,
+      timeTomiliseconds2(this.duration)
+    );
+    console.log(
+      "lo mejor para ",
+      this.duration,
+      " es : ",
+      speeds[closerDurationIndex]
+    );
     //seting speed
-    await this.page.click(`.step:nth-child(${this.speed * 10})`);
+    await this.page.click(`.step:nth-child(${closerDurationIndex})`);
     //go to next page
     await this.page.waitForSelector("a#continueToFleet3.continue.on", {
       visible: true
@@ -322,6 +354,16 @@ class Fleet {
     if (this.allResources) {
       await this.page.waitForSelector("a#allresources>img");
       await this.page.click("a#allresources>img");
+      let dutyRemaining = await this.page.evaluate(() => {
+        var duty = document.querySelector("input#deuterium").value;
+        duty = parseInt(duty.split(".").join(""));
+        document.querySelector("input#deuterium").value = "";
+        return duty;
+      });
+      await this.page.type(
+        "input#deuterium",
+        String(dutyRemaining - Random(400000, 600000))
+      );
     }
     console.log("mandando la flota...");
     await this.page.waitForSelector("a#sendFleet.start.on");

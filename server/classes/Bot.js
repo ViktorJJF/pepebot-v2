@@ -766,7 +766,7 @@ module.exports = class Bot {
     await this.browser.close();
   }
   hasAction(actionType) {
-    //expeditions - watchdog - hunter
+    //expeditions - watchdog - hunter - dailyFleetSave
     let actionIndex = this.actions.findIndex(
       action => action.type == actionType
     );

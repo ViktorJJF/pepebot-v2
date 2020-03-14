@@ -189,7 +189,7 @@ async function handleDialogFlowAction(
 
       break;
     case "stopExpeditionsAction":
-      sendTextMessage(sender, "Ok, dejare de hacer expediciones");
+      sendTextMessage(sender, "Ok, dejaré de hacer expediciones");
       var state = bot.stopAction("expeditions");
       if (state) {
         await sendTextMessage(sender, "expediciones desactivadas con éxito...");
@@ -201,13 +201,33 @@ async function handleDialogFlowAction(
       }
       break;
     case "beginWatchDogAction":
-      sendTextMessage(sender, "Ok, empezare a vigilar tu cuenta");
+      sendTextMessage(sender, "Ok, empezaré a vigilar tu cuenta");
       if (!bot.hasAction("watchDog")) {
         console.log("se entro al watchdog de telegram");
         bot.addAction("watchDog");
         watchDog(bot);
       } else {
         console.log(" no se entro al watchdog");
+      }
+      break;
+    case "stopDailyFleetSaveAction":
+      var state = bot.stopAction("dailyFleetSave");
+      if (state) {
+        await sendTextMessage(
+          sender,
+          "<b>FleetSave diario</b> desactivado con éxito (por hoy 😬)..."
+        );
+        await sendTextMessage(
+          sender,
+          "<b>" +
+            bot.ogameEmail +
+            ", antes que te quedes dormido</b>, te recomiendo programar un nuevo fleet... escribeme <b>'haz fleet'</b> y sigue los pasos 😇"
+        );
+      } else {
+        await sendTextMessage(
+          sender,
+          "algo salió mal y no pude detener el fleetsave de hoy..."
+        );
       }
       break;
     case "fleetSaveAction":

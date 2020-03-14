@@ -256,6 +256,10 @@ class Fleet {
 
     let shipsToSend = []; // return
     if (this.allShips) {
+      let hasEspionageProbe = await this.page.evaluate(() =>
+        document.querySelector(".espionageProbe[data-status='on']")
+      );
+      if (!hasEspionageProbe) return null;
       await this.page.waitForSelector("a#sendall");
       await this.page.click("a#sendall");
       await timeout(500);

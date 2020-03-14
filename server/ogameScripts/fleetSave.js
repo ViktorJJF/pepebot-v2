@@ -46,7 +46,7 @@ async function beginFleetSave(bot, beginAfter, duration) {
             "<b>" +
               ogameUsername +
               "</b>" +
-              " ⚠️ no tenías naves en tu luna <b>[" +
+              " ⚠️ no tenías naves (o sondas) en tu luna <b>[" +
               planet.coords +
               "]</b>"
           );

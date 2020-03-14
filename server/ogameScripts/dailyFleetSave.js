@@ -32,7 +32,7 @@ let beginDailyFleetSave = bots => {
       } else {
         await botTelegram.sendTextMessage(
           bot.telegramId,
-          `<b>${bot.ogameEmail}</b> se cumplieron los 05 minutos y veo que cancelaste el fleetsave de hoy... ojalá no te hayas dormido aún! 😡"`
+          `<b>${bot.ogameEmail}</b> se cumplieron los 03 minutos y veo que cancelaste el fleetsave de hoy... ojalá no te hayas dormido aún! 😡"`
         );
       }
       await timeout(Random(1 * 60 * 1000, 2 * 60 * 1000));

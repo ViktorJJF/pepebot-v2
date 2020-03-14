@@ -13,6 +13,7 @@ async function watchDog(bot, page) {
     let watchDogStatus = await start(page, bot, botTelegram);
     if (watchDogStatus) await timeout(Random(15 * 60 * 1000, 20 * 60 * 1000));
   }
+  return;
 }
 
 async function start(page, bot, botTelegram) {

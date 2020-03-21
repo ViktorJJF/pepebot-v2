@@ -7,6 +7,7 @@ const watchDog = require("../../ogameScripts/watchDog");
 const fleetSave = require("../../ogameScripts/fleetSave");
 const { timeout, timeTomiliseconds2 } = require("../../utils/utils.js");
 const config = require("../../config.js");
+const { format } = require("date-fns");
 
 process.on("uncaughtException", err => {
   console.log("un error probablemente en telegram: ", err);
@@ -132,7 +133,7 @@ async function handleDialogFlowAction(
       handleMessages(messages, sender);
       break;
     case "listActionsAction":
-      let actions = bot.getActions();
+      let actions = await bot.getActions();
       console.log("las acciones son estas: ", actions);
       if (actions.length > 0) {
         await sendTextMessage(sender, "actualmente estoy haciendo esto");
@@ -140,8 +141,14 @@ async function handleDialogFlowAction(
         actions.forEach((action, index) => {
           msg +=
             (action.type == "expeditions"
-              ? "✔️ Expediciones automáticas"
-              : "✔️ Vigilando cuenta") + "\n";
+              ? "✔️ Expediciones automáticas en [" +
+                action.payload.coords +
+                "] (activo desde " +
+                format(new Date(action.updatedAt), "hh:mm:ss aaa") +
+                " )"
+              : "✔️ Vigilando cuenta (activo desde " +
+                format(new Date(action.updatedAt), "hh:mm:ss aaa") +
+                " )") + "\n";
         });
         sendTextMessage(sender, msg);
       } else {
@@ -158,18 +165,23 @@ async function handleDialogFlowAction(
         var coords = parameters.fields.cooords.stringValue;
       }
       if (coords) {
-        sendTextMessage(
-          sender,
-          "Ok, empezare a hacer expediciones en tu luna de " + coords
-        );
-        var ships = [
-          { id: 1, qty: 5 },
-          { id: 9, qty: 10 }
-        ];
-        // var coords = "9:999:9";
-        if (!bot.hasAction("expeditions")) {
-          bot.addAction("expeditions");
+        if (!(await bot.hasAction("expeditions"))) {
+          sendTextMessage(
+            sender,
+            "Ok, empezaré a hacer expediciones en tu planeta/luna de " + coords
+          );
+          let ships = [
+            { id: 1, qty: 5 },
+            { id: 9, qty: 10 }
+          ];
+          // var coords = "9:999:9";
+          await bot.addAction("expeditions", { coords: coords });
           beginExpeditions(coords, ships, bot);
+        } else {
+          sendTextMessage(
+            sender,
+            "ya tenías activadas las expediones automáticas. Si vas a cambiar de coordenadas, primero dime: '<b>cancela las expediciones</b>'."
+          );
         }
       } else {
         handleMessages(messages, sender);
@@ -190,7 +202,7 @@ async function handleDialogFlowAction(
       break;
     case "stopExpeditionsAction":
       sendTextMessage(sender, "Ok, dejaré de hacer expediciones");
-      var state = bot.stopAction("expeditions");
+      var state = await bot.stopAction("expeditions");
       if (state) {
         await sendTextMessage(sender, "expediciones desactivadas con éxito...");
       } else {
@@ -201,17 +213,18 @@ async function handleDialogFlowAction(
       }
       break;
     case "beginWatchDogAction":
-      sendTextMessage(sender, "Ok, empezaré a vigilar tu cuenta");
-      if (!bot.hasAction("watchDog")) {
+      if (!(await bot.hasAction("watchDog"))) {
+        sendTextMessage(sender, "Ok, empezaré a vigilar tu cuenta");
         console.log("se entro al watchdog de telegram");
-        bot.addAction("watchDog");
+        await bot.addAction("watchDog");
         watchDog(bot);
       } else {
+        sendTextMessage(sender, "ya tenías el <b>WatchDog</b> activo!");
         console.log(" no se entro al watchdog");
       }
       break;
     case "stopDailyFleetSaveAction":
-      var state = bot.stopAction("dailyFleetSave");
+      var state = await bot.stopAction("dailyFleetSave");
       if (state) {
         await sendTextMessage(
           sender,
@@ -397,7 +410,7 @@ async function handleDialogFlowAction(
       break;
     case "stopWatchDogAction":
       await sendTextMessage(sender, "Ok, entonces entrarás a la cuenta 😆");
-      var state = bot.stopAction("watchDog");
+      var state = await bot.stopAction("watchDog");
       if (state) {
         await sendTextMessage(sender, "watchDog desactivado con éxito...");
       } else {

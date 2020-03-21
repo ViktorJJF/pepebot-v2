@@ -90,8 +90,8 @@ async function beginFleetSave(bot, beginAfter, duration) {
 
 async function activateWatchdog(minSecs, bot) {
   await timeout(minSecs + 0.1 * 6 * 1000); // Sleep until one of the expedition fleet come back
-  if (!bot.hasAction("watchDog")) {
-    bot.addAction("watchDog");
+  if (!(await bot.hasAction("watchDog"))) {
+    await bot.addAction("watchDog");
     watchDog(bot);
   } else {
     console.log(" no se entro al watchdog");

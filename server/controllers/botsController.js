@@ -52,6 +52,12 @@ const getOne = (req, res) => {
 };
 const create = async (req, res) => {
   let body = req.body;
+  //adding default actions
+  let actions = [
+    { type: "expeditions", active: false },
+    { type: "watchDog", active: false },
+    { type: "dailyFleetSave", active: false }
+  ];
   let bot = new Bot({
     server: body.server,
     language: body.language,
@@ -61,7 +67,8 @@ const create = async (req, res) => {
     ogamePassword: body.ogamePassword,
     state: body.state,
     userId: req.user._id,
-    proxy: body.proxy
+    proxy: body.proxy,
+    actions
   });
 
   console.log("el user id es: ", req.user._id);
@@ -235,8 +242,8 @@ const actions = async (req, res) => {
       console.log("ejecutando watchDog");
       let milliseconds = req.body.payload.milliseconds;
       var actionId;
-      if (!bot.hasAction("watchDog")) {
-        actionId = bot.addAction("watchDog");
+      if (!(await bot.hasAction("watchDog"))) {
+        actionId = await bot.addAction("watchDog");
         watchDog(bot);
       }
       res.json({ ok: true, msg: "Empezando watchdog...", actionId });
@@ -249,8 +256,8 @@ const actions = async (req, res) => {
       // let page = await bot.createNewPage();
       //first ejecution
       var actionId;
-      if (!bot.hasAction("expeditions")) {
-        actionId = bot.addAction("expeditions");
+      if (!(await bot.hasAction("expeditions"))) {
+        await bot.addAction("expeditions", { coords: origin });
         beginExpeditions(origin, ships, bot);
       }
       var ships = [
@@ -269,7 +276,7 @@ const stopAction = async (req, res) => {
   let type = req.params.type;
   let bot = bots.getBot(botId);
   console.log("el parametro a eliminar: ", type);
-  let state = bot.stopAction(type);
+  let state = await bot.stopAction(type);
   if (state) {
     res.json({ ok: true, msg: "Acción detenida con éxito" });
   }
@@ -284,7 +291,7 @@ const testTelegram = async (req, res) => {
 const listActions = async (req, res) => {
   let botId = req.params.id;
   let bot = bots.getBot(botId);
-  let actions = bot.getActions();
+  let actions = await bot.getActions();
   res.json({ ok: true, actions });
 };
 

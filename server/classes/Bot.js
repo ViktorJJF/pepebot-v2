@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer");
 const formatISO9075 = require("date-fns/formatISO9075");
+const BotModel = require("../models/Bots.js");
 const { timeout } = require("../utils/utils.js");
 const config = require("../config");
 const uuidv1 = require("uuid/v1");
@@ -23,7 +24,7 @@ module.exports = class Bot {
     this.navigationPromise = null;
     this.typingDelay = 50;
     this.currentPage = 0;
-    this.actions = [];
+    // this.actions = null;
     this.playerId = null;
 
     //currentPage
@@ -48,7 +49,7 @@ module.exports = class Bot {
     this.navigationPromise = null;
     this.typingDelay = 50;
     this.currentPage = 0;
-    this.actions = [];
+    // this.actions = botOjbect.actions;
     this.playerId = botOjbect.playerId;
   }
   async begin(proxy) {
@@ -765,39 +766,74 @@ module.exports = class Bot {
     this.actions = [];
     await this.browser.close();
   }
-  hasAction(actionType) {
-    //expeditions - watchdog - hunter - dailyFleetSave
-    let actionIndex = this.actions.findIndex(
-      action => action.type == actionType
-    );
+  async hasAction(actionType) {
+    //expeditions - watchDog - hunter - dailyFleetSave
+    let actions = await this.getActions();
+    let actionIndex = actions.findIndex(action => action.type === actionType);
+    console.log("se retornara: ", actionIndex);
     return actionIndex > -1 ? true : false;
   }
-  getActions() {
-    let result = [];
-    this.actions.forEach(action => {
-      result.push({
-        actionId: action.actionId,
-        type: action.type,
-        payload: action.payload
-      });
-    });
-    return result;
+  async getActions() {
+    try {
+      let result = await BotModel.aggregate([
+        {
+          $match: {
+            ogameEmail: this.ogameEmail
+          }
+        },
+        {
+          $project: {
+            ogameEmail: 1,
+            actions: {
+              $filter: {
+                input: "$actions",
+                as: "action",
+                cond: { $eq: ["$$action.active", true] }
+              }
+            }
+          }
+        }
+      ]);
+      return result[0].actions;
+    } catch (error) {
+      console.log("algo salio mal en getActions:", error);
+      return [];
+    }
   }
-  addAction(type, payload = {}) {
-    console.log("se recibio este action:", type);
-    let actionId = uuidv1();
-    if (!this.hasAction(type)) this.actions.push({ actionId, type, payload });
-    return actionId;
+  async addAction(type, payload = {}) {
+    try {
+      let botModel = await BotModel.findOne(
+        { ogameEmail: this.ogameEmail },
+        "actions"
+      );
+      let actionToUpdate = botModel.actions.find(
+        action => action.type === type
+      );
+      actionToUpdate.active = true;
+      actionToUpdate.payload.coords = payload.coords;
+      await botModel.save();
+      console.log("se recibio este action:", type);
+      return true;
+    } catch (error) {
+      console.log("algo salio mal en addaction:", error);
+      return;
+    }
   }
   async stopAction(type) {
     try {
-      let index = this.actions.findIndex(action => action.type == type);
-      this.actions.splice(this.actions[index], 1);
-      console.log("ahora actions es: ", this.actions);
+      let botModel = await BotModel.findOne(
+        { ogameEmail: this.ogameEmail },
+        "actions"
+      );
+      let actionToUpdate = botModel.actions.find(
+        action => action.type === type
+      );
+      actionToUpdate.active = false;
+      await botModel.save();
       return true;
     } catch (error) {
-      console.log(error);
-      return false;
+      console.log("algo salio mal en stopaction:", error);
+      return;
     }
   }
 };

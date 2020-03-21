@@ -19,7 +19,7 @@ async function beginExpeditions(
   speed = 1,
   expeditionDuration = 1
 ) {
-  while (bot.hasAction("expeditions")) {
+  while (await bot.hasAction("expeditions")) {
     let minSecs = await start(bot, origin, ships, speed);
     if (minSecs) await timeout(minSecs + 0.1 * 6 * 1000); // Sleep until one of the expedition fleet come back
     console.log("empezando nueva vuelta...");
@@ -49,7 +49,7 @@ async function start(bot, origin, ships, speed) {
         `<b>${ogameUsername}</b> estoy empezando a mandar las expediciones...`
       );
     var expeditionNumber = 1;
-    while (expeditionsPossible > 0 && bot.hasAction("expeditions")) {
+    while (expeditionsPossible > 0 && (await bot.hasAction("expeditions"))) {
       let shipsToSend = await sendExpedition(origin, ships, page, speed);
       let msg = `<b>Expedición nro ${expeditionNumber}\n</b>`;
       shipsToSend.forEach(shipToSend => {

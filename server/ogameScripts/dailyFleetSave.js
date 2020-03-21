@@ -9,11 +9,11 @@ rule.minute = Random(1, 2);
 // rule.minute = 1;
 
 let beginDailyFleetSave = bots => {
-  var j = schedule.scheduleJob(rule, async () => {
+  schedule.scheduleJob(rule, async () => {
     for (const bot of bots) {
       //adding action
-      if (!bot.hasAction("dailyFleetSave")) {
-        bot.addAction("dailyFleetSave");
+      if (!(await bot.hasAction("dailyFleetSave"))) {
+        await bot.addAction("dailyFleetSave");
       }
       //time to cancel
       await botTelegram.sendTextMessage(
@@ -22,7 +22,7 @@ let beginDailyFleetSave = bots => {
       );
       await timeout(3 * 60 * 1000); //tthree minutes to cancel daily fleetsave
       //begin
-      if (bot.hasAction("dailyFleetSave")) {
+      if (await bot.hasAction("dailyFleetSave")) {
         await botTelegram.sendTextMessage(
           bot.telegramId,
           `<b>${bot.ogameEmail}</b> parece que te quedaste dormido, empezaré el fleetSave..."`

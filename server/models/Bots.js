@@ -2,6 +2,19 @@ const mongoose = require("mongoose");
 
 let Schema = mongoose.Schema;
 
+var actionsSchema = new mongoose.Schema(
+  {
+    type: String,
+    active: { type: Boolean, default: false },
+    payload: {
+      coords: String
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
 let botsSchema = new Schema(
   {
     server: {
@@ -38,7 +51,8 @@ let botsSchema = new Schema(
     proxy: {
       type: String
     },
-    playerId: String
+    playerId: String,
+    actions: [actionsSchema]
   },
   {
     timestamps: true

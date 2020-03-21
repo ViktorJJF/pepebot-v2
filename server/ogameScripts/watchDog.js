@@ -9,7 +9,7 @@ async function watchDog(bot, page) {
     bot.ogameEmail +
       " empezare a cuidar tu cuenta, para desactivar dime algo como 'pepebot ya no cuides mi cuenta'"
   );
-  while (bot.hasAction("watchDog")) {
+  while (await bot.hasAction("watchDog")) {
     let watchDogStatus = await start(page, bot, botTelegram);
     if (watchDogStatus) await timeout(Random(15 * 60 * 1000, 20 * 60 * 1000));
   }

@@ -1,4 +1,5 @@
 const config = require("./config");
+const seed = require("../seed");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -11,6 +12,7 @@ const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
 const beginDailyFleetSave = require("./ogameScripts/dailyFleetSave");
+const beginActions = require("./ogameScripts/beginActions");
 
 //Middleware
 
@@ -98,10 +100,12 @@ BotModel.find().exec((err, payload) => {
     ) {
       await bot.begin();
       await bot.login(element.ogameEmail, element.ogamePassword);
+      beginActions(bot);
       //daily rutine
     }
   });
   beginDailyFleetSave(bots.bots);
+  // seed.actions();
 });
 
 const routes = require("./routes/api/api.js");

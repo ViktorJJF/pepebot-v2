@@ -1,3 +1,6 @@
+//new relic
+require("newrelic");
+
 const config = require("./config");
 const seed = require("../seed");
 const express = require("express");

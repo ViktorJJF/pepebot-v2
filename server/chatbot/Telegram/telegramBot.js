@@ -140,15 +140,18 @@ async function handleDialogFlowAction(
         let msg = "";
         actions.forEach((action, index) => {
           msg +=
-            (action.type == "expeditions"
+            action.type == "expeditions"
               ? "✔️ Expediciones automáticas en [" +
                 action.payload.coords +
                 "] (activo desde " +
                 format(new Date(action.updatedAt), "hh:mm:ss aaa") +
                 " )"
-              : "✔️ Vigilando cuenta (activo desde " +
+              : action.type == "watchDog"
+              ? "✔️ Vigilando cuenta (activo desde " +
                 format(new Date(action.updatedAt), "hh:mm:ss aaa") +
-                " )") + "\n";
+                " )" +
+                "\n"
+              : "✔️ Fleet diario (se reinicia a media noche)";
         });
         sendTextMessage(sender, msg);
       } else {

@@ -27,7 +27,7 @@ let beginDailyFleetSave = bots => {
           bot.telegramId,
           `<b>${bot.ogameEmail}</b> parece que te quedaste dormido, empezaré el fleetSave..."`
         );
-        await beginFleetSave(bot, "0min", "5h");
+        await beginFleetSave(bot, "0min", "6h");
         console.log("se culmino el fleet save para: ", bot.ogameEmail);
       } else {
         await botTelegram.sendTextMessage(

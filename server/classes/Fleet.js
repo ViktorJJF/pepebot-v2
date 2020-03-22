@@ -228,7 +228,10 @@ class Fleet {
         return [
           {
             id: "204",
-            qty: parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
+            qty:
+              parseInt((cazadorLigeroTotal * 1) / freeExpSlots) > 3000
+                ? 3000
+                : parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
           },
           // {
           //   id: "202",
@@ -236,7 +239,7 @@ class Fleet {
           // },
           {
             id: "203",
-            qty: 700
+            qty: 800
           },
           { id: "210", qty: 1 },
           { id: "215", qty: 1 },

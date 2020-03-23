@@ -66,12 +66,10 @@ const create = async (req, res) => {
     ogameEmail: body.ogameEmail,
     ogamePassword: body.ogamePassword,
     state: body.state,
-    userId: req.user._id,
+    userId: req.user ? user._id : body.userId,
     proxy: body.proxy,
     actions
   });
-
-  console.log("el user id es: ", req.user._id);
 
   console.log("se creara el bot con la siguiente info:", bot);
 
@@ -106,17 +104,7 @@ const update = async (req, res) => {
   let body = req.body;
   Bot.findByIdAndUpdate(
     id,
-    {
-      server: body.server,
-      language: body.language,
-      telegramId: body.telegramId,
-      telegramGroupId: body.telegramGroupId,
-      ogameEmail: body.ogameEmail,
-      ogamePassword: body.ogamePassword,
-      state: body.state,
-      userId: req.user._id,
-      proxy: body.proxy
-    },
+    req.body,
     {
       new: true
     },

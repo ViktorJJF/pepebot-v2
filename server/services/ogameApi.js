@@ -5,7 +5,7 @@ const axios = require("axios");
 var parseString = require("xml2js").parseString;
 
 //get players list
-let endPoint = "https://s167-es.ogame.gameforge.com/api/players.xml";
+let endPoint = "https://s168-es.ogame.gameforge.com/api/players.xml";
 console.log("empezando web scraping");
 let player = null;
 
@@ -39,7 +39,7 @@ const getPlanetsCoordinates = playerId => {
   return new Promise((resolve, reject) => {
     axios
       .get(
-        "https://s167-es.ogame.gameforge.com/api/playerData.xml?id=" + playerId
+        "https://s168-es.ogame.gameforge.com/api/playerData.xml?id=" + playerId
       )
       .then(res => {
         // console.log(res.data);

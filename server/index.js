@@ -1,5 +1,4 @@
 //new relic
-require("newrelic");
 
 const config = require("./config");
 const seed = require("../seed");
@@ -44,7 +43,8 @@ app.use(
 //     // cookie: { secure: true }
 // }))
 mongoose.connect(
-  config.dbString, {
+  config.dbString,
+  {
     useNewUrlParser: true
   },
   (err, res) => {
@@ -70,11 +70,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser(function (user_id, done) {
+passport.serializeUser(function(user_id, done) {
   done(null, user_id);
 });
 
-passport.deserializeUser(function (user_id, done) {
+passport.deserializeUser(function(user_id, done) {
   done(null, user_id);
 });
 

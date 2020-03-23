@@ -23,7 +23,6 @@
         "jsonwebtoken": "^8.5.1",
         "mongodb": "^3.2.7",
         "mongoose": "^5.9.5",
-        "newrelic": "^6.5.0",
         "node-schedule": "^1.3.2",
         "passport": "^0.4.0",
         "puppeteer": "^2.0.0",

@@ -1,10 +1,7 @@
 const puppeteer = require("puppeteer");
 const formatISO9075 = require("date-fns/formatISO9075");
 const BotModel = require("../models/Bots.js");
-const {
-  timeout,
-  Random
-} = require("../utils/utils.js");
+const { timeout, Random } = require("../utils/utils.js");
 const config = require("../config");
 const uuidv1 = require("uuid/v1");
 
@@ -105,7 +102,8 @@ module.exports = class Bot {
       await page.click('input[type="email"]');
       await page.type(
         'input[type="email"]',
-        ogameEmail ? ogameEmail : this.ogameEmail, {
+        ogameEmail ? ogameEmail : this.ogameEmail,
+        {
           delay: this.typingDelay
         }
       );
@@ -114,7 +112,8 @@ module.exports = class Bot {
       await page.click('input[type="password"]');
       await page.type(
         'input[type="password"]',
-        ogamePassword ? ogamePassword : this.ogamePassword, {
+        ogamePassword ? ogamePassword : this.ogamePassword,
+        {
           delay: this.typingDelay
         }
       );
@@ -157,7 +156,7 @@ module.exports = class Bot {
 
   async createNewPage() {
     let mainMenuUrl =
-      "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
+      "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
     let page = await this.browser.newPage();
     page.setDefaultTimeout(30 * 1000);
     await page.goto(mainMenuUrl, {
@@ -254,7 +253,8 @@ module.exports = class Bot {
 
     //Click to overview enemy missions
     await page.waitForSelector(
-      "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed", {
+      "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
+      {
         visible: true
       }
     );
@@ -319,10 +319,10 @@ module.exports = class Bot {
             "td.originFleet"
           ).innerText;
           attackDetail.hostilePlayer.origin.type = enemyMission.querySelector(
-              "td.originFleet>figure.moon"
-            ) ?
-            "moon" :
-            "planet";
+            "td.originFleet>figure.moon"
+          )
+            ? "moon"
+            : "planet";
 
           attackDetail.hostilePlayer.target.coords = enemyMission
             .querySelector("td.destCoords")
@@ -331,10 +331,10 @@ module.exports = class Bot {
             "td.destFleet"
           ).innerText;
           attackDetail.hostilePlayer.target.type = enemyMission.querySelector(
-              "td.destFleet>figure.moon"
-            ) ?
-            "moon" :
-            "planet";
+            "td.destFleet>figure.moon"
+          )
+            ? "moon"
+            : "planet";
           //impacto hour
           attackDetail.hostilePlayer.impactHour = parseInt(
             enemyMission.getAttribute("data-arrival-time") * 1000
@@ -461,15 +461,15 @@ module.exports = class Bot {
     var page = page || this.page;
     var [galaxy, system, planet] = coords.split(":");
     await this.goToSolarSystem(coords, page);
-    type == "planet" ?
-      console.log("Empezando a escanear planeta: ", coords) :
-      console.log("Empezando a escanear luna: ", coords);
+    type == "planet"
+      ? console.log("Empezando a escanear planeta: ", coords)
+      : console.log("Empezando a escanear luna: ", coords);
     // await timeout(5000);
     try {
       await page.waitForResponse(response => {
         return (
           response.url() ===
-          "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
+            "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
           response.status() === 200
         );
       });
@@ -485,15 +485,12 @@ module.exports = class Bot {
 
     try {
       planetActivity.lastActivity = await page.evaluate(
-        ({
-          planet,
-          type
-        }) => {
+        ({ planet, type }) => {
           var lastActivity = "off";
           let planetSelector = document.querySelector(
-            type == "planet" ?
-            `tr.row>td[rel="planet${planet}"]>.ListImage` :
-            `tr.row>td[rel="moon${planet}"]`
+            type == "planet"
+              ? `tr.row>td[rel="planet${planet}"]>.ListImage`
+              : `tr.row>td[rel="moon${planet}"]`
           );
           if (planetSelector.querySelector(".activity")) {
             if (planetSelector.querySelector(".activity.showMinutes")) {
@@ -505,7 +502,8 @@ module.exports = class Bot {
             }
           }
           return lastActivity;
-        }, {
+        },
+        {
           planet,
           type
         }
@@ -527,7 +525,7 @@ module.exports = class Bot {
       await this.page.waitForResponse(response => {
         return (
           response.url() ===
-          "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
+            "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
           response.status() === 200
         );
       });
@@ -648,7 +646,8 @@ module.exports = class Bot {
 
       await this.page.type(
         "#contentWrapper > #chatContent > .content > .editor_wrap > .new_msg_textarea",
-        msg, {
+        msg,
+        {
           delay: this.typingDelay / 2
         }
       );
@@ -731,7 +730,8 @@ module.exports = class Bot {
     let fleetOverviewButton = await page.$("p.event_list");
     if (fleetOverviewButton) {
       await page.waitForSelector(
-        "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed", {
+        "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
+        {
           visible: true
         }
       );
@@ -763,23 +763,23 @@ module.exports = class Bot {
 
       slots.current = parseInt(
         document
-        .querySelector("#slots>.fleft>span")
-        .innerText.match(/([0-9])/)[0]
+          .querySelector("#slots>.fleft>span")
+          .innerText.match(/([0-9])/)[0]
       );
       slots.all = parseInt(
         document
-        .querySelector("#slots>.fleft>span")
-        .innerText.match(/([^\/]+$)/)[0]
+          .querySelector("#slots>.fleft>span")
+          .innerText.match(/([^\/]+$)/)[0]
       );
       slots.expInUse = parseInt(
         document
-        .querySelector("#slots>.fleft:nth-child(2)>span")
-        .innerText.match(/([0-9])/)[0]
+          .querySelector("#slots>.fleft:nth-child(2)>span")
+          .innerText.match(/([0-9])/)[0]
       );
       slots.expTotal = parseInt(
         document
-        .querySelector("#slots>.fleft:nth-child(2)>span")
-        .innerText.match(/([^\/]+$)/)[0]
+          .querySelector("#slots>.fleft:nth-child(2)>span")
+          .innerText.match(/([^\/]+$)/)[0]
       );
       return {
         fleets,
@@ -811,17 +811,17 @@ module.exports = class Bot {
     return playerInfo;
   }
   async viejoProfeta(page) {
-    function updateMine(type) {
-      await page.waitForSelector('li.deuteriumSynthesizer>span>button.upgrade');
+    async function updateMine(type) {
+      await page.waitForSelector("li.deuteriumSynthesizer>span>button.upgrade");
       switch (type) {
         case "metal":
-          await page.click('li.metalMine>span>button.upgrade');
+          await page.click("li.metalMine>span>button.upgrade");
           break;
         case "crystal":
-          await page.click('li.crystalMine>span>button.upgrade');
+          await page.click("li.crystalMine>span>button.upgrade");
           break;
         case "deuterim":
-          await page.click('li.deuteriumSynthesizer>span>button.upgrade');
+          await page.click("li.deuteriumSynthesizer>span>button.upgrade");
           break;
 
         default:
@@ -830,10 +830,6 @@ module.exports = class Bot {
     }
   }
   async stop() {
-    this.actions.forEach(action => {
-      clearInterval(action.action);
-    });
-    this.actions = [];
     await this.browser.close();
   }
   async hasAction(actionType) {
@@ -845,7 +841,8 @@ module.exports = class Bot {
   }
   async getActions() {
     try {
-      let result = await BotModel.aggregate([{
+      let result = await BotModel.aggregate([
+        {
           $match: {
             ogameEmail: this.ogameEmail
           }
@@ -873,7 +870,8 @@ module.exports = class Bot {
   }
   async addAction(type, payload = {}) {
     try {
-      let botModel = await BotModel.findOne({
+      let botModel = await BotModel.findOne(
+        {
           ogameEmail: this.ogameEmail
         },
         "actions"
@@ -893,7 +891,8 @@ module.exports = class Bot {
   }
   async stopAction(type) {
     try {
-      let botModel = await BotModel.findOne({
+      let botModel = await BotModel.findOne(
+        {
           ogameEmail: this.ogameEmail
         },
         "actions"
@@ -901,6 +900,7 @@ module.exports = class Bot {
       let actionToUpdate = botModel.actions.find(
         action => action.type === type
       );
+      if (actionToUpdate.active == false) return false;
       actionToUpdate.active = false;
       await botModel.save();
       return true;

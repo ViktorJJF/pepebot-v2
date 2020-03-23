@@ -211,7 +211,7 @@ async function handleDialogFlowAction(
       } else {
         await sendTextMessage(
           sender,
-          "algo salió mal y no pude detener las expediciones..."
+          "ya tenias las <b>expediciones</b> desactivadas"
         );
       }
       break;
@@ -417,7 +417,10 @@ async function handleDialogFlowAction(
       if (state) {
         await sendTextMessage(sender, "watchDog desactivado con éxito...");
       } else {
-        await sendTextMessage(sender, "algo salió mal y no pude detenerme...");
+        await sendTextMessage(
+          sender,
+          "ya tenias el <b>watchDog</b> desactivado"
+        );
       }
       break;
     default:

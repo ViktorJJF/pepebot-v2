@@ -44,8 +44,7 @@ app.use(
 //     // cookie: { secure: true }
 // }))
 mongoose.connect(
-  config.dbString,
-  {
+  config.dbString, {
     useNewUrlParser: true
   },
   (err, res) => {
@@ -71,11 +70,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser(function(user_id, done) {
+passport.serializeUser(function (user_id, done) {
   done(null, user_id);
 });
 
-passport.deserializeUser(function(user_id, done) {
+passport.deserializeUser(function (user_id, done) {
   done(null, user_id);
 });
 
@@ -103,7 +102,6 @@ BotModel.find().exec((err, payload) => {
     ) {
       await bot.begin();
       await bot.login(element.ogameEmail, element.ogamePassword);
-
       beginActions(bot);
       //daily rutine
     }

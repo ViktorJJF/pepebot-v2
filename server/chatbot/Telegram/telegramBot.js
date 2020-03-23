@@ -145,7 +145,7 @@ async function handleDialogFlowAction(
                 action.payload.coords +
                 "] (activo desde " +
                 format(new Date(action.updatedAt), "hh:mm:ss aaa") +
-                " )"
+                " )\n"
               : action.type == "watchDog"
               ? "✔️ Vigilando cuenta (activo desde " +
                 format(new Date(action.updatedAt), "hh:mm:ss aaa") +

@@ -38,7 +38,7 @@ router.post("/bots/telegram", botsController.testTelegram);
 router.get("/memory", (req, res) => {
   let mem = process.memoryUsage().heapUsed / 1024 / 1024;
   console.log("el uso de memoria es: ", mem);
-  res.sendStatus(200);
+  res.json({ ok: true, memory: mem });
 });
 
 //tools

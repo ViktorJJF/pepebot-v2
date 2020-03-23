@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer");
 const formatISO9075 = require("date-fns/formatISO9075");
 const BotModel = require("../models/Bots.js");
-const { timeout } = require("../utils/utils.js");
+const { timeout, Random } = require("../utils/utils.js");
 const config = require("../config");
 const uuidv1 = require("uuid/v1");
 
@@ -154,7 +154,7 @@ module.exports = class Bot {
     let mainMenuUrl =
       "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
     let page = await this.browser.newPage();
-    page.setDefaultTimeout(30000);
+    page.setDefaultTimeout(30 * 1000);
     await page.goto(mainMenuUrl, { waitUntil: "networkidle0", timeout: 0 });
     return page;
   }
@@ -260,7 +260,7 @@ module.exports = class Bot {
     for (let i = 0; i < enemyMissionsRows.length; i++) {
       console.log("el tamaño de misiones es: ", enemyMissionsRows.length);
       let isSac = await enemyMissionsRows[i].evaluate(mission => {
-        return !mission.getAttribute("id").includes("eventRow");
+        return mission.getAttribute("class").includes("partnerInfo");
       });
       if (isSac) {
         console.log("se cortara la mision", i, " con valor: ", isSac);
@@ -656,12 +656,33 @@ module.exports = class Bot {
   async refreshPage(page) {
     var page = page || this.page;
     console.log("refrescando ogame a las : ", formatISO9075(new Date()));
-    await page.waitForSelector(
-      "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
+    // await page.waitForSelector(
+    //   "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
+    // );
+    // await page.click(
+    //   "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
+    // );
+    await page.waitForSelector(".smallplanet");
+    let planets = await page.$$(".smallplanet");
+    let selectedPlanet = planets[Random(0, planets.length - 1)];
+    await timeout(1.5 * 1000);
+    let hasMoon = await selectedPlanet.evaluate(e =>
+      e.querySelector("a.moonlink")
     );
-    await page.click(
-      "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
-    );
+    if (hasMoon) {
+      console.log("tiene luna, se escogera actividad al azar...");
+      let randomNumber = Random(0, 1);
+      console.log("numero aleatorio: ", randomNumber);
+      if (randomNumber === 0)
+        await selectedPlanet.evaluate(e => e.querySelector("a").click());
+      else
+        await selectedPlanet.evaluate(e =>
+          e.querySelector("a.moonlink").click()
+        );
+    } else {
+      console.log("no tiene luna, se cliqueara un planeta...");
+      await selectedPlanet.evaluate(e => e.querySelector("a").click());
+    }
     // await this.navigationPromise;
   }
 

@@ -103,6 +103,7 @@ BotModel.find().exec((err, payload) => {
     ) {
       await bot.begin();
       await bot.login(element.ogameEmail, element.ogamePassword);
+
       beginActions(bot);
       //daily rutine
     }

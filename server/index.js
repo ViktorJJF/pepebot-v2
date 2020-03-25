@@ -106,7 +106,7 @@ BotModel.find().exec((err, payload) => {
       //daily rutine
     }
   });
-  beginDailyFleetSave(bots.bots);
+  // beginDailyFleetSave(bots.bots);
   // seed.actions();
 });
 

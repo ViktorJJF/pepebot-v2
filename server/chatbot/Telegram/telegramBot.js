@@ -197,9 +197,9 @@ async function handleDialogFlowAction(
         console.log("informacion de planetas: ", playerInfo);
         let planets = [];
         playerInfo.planets.forEach(planet => {
-          if (planet.planetType === "moon") planets.push("" + planet.coords);
+          if (planet.planetType === "planet") planets.push("" + planet.coords);
         });
-        sendQuickReply(sender, "Selecciona coordenadas:", planets);
+        sendQuickReply(sender, "Escribe alguna de estas coordenadas", planets);
       }
 
       break;

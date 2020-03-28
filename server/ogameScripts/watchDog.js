@@ -1,5 +1,6 @@
 const { Random, timeout, msToTime } = require("../utils/utils");
 const formatISO9075 = require("date-fns/formatISO9075");
+const callMeBot = require("../services/callMeBot");
 
 async function watchDog(bot, page) {
   // await timeout(1 * 60 * 1000);
@@ -24,6 +25,7 @@ async function start(page, bot, botTelegram) {
     let attacked = await bot.watchDog(page);
     console.log(attacked);
     if (attacked) {
+      callMeBot("Te estan atacando llama"); //make telegram phonecall
       var ogameUsername = await bot.getOgameUsername(page);
       await botTelegram.sendTextMessage(
         bot.telegramId, //bot.telegramGroupId

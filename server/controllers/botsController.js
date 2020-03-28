@@ -229,13 +229,11 @@ const actions = async (req, res) => {
     case "watchDog":
       console.log("ejecutando watchDog");
       let milliseconds = req.body.payload.milliseconds;
-      var actionId;
       if (!(await bot.hasAction("watchDog"))) {
-        actionId = await bot.addAction("watchDog");
+        await bot.addAction("watchDog");
         watchDog(bot);
       }
-      res.json({ ok: true, msg: "Empezando watchdog...", actionId });
-      console.log("ahora las acciones del bot son: ", bot.actions);
+      return res.json({ ok: true, msg: "Empezando watchdog..." });
       break;
     case "expeditions":
       console.log("ejecutando expediciones");
@@ -252,7 +250,11 @@ const actions = async (req, res) => {
         { id: 1, qty: 5 },
         { id: 9, qty: 10 }
       ];
-      res.json({ ok: true, msg: "Empezando a hacer expediciones", actionId });
+      return res.json({
+        ok: true,
+        msg: "Empezando a hacer expediciones",
+        actionId
+      });
       break;
     default:
       break;

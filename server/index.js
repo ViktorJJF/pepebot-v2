@@ -91,13 +91,12 @@ BotModel.find().exec((err, payload) => {
     console.log(err);
   }
   payload.forEach(async element => {
-    console.log(element);
     let bot = new Bot();
 
     bot.initialize(element);
     bots.addBot(bot);
     if (
-      bot.ogameEmail == "vj.jimenez96@gmail.com" ||
+      bot.ogameEmail == "cs.nma18@gmail.com" ||
       config.environment !== "dev"
     ) {
       await bot.begin();

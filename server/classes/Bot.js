@@ -71,23 +71,11 @@ module.exports = class Bot {
         ]
       });
     }
-
-    this.page = await this.browser.newPage();
-    this.page.setDefaultTimeout(80000);
-    // await this.page._client.send("Emulation.clearDeviceMetricsOverride");
-    // PuppeteerBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
-    //   blocker.enableBlockingInPage(this.page);
-    // });
-    // this.page.on("console", consoleObj => console.log(consoleObj.text())); //enable console.log inside evaluate function
-    this.navigationPromise = this.page.waitForNavigation();
-
-    await this.page.goto(this.LOGIN_URL);
-
     console.log("se termino el inicio");
   }
   async login(ogameEmail, ogamePassword, page) {
     try {
-      var page = page || this.page;
+      var page = await this.page.goto(this.LOGIN_URL);
       console.log(`Empezando Logeo...`);
       //closing add
       await this.closeAds(page);
@@ -811,7 +799,7 @@ module.exports = class Bot {
     return playerInfo;
   }
   async viejoProfeta(page) {
-    function updateMine(type) {
+    async function updateMine(type) {
       await page.waitForSelector('li.deuteriumSynthesizer>span>button.upgrade');
       switch (type) {
         case "metal":

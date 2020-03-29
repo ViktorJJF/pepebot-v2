@@ -15,8 +15,7 @@ class Fleet {
     this.duration = null; //1h 2h 1h:30min 40min etc
     this.allResources = null;
     this.allShips = null;
-    this.ships = [
-      {
+    this.ships = [{
         id: "202",
         name: "Nave pequeña de carga",
         type: "transporterSmall",
@@ -172,35 +171,35 @@ class Fleet {
         //get max expeditions
         var expMax = parseInt(
           document
-            .querySelector("#slots>.fleft:nth-child(2)")
-            .innerText.match(/([^\/]+$)/)[0]
+          .querySelector("#slots>.fleft:nth-child(2)")
+          .innerText.match(/([^\/]+$)/)[0]
         );
         var expInUse = parseInt(
           document
-            .querySelector("#slots>.fleft:nth-child(2)")
-            .innerText.match(/[0-9]/)[0]
+          .querySelector("#slots>.fleft:nth-child(2)")
+          .innerText.match(/[0-9]/)[0]
         );
         var freeExpSlots = expMax - expInUse;
         console.log("las expediciones restantes son: ", freeExpSlots);
         var naveGrandeDeCargaTotal = parseInt(
           document
-            .querySelector("span.transporterLarge>span")
-            .getAttribute("data-value")
+          .querySelector("span.transporterLarge>span")
+          .getAttribute("data-value")
         );
         var cazadorLigeroTotal = parseInt(
           document
-            .querySelector("span.fighterLight>span")
-            .getAttribute("data-value")
+          .querySelector("span.fighterLight>span")
+          .getAttribute("data-value")
         );
         var navePequenaDeCargaTotal = parseInt(
           document
-            .querySelector("span.transporterSmall>span")
-            .getAttribute("data-value")
+          .querySelector("span.transporterSmall>span")
+          .getAttribute("data-value")
         );
         var sondaTotal = parseInt(
           document
-            .querySelector("span.espionageProbe>span")
-            .getAttribute("data-value")
+          .querySelector("span.espionageProbe>span")
+          .getAttribute("data-value")
         );
         var battleShips = document.querySelectorAll(
           "#battleships>ul#military>li"
@@ -224,17 +223,23 @@ class Fleet {
           //       ? 3000
           //       : parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
           // },
-          {
-            id: "202",
-            qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
-          },
+          // {
+          //   id: "202",
+          //   qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
+          // },
           {
             id: "203",
             qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots)
           },
-          { id: "210", qty: 1 },
+          {
+            id: "210",
+            qty: 1
+          },
           // { id: "215", qty: 1 },
-          { id: "219", qty: 1 },
+          {
+            id: "219",
+            qty: 1
+          },
           {
             id: lastBattleShipId,
             qty: 1
@@ -290,7 +295,9 @@ class Fleet {
     // );
     let [galaxy, system, planet] = this.destination.split(":");
     // await timeout(7500);
-    await this.page.waitForSelector("tbody #galaxy", { visible: true });
+    await this.page.waitForSelector("tbody #galaxy", {
+      visible: true
+    });
     await this.page.click("input#galaxy");
     await this.page.type("input#galaxy", galaxy);
     await this.page.click("input#system");

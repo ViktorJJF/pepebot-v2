@@ -3,7 +3,6 @@ const router = express.Router();
 const bots = require("../../classes/Bots.js");
 const Bot = require("../../classes/Bot");
 const telegramBot = require("../../chatbot/Telegram/telegramBot");
-const { beginState } = require("../../middlewares/botLogin.js");
 const ogameApi = require("../../services/ogameApi");
 
 //Controllers
@@ -30,8 +29,8 @@ router.delete("/bots/:id", botsController.deletes);
 router.post("/bots/test", botsController.testOgameLogin);
 router.get("/bots/:id/begin", botsController.begin);
 router.get("/bots/:id/stop", botsController.stop);
-router.get("/bots/:id/actions", beginState, botsController.listActions);
-router.post("/bots/:id/actions", beginState, botsController.actions);
+router.get("/bots/:id/actions", botsController.listActions);
+router.post("/bots/:id/actions", botsController.actions);
 router.get("/bots/:id/stop-action/:actionid", botsController.stopAction);
 router.post("/bots/telegram", botsController.testTelegram);
 

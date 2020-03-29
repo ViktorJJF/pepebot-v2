@@ -43,7 +43,7 @@ class Fleet {
       {
         id: "206",
         name: "Crucero",
-        type: "cruicer",
+        type: "cruiser",
         qty: 0
       },
       {
@@ -140,21 +140,12 @@ class Fleet {
     console.log("yendo al origen");
     await this.page.waitForSelector("span.planet-koords");
     await this.page.evaluate(origin => {
-      var planetCoords = document.querySelectorAll(".smallplanet.smaller");
+      var planetCoords = document.querySelectorAll(".smallplanet");
       for (let i = 0; i < planetCoords.length; i++) {
-        console.log(
-          "la coordenada es: ",
-          planetCoords[i].querySelector("span.planet-koords").innerText
-        );
         var planetCoordsText = planetCoords[i]
           .querySelector("span.planet-koords")
           .innerText.replace(/[\[\]']+/g, "");
-        console.log("ahora planet coords es: ", planetCoords[i]);
         if (planetCoordsText == origin) {
-          console.log(
-            "se clickeara : ",
-            planetCoords[i].querySelector("span.planet-koords").innerText
-          );
           if (planetCoords[i].querySelector(".moonlink"))
             planetCoords[i].querySelector(".moonlink").click();
           else planetCoords[i].querySelector("span.planet-koords").click();
@@ -226,23 +217,23 @@ class Fleet {
           }
         }
         return [
-          {
-            id: "204",
-            qty:
-              parseInt((cazadorLigeroTotal * 1) / freeExpSlots) > 3000
-                ? 3000
-                : parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
-          },
           // {
-          //   id: "202",
-          //   qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
+          //   id: "204",
+          //   qty:
+          //     parseInt((cazadorLigeroTotal * 1) / freeExpSlots) > 3000
+          //       ? 3000
+          //       : parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
           // },
           {
+            id: "202",
+            qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
+          },
+          {
             id: "203",
-            qty: 800
+            qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots)
           },
           { id: "210", qty: 1 },
-          { id: "215", qty: 1 },
+          // { id: "215", qty: 1 },
           { id: "219", qty: 1 },
           {
             id: lastBattleShipId,
@@ -252,6 +243,7 @@ class Fleet {
       });
       ships.forEach(localShip => {
         let shipIndex = this.ships.findIndex(ship => ship.id == localShip.id);
+        console.log("el indice es: ", shipIndex);
         if (this.ships[shipIndex].id !== "214")
           this.ships[shipIndex].qty = localShip.qty;
       });

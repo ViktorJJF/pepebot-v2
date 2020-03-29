@@ -1,5 +1,4 @@
 //new relic
-require("newrelic");
 
 const config = require("./config");
 const seed = require("../seed");
@@ -17,6 +16,7 @@ const mongoose = require("mongoose");
 const beginDailyFleetSave = require("./ogameScripts/dailyFleetSave");
 const beginActions = require("./ogameScripts/beginActions");
 
+const puppeteer = require("puppeteer");
 //Middleware
 
 // parse application/x-www-form-urlencoded
@@ -86,29 +86,50 @@ app.use("", require("./routes/api/telegram.js"));
 const BotModel = require("./models/Bots.js");
 const Bot = require("./classes/Bot");
 const bots = require("./classes/Bots.js");
-BotModel.find().exec((err, payload) => {
+BotModel.find().exec(async (err, payload) => {
   if (err) {
     console.log(err);
   }
+  let browser = await beginBrowser();
   payload.forEach(async element => {
-    console.log(element);
     let bot = new Bot();
 
     bot.initialize(element);
     bots.addBot(bot);
     if (
-      bot.ogameEmail == "vj.jimenez96@gmail.com" ||
+      bot.ogameEmail == "cs.nma18@gmail.com" ||
       config.environment !== "dev"
     ) {
-      await bot.begin();
+      console.log("empezando login");
+      await bot.begin(browser);
       await bot.login(element.ogameEmail, element.ogamePassword);
+      console.log("se termino el login");
       beginActions(bot);
       //daily rutine
     }
   });
-  beginDailyFleetSave(bots.bots);
+  // beginDailyFleetSave(bots.bots);
   // seed.actions();
 });
+
+async function beginBrowser() {
+  let browser;
+  if (config.environment === "dev") {
+    browser = await puppeteer.launch({
+      headless: false
+    });
+  } else {
+    browser = await puppeteer.launch({
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage"
+      ]
+    });
+  }
+  console.log("se termino el inicio");
+  return browser;
+}
 
 const routes = require("./routes/api/api.js");
 app.use("/api", routes);

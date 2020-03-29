@@ -66,12 +66,10 @@ const create = async (req, res) => {
     ogameEmail: body.ogameEmail,
     ogamePassword: body.ogamePassword,
     state: body.state,
-    userId: req.user._id,
+    userId: req.user ? user._id : body.userId,
     proxy: body.proxy,
     actions
   });
-
-  console.log("el user id es: ", req.user._id);
 
   console.log("se creara el bot con la siguiente info:", bot);
 
@@ -106,17 +104,7 @@ const update = async (req, res) => {
   let body = req.body;
   Bot.findByIdAndUpdate(
     id,
-    {
-      server: body.server,
-      language: body.language,
-      telegramId: body.telegramId,
-      telegramGroupId: body.telegramGroupId,
-      ogameEmail: body.ogameEmail,
-      ogamePassword: body.ogamePassword,
-      state: body.state,
-      userId: req.user._id,
-      proxy: body.proxy
-    },
+    req.body,
     {
       new: true
     },
@@ -241,13 +229,11 @@ const actions = async (req, res) => {
     case "watchDog":
       console.log("ejecutando watchDog");
       let milliseconds = req.body.payload.milliseconds;
-      var actionId;
       if (!(await bot.hasAction("watchDog"))) {
-        actionId = await bot.addAction("watchDog");
+        await bot.addAction("watchDog");
         watchDog(bot);
       }
-      res.json({ ok: true, msg: "Empezando watchdog...", actionId });
-      console.log("ahora las acciones del bot son: ", bot.actions);
+      return res.json({ ok: true, msg: "Empezando watchdog..." });
       break;
     case "expeditions":
       console.log("ejecutando expediciones");
@@ -264,7 +250,11 @@ const actions = async (req, res) => {
         { id: 1, qty: 5 },
         { id: 9, qty: 10 }
       ];
-      res.json({ ok: true, msg: "Empezando a hacer expediciones", actionId });
+      return res.json({
+        ok: true,
+        msg: "Empezando a hacer expediciones",
+        actionId
+      });
       break;
     default:
       break;

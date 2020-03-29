@@ -1,4 +1,3 @@
-const puppeteer = require("puppeteer");
 const formatISO9075 = require("date-fns/formatISO9075");
 const BotModel = require("../models/Bots.js");
 const {
@@ -55,27 +54,14 @@ module.exports = class Bot {
     // this.actions = botOjbect.actions;
     this.playerId = botOjbect.playerId;
   }
-  async begin(proxy) {
+  async begin(globalBrowser) {
     console.log("iniciando bot...");
-    var proxy = proxy || this.proxy;
-    if (config.environment === "dev") {
-      this.browser = await puppeteer.launch({
-        headless: false
-      });
-    } else {
-      this.browser = await puppeteer.launch({
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage"
-        ]
-      });
-    }
-    console.log("se termino el inicio");
+    this.browser = await globalBrowser.createIncognitoBrowserContext();
   }
   async login(ogameEmail, ogamePassword, page) {
     try {
-      var page = await this.page.goto(this.LOGIN_URL);
+
+      var page = await this.createNewPage(this.LOGIN_URL);
       console.log(`Empezando Logeo...`);
       //closing add
       await this.closeAds(page);
@@ -143,11 +129,11 @@ module.exports = class Bot {
     }
   }
 
-  async createNewPage() {
-    let mainMenuUrl =
-      "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
+  async createNewPage(url) {
+    let mainMenuUrl = url ||
+      "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
     let page = await this.browser.newPage();
-    page.setDefaultTimeout(30 * 1000);
+    page.setDefaultTimeout(20 * 1000);
     await page.goto(mainMenuUrl, {
       waitUntil: "networkidle0",
       timeout: 0
@@ -457,7 +443,7 @@ module.exports = class Bot {
       await page.waitForResponse(response => {
         return (
           response.url() ===
-          "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
+          "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
           response.status() === 200
         );
       });
@@ -515,7 +501,7 @@ module.exports = class Bot {
       await this.page.waitForResponse(response => {
         return (
           response.url() ===
-          "https://s167-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
+          "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
           response.status() === 200
         );
       });
@@ -564,7 +550,7 @@ module.exports = class Bot {
 
   async closeAds(page) {
     console.log("entrando a closeAds");
-    var page = page || this.page;
+    var page = page;
     // try {
     //   await this.page.waitForResponse(
     //     response => {
@@ -589,8 +575,8 @@ module.exports = class Bot {
     console.log("se encontro este add: ", adState);
     if (adState) {
       console.log("cerrando add en goToPage");
-      await this.page.waitForSelector(".openX_int_closeButton > a");
-      await this.page.click(".openX_int_closeButton > a");
+      await page.waitForSelector(".openX_int_closeButton > a");
+      await page.click(".openX_int_closeButton > a");
     }
     return 0;
   }
@@ -800,16 +786,16 @@ module.exports = class Bot {
   }
   async viejoProfeta(page) {
     async function updateMine(type) {
-      await page.waitForSelector('li.deuteriumSynthesizer>span>button.upgrade');
+      await page.waitForSelector("li.deuteriumSynthesizer>span>button.upgrade");
       switch (type) {
         case "metal":
-          await page.click('li.metalMine>span>button.upgrade');
+          await page.click("li.metalMine>span>button.upgrade");
           break;
         case "crystal":
-          await page.click('li.crystalMine>span>button.upgrade');
+          await page.click("li.crystalMine>span>button.upgrade");
           break;
         case "deuterim":
-          await page.click('li.deuteriumSynthesizer>span>button.upgrade');
+          await page.click("li.deuteriumSynthesizer>span>button.upgrade");
           break;
 
         default:
@@ -818,10 +804,6 @@ module.exports = class Bot {
     }
   }
   async stop() {
-    this.actions.forEach(action => {
-      clearInterval(action.action);
-    });
-    this.actions = [];
     await this.browser.close();
   }
   async hasAction(actionType) {
@@ -889,6 +871,7 @@ module.exports = class Bot {
       let actionToUpdate = botModel.actions.find(
         action => action.type === type
       );
+      if (actionToUpdate.active == false) return false;
       actionToUpdate.active = false;
       await botModel.save();
       return true;

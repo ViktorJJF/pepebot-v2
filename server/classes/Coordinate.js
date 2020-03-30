@@ -11,6 +11,3 @@ class Coordinate {
 }
 
 module.exports = Coordinate;
-
-let coords = new Coordinate(5, 24, 14);
-console.log(coords.generateCoords());

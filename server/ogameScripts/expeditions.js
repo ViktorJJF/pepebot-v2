@@ -10,7 +10,11 @@
 const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
 
-const { Random, timeout, msToTime } = require("../utils/utils");
+const {
+  Random,
+  timeout,
+  msToTime
+} = require("../utils/utils");
 
 async function beginExpeditions(
   origin,
@@ -21,7 +25,8 @@ async function beginExpeditions(
 ) {
   while (await bot.hasAction("expeditions")) {
     let minSecs = await start(bot, origin, ships, speed);
-    if (minSecs) await timeout(minSecs + 0.1 * 6 * 1000); // Sleep until one of the expedition fleet come back
+    if (minSecs) await timeout(minSecs + 0.1 * 6 * 1000);
+    // Sleep until one of the expedition fleet come back
     console.log("empezando nueva vuelta...");
   }
   return;
@@ -32,7 +37,10 @@ async function start(bot, origin, ships, speed) {
   try {
     console.log("empezando nueva expedicion");
     var page = await bot.createNewPage();
-    let { fleets, slots } = await bot.getFleets(page);
+    let {
+      fleets,
+      slots
+    } = await bot.getFleets(page);
     let bigNum = 999999999;
     let minSecs = bigNum;
     fleets.forEach(fleet => {
@@ -68,18 +76,16 @@ async function start(bot, origin, ships, speed) {
     }
     // If we didn't found any expedition fleet and didn't create any, let's wait 5min
     if (minSecs == bigNum) {
-      minSecs = 5 * 60;
+      minSecs = 6 * 1000;
     }
     await botTelegram.sendTextMessage(
       bot.telegramId,
       `<b>${ogameUsername}</b> acabo de completar todas las expediciones ... esperare a que la siguiente expedición vuelva dentro de ${msToTime(
-        minSecs + 0.1 * 60 * 1000
+        minSecs
       )} `
     );
-    console.log(
-      `me activare dentro de: <b>${msToTime(minSecs + 5 * 60 * 1000)}</b>`
-    );
     await bot.closePage(page);
+    bot.closeSession(); //closing session
     return minSecs;
   } catch (error) {
     console.log("se dio un error en expeditions..probablemente el logeo");

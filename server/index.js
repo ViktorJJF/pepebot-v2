@@ -16,7 +16,7 @@ const mongoose = require("mongoose");
 const beginDailyFleetSave = require("./ogameScripts/dailyFleetSave");
 const beginActions = require("./ogameScripts/beginActions");
 
-const puppeteer = require("puppeteer");
+const chronium = require("./classes/Chronium");
 //Middleware
 
 // parse application/x-www-form-urlencoded
@@ -86,11 +86,12 @@ app.use("", require("./routes/api/telegram.js"));
 const BotModel = require("./models/Bots.js");
 const Bot = require("./classes/Bot");
 const bots = require("./classes/Bots.js");
+
 BotModel.find().exec(async (err, payload) => {
   if (err) {
     console.log(err);
   }
-  let browser = await beginBrowser();
+  await chronium.begin(); //initializing browser
   payload.forEach(async element => {
     let bot = new Bot();
 
@@ -101,7 +102,6 @@ BotModel.find().exec(async (err, payload) => {
       config.environment !== "dev"
     ) {
       console.log("empezando login");
-      await bot.begin(browser);
       await bot.login(element.ogameEmail, element.ogamePassword);
       console.log("se termino el login");
       beginActions(bot);
@@ -111,25 +111,6 @@ BotModel.find().exec(async (err, payload) => {
   // beginDailyFleetSave(bots.bots);
   // seed.actions();
 });
-
-async function beginBrowser() {
-  let browser;
-  if (config.environment === "dev") {
-    browser = await puppeteer.launch({
-      headless: false
-    });
-  } else {
-    browser = await puppeteer.launch({
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage"
-      ]
-    });
-  }
-  console.log("se termino el inicio");
-  return browser;
-}
 
 const routes = require("./routes/api/api.js");
 app.use("/api", routes);

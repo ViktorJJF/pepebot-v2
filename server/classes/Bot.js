@@ -6,6 +6,7 @@ const {
 } = require("../utils/utils.js");
 const config = require("../config");
 const uuidv1 = require("uuid/v1");
+const chronium = require("../classes/Chronium");
 
 module.exports = class Bot {
   constructor() {
@@ -54,13 +55,18 @@ module.exports = class Bot {
     // this.actions = botOjbect.actions;
     this.playerId = botOjbect.playerId;
   }
-  async begin(globalBrowser) {
+  async begin() {
     console.log("iniciando bot...");
-    this.browser = await globalBrowser.createIncognitoBrowserContext();
+    let browser = chronium.getBrowser();
+    this.browser = await browser.createIncognitoBrowserContext();
+  }
+  async closeSession() {
+    await this.browser.close();
+    this.browser = null;
   }
   async login(ogameEmail, ogamePassword, page) {
     try {
-
+      if (!this.browser) await this.begin();
       var page = await this.createNewPage(this.LOGIN_URL);
       console.log(`Empezando Logeo...`);
       //closing add
@@ -130,6 +136,7 @@ module.exports = class Bot {
   }
 
   async createNewPage(url) {
+    if (!this.browser) this.begin();
     let mainMenuUrl = url ||
       "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
     let page = await this.browser.newPage();
@@ -142,7 +149,7 @@ module.exports = class Bot {
   }
 
   async checkLoginStatus(page) {
-    var page = page || this.page;
+    var page = page || this.createNewPage();
     var currentPage = null;
     currentPage = await page.evaluate(() => {
       var selector;

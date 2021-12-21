@@ -93,7 +93,6 @@ BotModel.find().exec(async (err, payload) => {
     console.log(err);
   }
   await chronium.begin(); //initializing browser
-  console.log("🚀 Aqui *** -> payload", payload);
   payload.forEach(async (element) => {
     let bot = new Bot();
 

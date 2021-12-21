@@ -13,7 +13,7 @@ class Chronium {
       });
     } else {
       browser = await puppeteer.launch({
-        executablePath: "/usr/bin/firefox",
+        // executablePath: "/usr/bin/firefox",
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",

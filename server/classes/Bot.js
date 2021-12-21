@@ -113,10 +113,13 @@ module.exports = class Bot {
       // await page.evaluate(() => {
       //   document.querySelector("button[type='submit']").click();
       // });
-
+      await page.screenshot({
+        path: config.BASE_PATH + "/public/screen3.png",
+        fullPage: true,
+      });
       // await page.click("#loginTab > #loginForm > p > .button-primary > span");
       await page.waitForSelector("div > #joinGame > a > .button > span", {
-        timeout: 3000,
+        timeout: 15000,
       });
       await page.evaluate(() => {
         document.querySelector("div > #joinGame > a > .button > span").click();

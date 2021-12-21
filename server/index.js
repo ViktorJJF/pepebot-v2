@@ -105,7 +105,8 @@ BotModel.find().exec(async (err, payload) => {
       console.log("empezando login");
       let login = await bot.login(element.ogameEmail, element.ogamePassword);
       console.log("🚀 Aqui *** -> login", login);
-      console.log("se termino el login");
+      console.log("ffffffff");
+      console.log("se termino el loginnnn");
       if (login) {
         beginActions(bot);
       }

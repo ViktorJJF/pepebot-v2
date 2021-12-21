@@ -65,7 +65,7 @@ module.exports = class Bot {
     try {
       if (!this.browser) await this.begin();
       var page = await this.createNewPage(this.LOGIN_URL);
-      console.log(`Empezando Logeo...`);
+      console.log(`Empezando Logeooo...`);
       //closing add
       await this.closeAds(page);
       console.log("se termino de pasar por closeAds");

@@ -22,7 +22,7 @@ const chronium = require("./classes/Chronium");
 // parse application/x-www-form-urlencoded
 app.use(
   bodyParser.urlencoded({
-    extended: false
+    extended: false,
   })
 );
 
@@ -31,7 +31,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(
   cors({
-    credentials: true
+    credentials: true,
   })
 );
 
@@ -44,8 +44,9 @@ app.use(
 //     // cookie: { secure: true }
 // }))
 mongoose.connect(
-  config.dbString, {
-    useNewUrlParser: true
+  config.dbString,
+  {
+    useNewUrlParser: true,
   },
   (err, res) => {
     if (err) throw err;
@@ -57,14 +58,14 @@ app.use(
   session({
     secret: "ijegoierjgoiemrjgoiem",
     store: new MongoStore({
-      mongooseConnection: mongoose.connection
+      mongooseConnection: mongoose.connection,
     }),
     resave: false,
     saveUninitialized: true,
     vcookie: {
       httpOnly: true,
-      maxAge: 2419200000
-    } // configure when sessions expires
+      maxAge: 2419200000,
+    }, // configure when sessions expires
   })
 );
 app.use(passport.initialize());
@@ -92,7 +93,8 @@ BotModel.find().exec(async (err, payload) => {
     console.log(err);
   }
   await chronium.begin(); //initializing browser
-  payload.forEach(async element => {
+  console.log("🚀 Aqui *** -> payload", payload);
+  payload.forEach(async (element) => {
     let bot = new Bot();
 
     bot.initialize(element);

@@ -13,13 +13,7 @@ class Chronium {
       });
     } else {
       browser = await puppeteer.launch({
-        args: [
-          "--no-sandbox",
-          "--single-process",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-          "--no-zygote",
-        ],
+        defaultViewport: { width: 1920, height: 1080 },
       });
     }
     console.log("se termino el inicio");

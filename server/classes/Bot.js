@@ -69,12 +69,8 @@ module.exports = class Bot {
       //closing add
       await this.closeAds(page);
       console.log("se termino de pasar por closeAds");
-      await page.waitForSelector(
-        "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
-      );
-      await page.evaluate(() => {
-        document.querySelector(".tabsList>li:nth-child(1)").click();
-      });
+      await page.waitForSelector("#loginRegisterTabs .tabsList li");
+      await page.click("#loginRegisterTabs .tabsList li");
       // await page.click(
       //   "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
       // );

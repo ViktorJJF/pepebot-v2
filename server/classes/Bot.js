@@ -660,7 +660,7 @@ module.exports = class Bot {
     // );
     console.log("tomando foto...");
     await page.screenshot({
-      path: "../public/screen.png",
+      path: config.BASE_PATH + "/public/screen.png",
       fullPage: true,
     });
     await page.waitForSelector(".smallplanet");

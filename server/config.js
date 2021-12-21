@@ -25,4 +25,5 @@ module.exports = {
   expiresIn: "24h",
   telegramId: "624818317",
   universe: "s208",
+  BASE_PATH: __dirname,
 };

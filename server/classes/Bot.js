@@ -658,6 +658,7 @@ module.exports = class Bot {
     // await page.click(
     //   "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
     // );
+    await timeout(5 * 1000);
     await page.waitForSelector(".smallplanet");
     let planets = await page.$$(".smallplanet");
     let selectedPlanet = planets[Random(0, planets.length - 1)];

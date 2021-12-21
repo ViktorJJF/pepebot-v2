@@ -15,8 +15,10 @@ class Chronium {
       browser = await puppeteer.launch({
         args: [
           "--no-sandbox",
-          "--disable-setuid-sandbox",
+          "--single-process",
           "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--no-zygote",
         ],
       });
     }

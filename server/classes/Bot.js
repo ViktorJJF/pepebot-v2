@@ -107,6 +107,7 @@ module.exports = class Bot {
       await page.click(
         "#loginRegisterTabs > #loginTab > #loginForm > p > .button-primary"
       );
+      console.log("hemos dado click...");
       // await page.evaluate(() => {
       //   document.querySelector("button[type='submit']").click();
       // });
@@ -137,6 +138,7 @@ module.exports = class Bot {
       console.log("Logeo finalizado exitosamente");
       return true;
     } catch (error) {
+      console.log("aaaaa", error);
       return false;
     }
   }

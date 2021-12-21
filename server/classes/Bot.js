@@ -113,6 +113,9 @@ module.exports = class Bot {
           )
           .click();
       });
+      await page.click(
+        "#loginForm > p > button.button.button-primary.button-lg"
+      );
       console.log("hemos dado click...");
       // await page.evaluate(() => {
       //   document.querySelector("button[type='submit']").click();

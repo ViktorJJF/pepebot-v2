@@ -71,6 +71,10 @@ module.exports = class Bot {
       console.log("se termino de pasar por closeAds");
       await page.waitForSelector("#loginRegisterTabs .tabsList li");
       await page.click("#loginRegisterTabs .tabsList li");
+      await page.screenshot({
+        path: config.BASE_PATH + "/public/screen1.png",
+        fullPage: true,
+      });
       // await page.click(
       //   "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
       // );
@@ -93,6 +97,10 @@ module.exports = class Bot {
           delay: this.typingDelay,
         }
       );
+      await page.screenshot({
+        path: config.BASE_PATH + "/public/screen2.png",
+        fullPage: true,
+      });
       await page.waitForSelector(
         "#loginTab > #loginForm > p > .button-primary > span"
       );

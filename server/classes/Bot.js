@@ -102,11 +102,14 @@ module.exports = class Bot {
         fullPage: true,
       });
       await page.waitForSelector(
-        "#loginTab > #loginForm > p > .button-primary > span"
+        "#loginRegisterTabs > #loginTab > #loginForm > p > .button-primary"
       );
-      await page.evaluate(() => {
-        document.querySelector("button[type='submit']").click();
-      });
+      await page.click(
+        "#loginRegisterTabs > #loginTab > #loginForm > p > .button-primary"
+      );
+      // await page.evaluate(() => {
+      //   document.querySelector("button[type='submit']").click();
+      // });
 
       // await page.click("#loginTab > #loginForm > p > .button-primary > span");
       await page.waitForSelector("div > #joinGame > a > .button > span", {

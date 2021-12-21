@@ -103,9 +103,12 @@ BotModel.find().exec(async (err, payload) => {
       config.environment !== "dev"
     ) {
       console.log("empezando login");
-      await bot.login(element.ogameEmail, element.ogamePassword);
+      let login = await bot.login(element.ogameEmail, element.ogamePassword);
+      console.log("🚀 Aqui *** -> login", login);
       console.log("se termino el login");
-      beginActions(bot);
+      if (login) {
+        beginActions(bot);
+      }
       //daily rutine
     }
   });

@@ -101,9 +101,11 @@ module.exports = class Bot {
         path: config.BASE_PATH + "/public/screen2.png",
         fullPage: true,
       });
+      console.log("aaaa");
       await page.waitForSelector(
         "#loginRegisterTabs > #loginTab > #loginForm > p > .button-primary"
       );
+      console.log("bbbb");
       await page.click(
         "#loginRegisterTabs > #loginTab > #loginForm > p > .button-primary"
       );

@@ -10,11 +10,7 @@
 const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
 
-const {
-  Random,
-  timeout,
-  msToTime
-} = require("../utils/utils");
+const { Random, timeout, msToTime } = require("../utils/utils");
 
 async function beginExpeditions(
   origin,
@@ -37,13 +33,12 @@ async function start(bot, origin, ships, speed) {
   try {
     console.log("empezando nueva expedicion");
     var page = await bot.createNewPage();
-    let {
-      fleets,
-      slots
-    } = await bot.getFleets(page);
+    let { fleets, slots } = await bot.getFleets(page);
+    console.log("🚀 Aqui *** -> slots", slots);
+    console.log("🚀 Aqui *** -> fleets", fleets);
     let bigNum = 999999999;
     let minSecs = bigNum;
-    fleets.forEach(fleet => {
+    fleets.forEach((fleet) => {
       if (fleet.missionType == "15" && fleet.return == "true") {
         minSecs = Math.min(fleet.arrivalTime * 1000 - Date.now(), minSecs);
       }
@@ -60,7 +55,7 @@ async function start(bot, origin, ships, speed) {
     while (expeditionsPossible > 0 && (await bot.hasAction("expeditions"))) {
       let shipsToSend = await sendExpedition(origin, ships, page, speed);
       let msg = `<b>Expedición nro ${expeditionNumber}\n</b>`;
-      shipsToSend.forEach(shipToSend => {
+      shipsToSend.forEach((shipToSend) => {
         msg += "✔️<b>" + shipToSend.name + ":</b> " + shipToSend.qty + "\n";
       });
       console.log("mandando expedicion...");

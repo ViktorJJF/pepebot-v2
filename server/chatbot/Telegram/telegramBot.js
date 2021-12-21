@@ -9,21 +9,21 @@ const { timeout, timeTomiliseconds2 } = require("../../utils/utils.js");
 const config = require("../../config.js");
 const { format } = require("date-fns");
 
-process.on("uncaughtException", err => {
+process.on("uncaughtException", (err) => {
   console.log("un error probablemente en telegram: ", err);
 });
 
 let token;
 if (config.environment === "dev")
   token = "1107562973:AAGpbcw8rPs2lxllhdiA__kRIKDFYKX2XvA";
-else token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
+else token = "1107562973:AAGpbcw8rPs2lxllhdiA__kRIKDFYKX2XvA";
 // token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
 try {
   var api = new telegram({
     token,
     updates: {
-      enabled: true
-    }
+      enabled: true,
+    },
   });
 
   // api.setWebhook("https://48791559.ngrok.io/api/webhook");
@@ -39,27 +39,30 @@ try {
   // ]);
 
   // setPersistentMenu(["Expediciones", "Watchdog", "Scan", "Fleet Save"]);
-  api.sendMessage({
-    chat_id: -339549424,
-    text: "Opciones",
-    reply_markup: JSON.stringify({
-      keyboard: [
-        ["🚀 Expediciones", "🚀❌ Cancelar"],
-        ["🐶 Watchdog", "🐶❌ Cancelar"],
-        ["🔍 Scan", "💤 Fleet Save"]
-      ],
-      resize_keyboard: true
-    })
-  });
+  // api.sendMessage({
+  //   chat_id: -339549424,
+  //   text: "Opciones",
+  //   reply_markup: JSON.stringify({
+  //     keyboard: [
+  //       ["🚀 Expediciones", "🚀❌ Cancelar"],
+  //       ["🐶 Watchdog", "🐶❌ Cancelar"],
+  //       ["🔍 Scan", "💤 Fleet Save"],
+  //     ],
+  //     resize_keyboard: true,
+  //   }),
+  // });
   // console.log("enviando mensaje de telegram");
 
-  api.on("message", async message => {
+  api.on("message", async (message) => {
     let sender = message.from.id;
     let msg = message.text.replace("/", "");
     console.log("mensaje completo: ", message);
     console.log("se recibio el mensaj1e:", msg, ".");
     console.log("de ", sender);
     sendTypingOn(sender); //typing on
+    if (msg === "id") {
+      sendTextMessage(sender, `Tu id es ${sender}`);
+    }
     let result = await dialogflow.sendToDialogFlow(sender, msg);
     handleDialogFlowResponse(sender, result);
     // console.log("respuestas recibidas: ", responses);
@@ -123,10 +126,10 @@ async function handleDialogFlowAction(
       if (email && password) {
         axios
           .post("/api/login-bot", { email, password, user_id: sender })
-          .then(res => {
+          .then((res) => {
             console.log(res);
           })
-          .catch(err => {
+          .catch((err) => {
             console.error(err);
           });
       }
@@ -166,6 +169,7 @@ async function handleDialogFlowAction(
       );
       if (parameters.fields.cooords.stringValue) {
         var coords = parameters.fields.cooords.stringValue;
+        console.log("🚀 Aqui *** -> coords", coords);
       }
       if (coords) {
         if (!(await bot.hasAction("expeditions"))) {
@@ -175,7 +179,7 @@ async function handleDialogFlowAction(
           );
           let ships = [
             { id: 1, qty: 5 },
-            { id: 9, qty: 10 }
+            { id: 9, qty: 10 },
           ];
           // var coords = "9:999:9";
           await bot.addAction("expeditions", { coords: coords });
@@ -188,18 +192,18 @@ async function handleDialogFlowAction(
         }
       } else {
         handleMessages(messages, sender);
-        let playerId = bot.playerId;
-        console.log("el playerId es: ", playerId);
-        const res = await axios(
-          "https://pepehunter.herokuapp.com/api/players/" + playerId
-        );
-        let playerInfo = res.data.playerInfo;
-        console.log("informacion de planetas: ", playerInfo);
-        let planets = [];
-        playerInfo.planets.forEach(planet => {
-          if (planet.planetType === "planet") planets.push("" + planet.coords);
-        });
-        sendQuickReply(sender, "Escribe alguna de estas coordenadas", planets);
+        // let playerId = bot.playerId;
+        // console.log("el playerId es: ", playerId);
+        // const res = await axios(
+        //   "https://pepehunter.herokuapp.com/api/players/" + playerId
+        // );
+        // let playerInfo = res.data.playerInfo;
+        // console.log("informacion de planetas: ", playerInfo);
+        // let planets = [];
+        // playerInfo.planets.forEach((planet) => {
+        //   if (planet.planetType === "planet") planets.push("" + planet.coords);
+        // });
+        // sendQuickReply(sender, "Escribe alguna de estas coordenadas", planets);
       }
 
       break;
@@ -307,7 +311,7 @@ async function handleDialogFlowAction(
             if (!playerInfo.hasOwnProperty("planets")) {
               return sendTextMessage(sender, "Ese jugador no existe");
             }
-            playerInfo.planets.forEach(planet => {
+            playerInfo.planets.forEach((planet) => {
               if (planet.activities[0].lastActivity == "on") {
                 return 0;
               } else {
@@ -340,7 +344,7 @@ async function handleDialogFlowAction(
         sendTypingOn(sender);
         axios
           .get("https://pepehunter.herokuapp.com/api/scan?nickname=" + player)
-          .then(async res => {
+          .then(async (res) => {
             let playerInfo = res.data.playerInfo;
             if (!playerInfo.hasOwnProperty("planets"))
               return sendTextMessage(sender, "Ese jugador no existe");
@@ -404,7 +408,7 @@ async function handleDialogFlowAction(
               );
             }
           })
-          .catch(err => {
+          .catch((err) => {
             console.log("algo salio mal...");
             console.error(err);
           });
@@ -477,11 +481,11 @@ async function handleMessage(message, sender) {
       break;
     case "quickReplies": //quick replies
       let replies = [];
-      message.quickReplies.quickReplies.forEach(text => {
+      message.quickReplies.quickReplies.forEach((text) => {
         let reply = {
           content_type: "text",
           title: text,
-          payload: text
+          payload: text,
         };
         replies.push(reply);
       });
@@ -494,9 +498,9 @@ async function handleMessage(message, sender) {
       let desestructPayload = structProtoToJson(message.payload);
       var messageData = {
         recipient: {
-          id: sender
+          id: sender,
         },
-        message: desestructPayload.facebook
+        message: desestructPayload.facebook,
       };
       callSendAPI(messageData);
       break;
@@ -537,12 +541,12 @@ function handleQuickReply(senderID, quickReply, messageId) {
 
 async function sendTextMessage(recipientId, text) {
   console.log("llego este recipient: ", recipientId);
-  let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
+  // let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
   console.log("se enviara la respuesta: ", text);
   await api.sendMessage({
-    chat_id: config.environment === "dev" ? recipientId : bot.telegramGroupId,
+    chat_id: config.telegramId,
     text: text,
-    parse_mode: "html"
+    parse_mode: "html",
   });
 }
 
@@ -560,7 +564,7 @@ async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
       console.log("dentro de if ", idx);
       row.push({
         text: "🌘 " + reply,
-        switch_inline_query_current_chat: "/" + reply
+        switch_inline_query_current_chat: "/" + reply,
       });
       i++;
     }
@@ -577,24 +581,24 @@ async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
     text: text,
     parse_mode: "html",
     reply_markup: JSON.stringify({
-      inline_keyboard
-    })
+      inline_keyboard,
+    }),
   });
 }
 
 function sendImageMessage(recipientId, imageUrl) {
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientId,
     },
     message: {
       attachment: {
         type: "image",
         payload: {
-          url: imageUrl
-        }
-      }
-    }
+          url: imageUrl,
+        },
+      },
+    },
   };
 
   callSendAPI(messageData);
@@ -603,16 +607,16 @@ function sendImageMessage(recipientId, imageUrl) {
 function sendGifMessage(recipientId) {
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientId,
     },
     message: {
       attachment: {
         type: "image",
         payload: {
-          url: config.SERVER_URL + "/assets/instagram_logo.gif"
-        }
-      }
-    }
+          url: config.SERVER_URL + "/assets/instagram_logo.gif",
+        },
+      },
+    },
   };
 
   callSendAPI(messageData);
@@ -620,16 +624,16 @@ function sendGifMessage(recipientId) {
 function sendAudioMessage(recipientId) {
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientId,
     },
     message: {
       attachment: {
         type: "audio",
         payload: {
-          url: config.SERVER_URL + "/assets/sample.mp3"
-        }
-      }
-    }
+          url: config.SERVER_URL + "/assets/sample.mp3",
+        },
+      },
+    },
   };
 
   callSendAPI(messageData);
@@ -642,16 +646,16 @@ function sendAudioMessage(recipientId) {
 function sendVideoMessage(recipientId, videoName) {
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientId,
     },
     message: {
       attachment: {
         type: "video",
         payload: {
-          url: config.SERVER_URL + videoName
-        }
-      }
-    }
+          url: config.SERVER_URL + videoName,
+        },
+      },
+    },
   };
 
   callSendAPI(messageData);
@@ -660,16 +664,16 @@ function sendVideoMessage(recipientId, videoName) {
 function sendFileMessage(recipientId, fileName) {
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientId,
     },
     message: {
       attachment: {
         type: "file",
         payload: {
-          url: config.SERVER_URL + fileName
-        }
-      }
-    }
+          url: config.SERVER_URL + fileName,
+        },
+      },
+    },
   };
 
   callSendAPI(messageData);
@@ -682,7 +686,7 @@ function sendFileMessage(recipientId, fileName) {
 function sendButtonMessage(recipientId, text, buttons) {
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientId,
     },
     message: {
       attachment: {
@@ -690,10 +694,10 @@ function sendButtonMessage(recipientId, text, buttons) {
         payload: {
           template_type: "button",
           text: text,
-          buttons: buttons
-        }
-      }
-    }
+          buttons: buttons,
+        },
+      },
+    },
   };
 
   callSendAPI(messageData);
@@ -702,17 +706,17 @@ function sendButtonMessage(recipientId, text, buttons) {
 function sendGenericMessage(recipientId, elements) {
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientId,
     },
     message: {
       attachment: {
         type: "template",
         payload: {
           template_type: "generic",
-          elements: elements
-        }
-      }
-    }
+          elements: elements,
+        },
+      },
+    },
   };
 
   callSendAPI(messageData);
@@ -721,8 +725,8 @@ function sendGenericMessage(recipientId, elements) {
 function sendTypingOn(recipientId) {
   let bot = bots.getBotByTelegramId(recipientId);
   api.sendChatAction({
-    chat_id: config.environment === "dev" ? recipientId : bot.telegramGroupId,
-    action: "typing"
+    chat_id: recipientId,
+    action: "typing",
   });
 }
 

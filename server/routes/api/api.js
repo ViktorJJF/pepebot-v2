@@ -51,17 +51,17 @@ router.get("/session", (req, res) => {
   if (req.isAuthenticated()) {
     return res.json({
       isAuthenticated: true,
-      activeSession: req.user
+      activeSession: req.user,
     });
   }
   return res.json({
-    isAuthenticated: false
+    isAuthenticated: false,
   });
 });
 router.get("/session/list", (req, res) => {
   console.log("sesiones activas: ", req.sessionStore);
   return res.json({
-    sesions: req.session
+    sesions: req.session,
   });
 });
 
@@ -97,7 +97,7 @@ router.get("/hunter", async (req, res) => {
   if (!bot)
     return res.json({
       ok: false,
-      msg: "No hay un bot creado con ese id de usuario"
+      msg: "No hay un bot creado con ese id de usuario",
     });
   try {
     telegramBot.sendTextMessage(
@@ -149,7 +149,7 @@ router.get("/check-activity", async (req, res) => {
   if (!bot)
     return res.json({
       ok: false,
-      msg: "No hay un bot creado con ese id de usuario"
+      msg: "No hay un bot creado con ese id de usuario",
     });
   try {
     let activity = await bot.checkPlanetActivity(coords, "planet");
@@ -186,20 +186,20 @@ const axios = require("axios");
 var parseString = require("xml2js").parseString;
 router.get("/universe", (req, res1) => {
   axios
-    .get("https://s166-es.ogame.gameforge.com/api/universe.xml")
-    .then(res => {
-      parseString(res.data, function(err, result) {
+    .get("https://s208-es.ogame.gameforge.com/api/universe.xml")
+    .then((res) => {
+      parseString(res.data, function (err, result) {
         let coords = [];
-        result.universe.planet.forEach(planet => {
+        result.universe.planet.forEach((planet) => {
           coords.push({
             player: planet["$"].player,
-            coords: planet["$"].coords
+            coords: planet["$"].coords,
           });
         });
         res1.json(coords);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
     });
 });

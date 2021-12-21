@@ -3,7 +3,7 @@ const {
   Random,
   timeTomiliseconds,
   timeTomiliseconds2,
-  getCloserDurationIndex
+  getCloserDurationIndex,
 } = require("../utils/utils.js");
 class Fleet {
   constructor() {
@@ -15,96 +15,97 @@ class Fleet {
     this.duration = null; //1h 2h 1h:30min 40min etc
     this.allResources = null;
     this.allShips = null;
-    this.ships = [{
+    this.ships = [
+      {
         id: "202",
         name: "Nave pequeña de carga",
         type: "transporterSmall",
-        qty: 0
+        qty: 0,
       },
       {
         id: "203",
         name: "Nave Grande de carga",
         type: "transporterLarge",
-        qty: 0
+        qty: 0,
       },
       {
         id: "204",
         name: "Cazador Ligero",
         type: "fighterLight",
-        qty: 0
+        qty: 0,
       },
       {
         id: "205",
         name: "Cazador Pesado",
         type: "fighterHeavy",
-        qty: 0
+        qty: 0,
       },
       {
         id: "206",
         name: "Crucero",
         type: "cruiser",
-        qty: 0
+        qty: 0,
       },
       {
         id: "207",
         name: "Nave de batalla",
         type: "battleship",
-        qty: 0
+        qty: 0,
       },
       {
         id: "208",
         name: "Colonizador",
         type: "colonyShip",
-        qty: 0
+        qty: 0,
       },
       {
         id: "209",
         name: "Reciclador",
         type: "recycler",
-        qty: 0
+        qty: 0,
       },
       {
         id: "210",
         name: "Sonda de espionaje",
         type: "espionageProbe",
-        qty: 0
+        qty: 0,
       },
       {
         id: "211",
         name: "Bombardero",
         type: "bomber",
-        qty: 0
+        qty: 0,
       },
       {
         id: "213",
         name: "Destructor",
         type: "destroyer",
-        qty: 0
+        qty: 0,
       },
       {
         id: "214",
         name: "Estrella de la muerte",
         type: "deathstar",
-        qty: 0
+        qty: 0,
       },
       {
         id: "215",
         name: "Acorazado",
         type: "interceptor",
-        qty: 0
+        qty: 0,
       },
       {
         id: "218",
         name: "Segador",
         type: "reaper",
-        qty: 0
+        qty: 0,
       },
       {
         id: "219",
         name: "Explorador",
         type: "explorer",
-        qty: 0
-      }
+        qty: 0,
+      },
     ];
   }
   setPage(value) {
@@ -138,7 +139,7 @@ class Fleet {
     //select origin
     console.log("yendo al origen");
     await this.page.waitForSelector("span.planet-koords");
-    await this.page.evaluate(origin => {
+    await this.page.evaluate((origin) => {
       var planetCoords = document.querySelectorAll(".smallplanet");
       for (let i = 0; i < planetCoords.length; i++) {
         var planetCoordsText = planetCoords[i]
@@ -153,15 +154,15 @@ class Fleet {
     }, this.origin);
     //go to fleet view
     await this.page.waitForSelector(
-      "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
+      "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
     );
     await this.page.click(
-      "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
+      "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
     );
     await timeout(1500);
     await this.page.waitForSelector("#planet.planet-header");
     //check if exists ships
-    let existsShips = await this.page.evaluate(e =>
+    let existsShips = await this.page.evaluate((e) =>
       document.querySelector("#warning") ? false : true
     );
     if (!existsShips) return null;
@@ -171,35 +172,35 @@ class Fleet {
         //get max expeditions
         var expMax = parseInt(
           document
-          .querySelector("#slots>.fleft:nth-child(2)")
-          .innerText.match(/([^\/]+$)/)[0]
+            .querySelector("#slots>.fleft:nth-child(2)")
+            .innerText.match(/([^\/]+$)/)[0]
         );
         var expInUse = parseInt(
           document
-          .querySelector("#slots>.fleft:nth-child(2)")
-          .innerText.match(/[0-9]/)[0]
+            .querySelector("#slots>.fleft:nth-child(2)")
+            .innerText.match(/[0-9]/)[0]
         );
         var freeExpSlots = expMax - expInUse;
         console.log("las expediciones restantes son: ", freeExpSlots);
         var naveGrandeDeCargaTotal = parseInt(
           document
-          .querySelector("span.transporterLarge>span")
-          .getAttribute("data-value")
+            .querySelector("span.transporterLarge>span")
+            .getAttribute("data-value")
         );
         var cazadorLigeroTotal = parseInt(
           document
-          .querySelector("span.fighterLight>span")
-          .getAttribute("data-value")
+            .querySelector("span.fighterLight>span")
+            .getAttribute("data-value")
         );
         var navePequenaDeCargaTotal = parseInt(
           document
-          .querySelector("span.transporterSmall>span")
-          .getAttribute("data-value")
+            .querySelector("span.transporterSmall>span")
+            .getAttribute("data-value")
         );
         var sondaTotal = parseInt(
           document
-          .querySelector("span.espionageProbe>span")
-          .getAttribute("data-value")
+            .querySelector("span.espionageProbe>span")
+            .getAttribute("data-value")
         );
         var battleShips = document.querySelectorAll(
           "#battleships>ul#military>li"
@@ -209,9 +210,8 @@ class Fleet {
             battleShips[i].querySelector("span>span").getAttribute("data-value")
           );
           if (lastBattleShipQty > 0) {
-            var lastBattleShipId = battleShips[i].getAttribute(
-              "data-technology"
-            );
+            var lastBattleShipId =
+              battleShips[i].getAttribute("data-technology");
             i = -1;
           }
         }
@@ -229,25 +229,25 @@ class Fleet {
           // },
           {
             id: "203",
-            qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots)
+            qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots),
           },
           {
             id: "210",
-            qty: 1
+            qty: 1,
           },
           // { id: "215", qty: 1 },
           {
             id: "219",
-            qty: 1
+            qty: 1,
           },
           {
             id: lastBattleShipId,
-            qty: 1
-          }
+            qty: 1,
+          },
         ];
       });
-      ships.forEach(localShip => {
-        let shipIndex = this.ships.findIndex(ship => ship.id == localShip.id);
+      ships.forEach((localShip) => {
+        let shipIndex = this.ships.findIndex((ship) => ship.id == localShip.id);
         console.log("el indice es: ", shipIndex);
         if (this.ships[shipIndex].id !== "214")
           this.ships[shipIndex].qty = localShip.qty;
@@ -296,65 +296,70 @@ class Fleet {
     let [galaxy, system, planet] = this.destination.split(":");
     // await timeout(7500);
     await this.page.waitForSelector("tbody #galaxy", {
-      visible: true
+      visible: true,
     });
     await this.page.click("input#galaxy");
     await this.page.type("input#galaxy", galaxy);
+    await timeout(2000);
     await this.page.click("input#system");
     await this.page.type("input#system", system);
+    await timeout(2000);
     await this.page.click("input#position");
     await this.page.type("input#position", planet);
-
-    if (this.duration) {
-      let speeds = [];
-      let speedSelectors = await this.page.$$(".step");
-      for (const speedSelector of speedSelectors) {
-        await timeout(1000);
-        await speedSelector.hover();
-        await timeout(500);
-        let currentSpeed = await this.page.evaluate(() => {
-          return document
-            .querySelector("span#duration")
-            .innerText.replace(" h", "");
-        });
-        speeds.push(currentSpeed);
-      }
-      console.log("las velocidades son: ", speeds);
-      speeds = speeds.map(e => timeTomiliseconds(e));
-      let closerDurationIndex = getCloserDurationIndex(
-        speeds,
-        timeTomiliseconds2(this.duration)
-      );
-      console.log(
-        "lo mejor para ",
-        this.duration,
-        " es : ",
-        speeds[closerDurationIndex]
-      );
-      //seting speed
-      await this.page.click(`.step:nth-child(${closerDurationIndex})`);
-    } else {
-      //seting speed
-      await this.page.click(`.step:nth-child(10)`);
-    }
+    await timeout(2000);
+    // if (this.duration) {
+    //   let speeds = [];
+    //   let speedSelectors = await this.page.$$(".step");
+    //   for (const speedSelector of speedSelectors) {
+    //     await timeout(1000);
+    //     await speedSelector.hover();
+    //     await timeout(500);
+    //     let currentSpeed = await this.page.evaluate(() => {
+    //       return document
+    //         .querySelector("span#duration")
+    //         .innerText.replace(" h", "");
+    //     });
+    //     speeds.push(currentSpeed);
+    //   }
+    //   console.log("las velocidades son: ", speeds);
+    //   speeds = speeds.map((e) => timeTomiliseconds(e));
+    //   let closerDurationIndex = getCloserDurationIndex(
+    //     speeds,
+    //     timeTomiliseconds2(this.duration)
+    //   );
+    //   console.log(
+    //     "lo mejor para ",
+    //     this.duration,
+    //     " es : ",
+    //     speeds[closerDurationIndex]
+    //   );
+    //   //seting speed
+    //   await this.page.click(`.step:nth-child(${closerDurationIndex})`);
+    // } else {
+    //   //seting speed
+    //   await this.page.click(`.step:nth-child(10)`);
+    // }
+    await timeout(5000);
+    // await this.page.waitForSelector("li#button15.on>a#missionButton15");
     //go to next page
-    await this.page.waitForSelector("a#continueToFleet3.continue.on", {
-      visible: true
-    });
-    await this.page.waitForSelector("a#continueToFleet3.continue.on");
-    await this.page.click("a#continueToFleet3.continue.on");
+    // en la nueva actualizacion de ogame no se necesita esto
+    // await this.page.waitForSelector("a#continueToFleet3.continue.on", {
+    //   visible: true,
+    // });
+    // await this.page.waitForSelector("a#continueToFleet3.continue.on");
+    // await this.page.click("a#continueToFleet3.continue.on");
     switch (this.mission) {
       case "expedition":
         console.log("se escogio expedicion");
         await this.page.waitForSelector("li#button15>a#missionButton15", {
-          visible: true
+          visible: true,
         });
         await this.page.click("li#button15>a#missionButton15");
         break;
       case "espionage":
         console.log("se escogio espionaje");
         await this.page.waitForSelector("li#button6>a#missionButton6", {
-          visible: true
+          visible: true,
         });
         await this.page.click("li#button6>a#missionButton6");
         break;

@@ -17,10 +17,12 @@ module.exports = {
     __dirname + "/chatbot/credentialspepitobot-ksksls-02f6c18bdc1c.json", //credenciales
   //database
   dbString:
-    "mongodb+srv://VictorJJF:Sed4cfv52309$@cluster0-ceisv.mongodb.net/pepebot",
+    "mongodb+srv://ViktorJJF:Sed4cfv52309$@jfbotscluster.88rtm.mongodb.net/pepeBot",
   //hash
   saltRounds: 10,
   //JWT
   seed: "mysecretSeed",
-  expiresIn: "24h"
+  expiresIn: "24h",
+  telegramId: "624818317",
+  universe: "s208",
 };

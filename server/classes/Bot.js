@@ -1,9 +1,6 @@
 const formatISO9075 = require("date-fns/formatISO9075");
 const BotModel = require("../models/Bots.js");
-const {
-  timeout,
-  Random
-} = require("../utils/utils.js");
+const { timeout, Random } = require("../utils/utils.js");
 const config = require("../config");
 const uuidv1 = require("uuid/v1");
 const chronium = require("../classes/Chronium");
@@ -85,8 +82,9 @@ module.exports = class Bot {
       await page.click('input[type="email"]');
       await page.type(
         'input[type="email"]',
-        ogameEmail ? ogameEmail : this.ogameEmail, {
-          delay: this.typingDelay
+        ogameEmail ? ogameEmail : this.ogameEmail,
+        {
+          delay: this.typingDelay,
         }
       );
 
@@ -94,8 +92,9 @@ module.exports = class Bot {
       await page.click('input[type="password"]');
       await page.type(
         'input[type="password"]',
-        ogamePassword ? ogamePassword : this.ogamePassword, {
-          delay: this.typingDelay
+        ogamePassword ? ogamePassword : this.ogamePassword,
+        {
+          delay: this.typingDelay,
         }
       );
       await page.waitForSelector(
@@ -107,7 +106,7 @@ module.exports = class Bot {
 
       // await page.click("#loginTab > #loginForm > p > .button-primary > span");
       await page.waitForSelector("div > #joinGame > a > .button > span", {
-        timeout: 3000
+        timeout: 3000,
       });
       await page.evaluate(() => {
         document.querySelector("div > #joinGame > a > .button > span").click();
@@ -137,13 +136,14 @@ module.exports = class Bot {
 
   async createNewPage(url) {
     if (!this.browser) this.begin();
-    let mainMenuUrl = url ||
-      "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1";
+    let mainMenuUrl =
+      url ||
+      `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`;
     let page = await this.browser.newPage();
     page.setDefaultTimeout(20 * 1000);
     await page.goto(mainMenuUrl, {
       waitUntil: "networkidle0",
-      timeout: 0
+      timeout: 0,
     });
     return page;
   }
@@ -235,8 +235,9 @@ module.exports = class Bot {
 
     //Click to overview enemy missions
     await page.waitForSelector(
-      "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed", {
-        visible: true
+      "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
+      {
+        visible: true,
       }
     );
     await page.click(
@@ -247,12 +248,12 @@ module.exports = class Bot {
     await timeout(3000);
     let attackDetails = {
       normal: [],
-      sac: []
+      sac: [],
     };
     let enemyMissionsRows = await page.$$("tr.eventFleet");
     for (let i = 0; i < enemyMissionsRows.length; i++) {
       console.log("el tamaño de misiones es: ", enemyMissionsRows.length);
-      let isSac = await enemyMissionsRows[i].evaluate(mission => {
+      let isSac = await enemyMissionsRows[i].evaluate((mission) => {
         return mission.getAttribute("class").includes("partnerInfo");
       });
       if (isSac) {
@@ -271,51 +272,48 @@ module.exports = class Bot {
         // await page.waitForSelector("td.icon_movement", { visible: true });
         let fleet = await enemyMission.$("td.icon_movement");
         await fleet.hover();
-        var attackDetail = await enemyMission.evaluate(enemyMission => {
+        var attackDetail = await enemyMission.evaluate((enemyMission) => {
           var attackDetail = {
             hostilePlayer: {
               name: "",
               origin: {
                 planetName: "",
                 coords: "",
-                type: ""
+                type: "",
               },
               target: {
                 planetName: "",
                 coords: "",
-                type: ""
+                type: "",
               },
               impactHour: "",
-              timeRemaining: ""
+              timeRemaining: "",
             },
-            ships: []
+            ships: [],
           };
           attackDetail.hostilePlayer.origin.coords = enemyMission
             .querySelector("td.coordsOrigin")
             .innerText.replace(/[\[\]']+/g, "");
-          let planetPosition = attackDetail.hostilePlayer.origin.coords.split(
-            ":"
-          )[2];
-          attackDetail.hostilePlayer.origin.planetName = enemyMission.querySelector(
-            "td.originFleet"
-          ).innerText;
+          let planetPosition =
+            attackDetail.hostilePlayer.origin.coords.split(":")[2];
+          attackDetail.hostilePlayer.origin.planetName =
+            enemyMission.querySelector("td.originFleet").innerText;
           attackDetail.hostilePlayer.origin.type = enemyMission.querySelector(
-              "td.originFleet>figure.moon"
-            ) ?
-            "moon" :
-            "planet";
+            "td.originFleet>figure.moon"
+          )
+            ? "moon"
+            : "planet";
 
           attackDetail.hostilePlayer.target.coords = enemyMission
             .querySelector("td.destCoords")
             .innerText.replace(/[\[\]']+/g, "");
-          attackDetail.hostilePlayer.target.planetName = enemyMission.querySelector(
-            "td.destFleet"
-          ).innerText;
+          attackDetail.hostilePlayer.target.planetName =
+            enemyMission.querySelector("td.destFleet").innerText;
           attackDetail.hostilePlayer.target.type = enemyMission.querySelector(
-              "td.destFleet>figure.moon"
-            ) ?
-            "moon" :
-            "planet";
+            "td.destFleet>figure.moon"
+          )
+            ? "moon"
+            : "planet";
           //impacto hour
           attackDetail.hostilePlayer.impactHour = parseInt(
             enemyMission.getAttribute("data-arrival-time") * 1000
@@ -330,7 +328,7 @@ module.exports = class Bot {
             if (index > 0) {
               var shipJson = {
                 name: "",
-                qty: 0
+                qty: 0,
               };
               try {
                 shipJson.name = ship.querySelector("td").innerText;
@@ -377,14 +375,14 @@ module.exports = class Bot {
     await page.waitForSelector(galaxyInputSelector);
     await page.click(galaxyInputSelector);
     await page.type(galaxyInputSelector, galaxy, {
-      delay: this.typingDelay
+      delay: this.typingDelay,
     });
     let systemInputSelector =
       "#galaxycomponent > #inhalt > #galaxyHeader #system_input";
     await page.waitForSelector(systemInputSelector);
     await page.click(systemInputSelector);
     await page.type(systemInputSelector, system, {
-      delay: this.typingDelay
+      delay: this.typingDelay,
     });
     //click !vamos!
     await page.waitForSelector(
@@ -405,24 +403,24 @@ module.exports = class Bot {
         this.currentPage = "galaxy";
         console.log("yendo a vista galaxias");
         await page.waitForSelector(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(10) > .menubutton"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
         );
         await page.click(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(10) > .menubutton"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
         );
         // await navigationPromise
         break;
       case "fleet":
         console.log("yendo a vista flota");
         await page.waitForSelector(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
         );
         await page.click(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
         );
         break;
       case "fleetMovement":
-        console.log("yendo a vista flota");
+        console.log("yendo a vista flota movement");
         await page.waitForSelector(
           "#toolbarcomponent > #links > #menuTable > li:nth-child(9)>span.menu_icon>a"
         );
@@ -442,15 +440,15 @@ module.exports = class Bot {
     var page = page || this.page;
     var [galaxy, system, planet] = coords.split(":");
     await this.goToSolarSystem(coords, page);
-    type == "planet" ?
-      console.log("Empezando a escanear planeta: ", coords) :
-      console.log("Empezando a escanear luna: ", coords);
+    type == "planet"
+      ? console.log("Empezando a escanear planeta: ", coords)
+      : console.log("Empezando a escanear luna: ", coords);
     // await timeout(5000);
     try {
-      await page.waitForResponse(response => {
+      await page.waitForResponse((response) => {
         return (
           response.url() ===
-          "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
+            `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1` &&
           response.status() === 200
         );
       });
@@ -461,20 +459,17 @@ module.exports = class Bot {
     }
     var planetActivity = {
       date: new Date(),
-      lastActivity: "off"
+      lastActivity: "off",
     };
 
     try {
       planetActivity.lastActivity = await page.evaluate(
-        ({
-          planet,
-          type
-        }) => {
+        ({ planet, type }) => {
           var lastActivity = "off";
           let planetSelector = document.querySelector(
-            type == "planet" ?
-            `tr.row>td[rel="planet${planet}"]>.ListImage` :
-            `tr.row>td[rel="moon${planet}"]`
+            type == "planet"
+              ? `tr.row>td[rel="planet${planet}"]>.ListImage`
+              : `tr.row>td[rel="moon${planet}"]`
           );
           if (planetSelector.querySelector(".activity")) {
             if (planetSelector.querySelector(".activity.showMinutes")) {
@@ -486,9 +481,10 @@ module.exports = class Bot {
             }
           }
           return lastActivity;
-        }, {
+        },
+        {
           planet,
-          type
+          type,
         }
       );
       console.log("Estado: ", planetActivity.lastActivity);
@@ -505,10 +501,10 @@ module.exports = class Bot {
     // await timeout(5000);
     console.log("esperando respuesta del sistema solar...");
     try {
-      await this.page.waitForResponse(response => {
+      await this.page.waitForResponse((response) => {
         return (
           response.url() ===
-          "https://s168-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1" &&
+            `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1` &&
           response.status() === 200
         );
       });
@@ -558,23 +554,15 @@ module.exports = class Bot {
   async closeAds(page) {
     console.log("entrando a closeAds");
     var page = page;
-    // try {
-    //   await this.page.waitForResponse(
-    //     response => {
-    //       return (
-    //         response.url() ===
-    //           "https://ads-media.gameforge.com/53f75e5be1b5087082575d4181613f27.jpg" &&
-    //         response.status() === 200
-    //       );
-    //     },
-    //     { timeout: 5000 }
-    //   );
-    //   console.log("se termino de esperar la respuesta del ad");
-    //   await timeout(500);
-    // } catch (error) {
-    //   console.log(error);
-    // }
     await timeout(2700);
+    let hasCookie = await page.evaluate(() => {
+      return Boolean(document.querySelector(".cookiebanner5:nth-child(2)"));
+    });
+    console.log("🚀 Aqui *** -> hasCookie", hasCookie);
+    if (hasCookie) {
+      await page.click(".cookiebanner5:nth-child(2)");
+    }
+
     let adState = await page.evaluate(() => {
       let ad = document.querySelector(".openX_int_closeButton > a");
       return ad;
@@ -606,7 +594,7 @@ module.exports = class Bot {
       await this.page.click("#searchText");
 
       await this.page.type("#searchText", nickname, {
-        delay: this.typingDelay
+        delay: this.typingDelay,
       });
 
       await this.page.waitForSelector(
@@ -629,8 +617,9 @@ module.exports = class Bot {
 
       await this.page.type(
         "#contentWrapper > #chatContent > .content > .editor_wrap > .new_msg_textarea",
-        msg, {
-          delay: this.typingDelay / 2
+        msg,
+        {
+          delay: this.typingDelay / 2,
         }
       );
 
@@ -652,7 +641,7 @@ module.exports = class Bot {
     const pageTarget = page.target(); //save this to know that this was the opener
     await page.click(clickSelector); //click on a link
     const newTarget = await browser.waitForTarget(
-      target => target.opener() === pageTarget
+      (target) => target.opener() === pageTarget
     ); //check that you opened this page, rather than just checking the url
     const newPage = await newTarget.page(); //get the page object
     // await newPage.once("load",()=>{}); //this doesn't work; wait till page is loaded
@@ -673,7 +662,7 @@ module.exports = class Bot {
     let planets = await page.$$(".smallplanet");
     let selectedPlanet = planets[Random(0, planets.length - 1)];
     await timeout(1.5 * 1000);
-    let hasMoon = await selectedPlanet.evaluate(e =>
+    let hasMoon = await selectedPlanet.evaluate((e) =>
       e.querySelector("a.moonlink")
     );
     if (hasMoon) {
@@ -681,14 +670,14 @@ module.exports = class Bot {
       let randomNumber = Random(0, 1);
       console.log("numero aleatorio: ", randomNumber);
       if (randomNumber === 0)
-        await selectedPlanet.evaluate(e => e.querySelector("a").click());
+        await selectedPlanet.evaluate((e) => e.querySelector("a").click());
       else
-        await selectedPlanet.evaluate(e =>
+        await selectedPlanet.evaluate((e) =>
           e.querySelector("a.moonlink").click()
         );
     } else {
       console.log("no tiene luna, se cliqueara un planeta...");
-      await selectedPlanet.evaluate(e => e.querySelector("a").click());
+      await selectedPlanet.evaluate((e) => e.querySelector("a").click());
     }
     // await this.navigationPromise;
   }
@@ -701,8 +690,8 @@ module.exports = class Bot {
         expTotal: null,
         expInUse: null,
         all: null,
-        current: null
-      }
+        current: null,
+      },
     };
     //go to fleet view
     await this.goToPage("fleet", page);
@@ -712,8 +701,9 @@ module.exports = class Bot {
     let fleetOverviewButton = await page.$("p.event_list");
     if (fleetOverviewButton) {
       await page.waitForSelector(
-        "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed", {
-          visible: true
+        "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
+        {
+          visible: true,
         }
       );
       await page.click(
@@ -730,41 +720,41 @@ module.exports = class Bot {
         expTotal: null,
         expInUse: null,
         all: null,
-        current: null
+        current: null,
       };
       var fleetEvents = document.querySelectorAll("tr.eventFleet");
       console.log("fleet events es de tamaño: ", fleetEvents.length);
-      fleetEvents.forEach(fleetEvent => {
+      fleetEvents.forEach((fleetEvent) => {
         fleets.push({
           missionType: fleetEvent.getAttribute("data-mission-type"),
           return: fleetEvent.getAttribute("data-return-flight"),
-          arrivalTime: fleetEvent.getAttribute("data-arrival-time")
+          arrivalTime: fleetEvent.getAttribute("data-arrival-time"),
         });
       });
 
       slots.current = parseInt(
         document
-        .querySelector("#slots>.fleft>span")
-        .innerText.match(/([0-9])/)[0]
+          .querySelector("#slots>.fleft>span")
+          .innerText.match(/([0-9])/)[0]
       );
       slots.all = parseInt(
         document
-        .querySelector("#slots>.fleft>span")
-        .innerText.match(/([^\/]+$)/)[0]
+          .querySelector("#slots>.fleft>span")
+          .innerText.match(/([^\/]+$)/)[0]
       );
       slots.expInUse = parseInt(
         document
-        .querySelector("#slots>.fleft:nth-child(2)>span")
-        .innerText.match(/([0-9])/)[0]
+          .querySelector("#slots>.fleft:nth-child(2)>span")
+          .innerText.match(/([0-9])/)[0]
       );
       slots.expTotal = parseInt(
         document
-        .querySelector("#slots>.fleft:nth-child(2)>span")
-        .innerText.match(/([^\/]+$)/)[0]
+          .querySelector("#slots>.fleft:nth-child(2)>span")
+          .innerText.match(/([^\/]+$)/)[0]
       );
       return {
         fleets,
-        slots
+        slots,
       };
     });
     return fleetDetails;
@@ -816,16 +806,17 @@ module.exports = class Bot {
   async hasAction(actionType) {
     //expeditions - watchDog - hunter - dailyFleetSave
     let actions = await this.getActions();
-    let actionIndex = actions.findIndex(action => action.type === actionType);
+    let actionIndex = actions.findIndex((action) => action.type === actionType);
     console.log("se retornara: ", actionIndex);
     return actionIndex > -1 ? true : false;
   }
   async getActions() {
     try {
-      let result = await BotModel.aggregate([{
+      let result = await BotModel.aggregate([
+        {
           $match: {
-            ogameEmail: this.ogameEmail
-          }
+            ogameEmail: this.ogameEmail,
+          },
         },
         {
           $project: {
@@ -835,12 +826,12 @@ module.exports = class Bot {
                 input: "$actions",
                 as: "action",
                 cond: {
-                  $eq: ["$$action.active", true]
-                }
-              }
-            }
-          }
-        }
+                  $eq: ["$$action.active", true],
+                },
+              },
+            },
+          },
+        },
       ]);
       return result[0].actions;
     } catch (error) {
@@ -850,13 +841,14 @@ module.exports = class Bot {
   }
   async addAction(type, payload = {}) {
     try {
-      let botModel = await BotModel.findOne({
-          ogameEmail: this.ogameEmail
+      let botModel = await BotModel.findOne(
+        {
+          ogameEmail: this.ogameEmail,
         },
         "actions"
       );
       let actionToUpdate = botModel.actions.find(
-        action => action.type === type
+        (action) => action.type === type
       );
       actionToUpdate.active = true;
       actionToUpdate.payload.coords = payload.coords;
@@ -870,13 +862,14 @@ module.exports = class Bot {
   }
   async stopAction(type) {
     try {
-      let botModel = await BotModel.findOne({
-          ogameEmail: this.ogameEmail
+      let botModel = await BotModel.findOne(
+        {
+          ogameEmail: this.ogameEmail,
         },
         "actions"
       );
       let actionToUpdate = botModel.actions.find(
-        action => action.type === type
+        (action) => action.type === type
       );
       if (actionToUpdate.active == false) return false;
       actionToUpdate.active = false;

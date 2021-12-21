@@ -1,8 +1,4 @@
-const {
-  Random,
-  timeout,
-  msToTime
-} = require("../utils/utils");
+const { Random, timeout, msToTime } = require("../utils/utils");
 const formatISO9075 = require("date-fns/formatISO9075");
 const callMeBot = require("../services/callMeBot");
 
@@ -12,7 +8,7 @@ async function watchDog(bot, page) {
   botTelegram.sendTextMessage(
     bot.telegramId,
     bot.ogameEmail +
-    " empezare a cuidar tu cuenta, para desactivar dime algo como 'pepebot ya no cuides mi cuenta'"
+      " empezare a cuidar tu cuenta, para desactivar dime algo como 'pepebot ya no cuides mi cuenta'"
   );
   while (await bot.hasAction("watchDog")) {
     let watchDogStatus = await start(page, bot, botTelegram);
@@ -34,65 +30,65 @@ async function start(page, bot, botTelegram) {
       await botTelegram.sendTextMessage(
         bot.telegramId, //bot.telegramGroupId
         "⚠️ <b>" +
-        ogameUsername +
-        "</b>" +
-        " te están atacando ⚠️\nverificaré los detalles..."
+          ogameUsername +
+          "</b>" +
+          " te están atacando ⚠️\nverificaré los detalles..."
       );
       var attackDetails = await bot.attackDetail(page);
       console.log("llego esta respuesta: ", attackDetails);
       await botTelegram.sendTextMessage(
         bot.telegramId, //bot.telegramGroupId
         "⚠️ <b>" +
-        ogameUsername +
-        "</b>" +
-        " tienes " +
-        attackDetails.normal.length +
-        " ataques normales y " +
-        attackDetails.sac.length +
-        " SACS en tu contra"
+          ogameUsername +
+          "</b>" +
+          " tienes " +
+          attackDetails.normal.length +
+          " ataques normales y " +
+          attackDetails.sac.length +
+          " SACS en tu contra"
       );
       if (attackDetails.normal.length > 0) {
         await botTelegram.sendTextMessage(
           bot.telegramId, //bot.telegramGroupId
           "<b>Detalle de Ataques normales</b>"
         );
-        attackDetails.normal.forEach(async attackDetail => {
+        attackDetails.normal.forEach(async (attackDetail) => {
           let shipsDetailMsg = "";
-          attackDetail.ships.forEach(ship => {
+          attackDetail.ships.forEach((ship) => {
             shipsDetailMsg += "✔️ " + ship.name + " " + ship.qty + "\n";
           });
           await botTelegram.sendTextMessage(
             bot.telegramId,
             "<b>Detalles</b>:\n" +
-            "✅ <b>Jugador hostil:</b> " +
-            attackDetail.hostilePlayer.name +
-            "\n" +
-            "✅ <b>Desde:</b> " +
-            attackDetail.hostilePlayer.origin.planetName +
-            " (" +
-            attackDetail.hostilePlayer.origin.coords +
-            ") (" +
-            (attackDetail.hostilePlayer.origin.type == "moon" ?
-              "luna" :
-              "planeta") +
-            ")\n" +
-            "✅ <b>A tu planeta:</b> " +
-            attackDetail.hostilePlayer.target.planetName +
-            " (" +
-            attackDetail.hostilePlayer.target.coords +
-            ") (" +
-            (attackDetail.hostilePlayer.target.type == "moon" ?
-              "luna" :
-              "planeta") +
-            ")\n" +
-            "🕜 <b>Hora de impacto:</b> " +
-            formatISO9075(attackDetail.hostilePlayer.impactHour) +
-            "\n" +
-            "🕜 <b>Tiempo restante:</b> " +
-            msToTime(attackDetail.hostilePlayer.timeRemaining) +
-            "\n" +
-            "📝 <b>Detalle de Naves:</b>\n" +
-            shipsDetailMsg
+              "✅ <b>Jugador hostil:</b> " +
+              attackDetail.hostilePlayer.name +
+              "\n" +
+              "✅ <b>Desde:</b> " +
+              attackDetail.hostilePlayer.origin.planetName +
+              " (" +
+              attackDetail.hostilePlayer.origin.coords +
+              ") (" +
+              (attackDetail.hostilePlayer.origin.type == "moon"
+                ? "luna"
+                : "planeta") +
+              ")\n" +
+              "✅ <b>A tu planeta:</b> " +
+              attackDetail.hostilePlayer.target.planetName +
+              " (" +
+              attackDetail.hostilePlayer.target.coords +
+              ") (" +
+              (attackDetail.hostilePlayer.target.type == "moon"
+                ? "luna"
+                : "planeta") +
+              ")\n" +
+              "🕜 <b>Hora de impacto:</b> " +
+              formatISO9075(attackDetail.hostilePlayer.impactHour) +
+              "\n" +
+              "🕜 <b>Tiempo restante:</b> " +
+              msToTime(attackDetail.hostilePlayer.timeRemaining) +
+              "\n" +
+              "📝 <b>Detalle de Naves:</b>\n" +
+              shipsDetailMsg
           );
         });
       }

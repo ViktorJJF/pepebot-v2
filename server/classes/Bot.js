@@ -103,12 +103,16 @@ module.exports = class Bot {
       });
       console.log("aaaa");
       await page.waitForSelector(
-        "#loginRegisterTabs > #loginTab > #loginForm > p > .button-primary"
+        "#loginForm > p > button.button.button-primary.button-lg"
       );
       console.log("bbbb");
-      await page.click(
-        "#loginRegisterTabs > #loginTab > #loginForm > p > .button-primary"
-      );
+      await page.evaluate(() => {
+        document
+          .querySelector(
+            "#loginForm > p > button.button.button-primary.button-lg"
+          )
+          .click();
+      });
       console.log("hemos dado click...");
       // await page.evaluate(() => {
       //   document.querySelector("button[type='submit']").click();

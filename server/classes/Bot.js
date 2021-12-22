@@ -73,7 +73,6 @@ module.exports = class Bot {
       await page.click("#loginRegisterTabs .tabsList li");
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen1.png",
-        fullPage: true,
       });
       // await page.click(
       //   "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
@@ -99,7 +98,6 @@ module.exports = class Bot {
       );
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen2.png",
-        fullPage: true,
       });
       console.log("aaaa");
       await page.waitForSelector(
@@ -122,7 +120,6 @@ module.exports = class Bot {
       // });
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen3.png",
-        fullPage: true,
       });
       // await page.click("#loginTab > #loginForm > p > .button-primary > span");
       await page.waitForSelector("div > #joinGame > a > .button > span", {
@@ -682,7 +679,6 @@ module.exports = class Bot {
     console.log("tomando foto...");
     await page.screenshot({
       path: config.BASE_PATH + "/public/screen.png",
-      fullPage: true,
     });
     await page.waitForSelector(".smallplanet");
     let planets = await page.$$(".smallplanet");

@@ -74,9 +74,20 @@ module.exports = class Bot {
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen1.png",
       });
-      // await page.click(
-      //   "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
-      // );
+      await page.click(
+        "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
+      );
+      await page.waitForSelector(
+        "#loginForm > p > button.button.button-primary.button-lg"
+      );
+      console.log("bbbb");
+      await page.evaluate(() => {
+        document
+          .querySelector(
+            "#loginForm > p > button.button.button-primary.button-lg"
+          )
+          .click();
+      });
       await page.waitForSelector('input[type="email"]');
       await page.click('input[type="email"]');
       await page.type(

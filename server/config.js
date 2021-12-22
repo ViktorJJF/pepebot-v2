@@ -3,7 +3,7 @@
 // ========================
 
 module.exports = {
-  environment: "dev",
+  environment: "prod",
   port: (process.env.PORT = process.env.PORT || 3000),
   FB_PAGE_TOKEN:
     "EAAFeWyKYN50BAGde7NOFEsLCgIZCzN5k3JD24XO4CqOTCaY506P7oi2a8Ai1qWhhS9zOs53VFWVTMbRJ6E5b5VY4SV5cNZBpatSvCtsZBuxp6AW9sHkUw2dzDOWv9eZC4tvRiUreQlyNKebALzKDoAZCLrRkHwIDuWwWTxZCsAUwZAUgoSCS8Mx",

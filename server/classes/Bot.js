@@ -96,24 +96,28 @@ module.exports = class Bot {
           delay: this.typingDelay,
         }
       );
+      await page.focus('input[type="password"]');
+      console.log("presionando enter...");
+      await page.keyboard.type("\n");
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen2.png",
       });
       console.log("aaaa");
-      await page.waitForSelector(
-        "#loginForm > p > button.button.button-primary.button-lg"
-      );
-      console.log("bbbb");
-      await page.evaluate(() => {
-        document
-          .querySelector(
-            "#loginForm > p > button.button.button-primary.button-lg"
-          )
-          .click();
-      });
-      await page.click(
-        "#loginForm > p > button.button.button-primary.button-lg"
-      );
+
+      // await page.waitForSelector(
+      //   "#loginForm > p > button.button.button-primary.button-lg"
+      // );
+      // console.log("bbbb");
+      // await page.evaluate(() => {
+      //   document
+      //     .querySelector(
+      //       "#loginForm > p > button.button.button-primary.button-lg"
+      //     )
+      //     .click();
+      // });
+      // await page.click(
+      //   "#loginForm > p > button.button.button-primary.button-lg"
+      // );
       console.log("hemos dado click...");
       // await page.evaluate(() => {
       //   document.querySelector("button[type='submit']").click();

@@ -99,7 +99,7 @@ BotModel.find().exec(async (err, payload) => {
     bot.initialize(element);
     bots.addBot(bot);
     if (
-      (bot.ogameEmail == "cs.nma18@gmail.com" ||
+      (bot.ogameEmail == "viktor.developer96@gmail.com" ||
         config.environment !== "dev") &&
       bot.ogameEmail != "carlos.jf.1681@gmail.com"
     ) {

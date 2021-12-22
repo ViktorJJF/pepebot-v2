@@ -67,27 +67,16 @@ module.exports = class Bot {
       var page = await this.createNewPage(this.LOGIN_URL);
       console.log(`Empezando Logeooo...`);
       //closing add
-      await this.closeAds(page);
-      console.log("se termino de pasar por closeAds");
+      // await this.closeAds(page);
+      // console.log("se termino de pasar por closeAds");
       await page.waitForSelector("#loginRegisterTabs .tabsList li");
       await page.click("#loginRegisterTabs .tabsList li");
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen1.png",
       });
-      await page.click(
-        "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
-      );
-      await page.waitForSelector(
-        "#loginForm > p > button.button.button-primary.button-lg"
-      );
-      console.log("bbbb");
-      await page.evaluate(() => {
-        document
-          .querySelector(
-            "#loginForm > p > button.button.button-primary.button-lg"
-          )
-          .click();
-      });
+      // await page.click(
+      //   "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
+      // );
       await page.waitForSelector('input[type="email"]');
       await page.click('input[type="email"]');
       await page.type(
@@ -108,7 +97,6 @@ module.exports = class Bot {
         }
       );
       await page.focus('input[type="password"]');
-      console.log("presionando enter...");
       await page.keyboard.type("\n");
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen2.png",
@@ -138,7 +126,7 @@ module.exports = class Bot {
       });
       // await page.click("#loginTab > #loginForm > p > .button-primary > span");
       await page.waitForSelector("div > #joinGame > a > .button > span", {
-        timeout: 15000,
+        timeout: 25000,
       });
       await page.evaluate(() => {
         document.querySelector("div > #joinGame > a > .button > span").click();

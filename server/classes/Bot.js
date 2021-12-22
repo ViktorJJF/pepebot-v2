@@ -96,12 +96,22 @@ module.exports = class Bot {
           delay: this.typingDelay,
         }
       );
-      await page.focus('input[type="password"]');
-      await page.keyboard.type("\n");
       await page.screenshot({
         path: config.BASE_PATH + "/public/screen2.png",
       });
       console.log("aaaa");
+
+      const selector =
+        "#loginForm > p > button.button.button-primary.button-lg";
+
+      const rect = await page.evaluate((selector) => {
+        const element = document.querySelector(selector);
+        if (!element) return null;
+        const { x, y } = element.getBoundingClientRect();
+        return { x, y };
+      }, selector);
+
+      await page.mouse.click(rect.x, rect.y, { clickCount: 2 });
 
       // await page.waitForSelector(
       //   "#loginForm > p > button.button.button-primary.button-lg"

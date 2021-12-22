@@ -67,7 +67,7 @@ module.exports = class Bot {
       var page = await this.createNewPage(this.LOGIN_URL);
       console.log(`Empezando Logeooo...`);
       //closing add
-      // await this.closeAds(page);
+      await this.closeAds(page);
       // console.log("se termino de pasar por closeAds");
       await page.waitForSelector("#loginRegisterTabs .tabsList li");
       await page.click("#loginRegisterTabs .tabsList li");

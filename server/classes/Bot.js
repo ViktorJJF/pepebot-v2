@@ -111,7 +111,7 @@ module.exports = class Bot {
         return { x, y };
       }, selector);
 
-      await page.mouse.click(rect.x, rect.y, { clickCount: 2 });
+      await page.mouse.click(rect.x, rect.y, { clickCount: 1 });
 
       // await page.waitForSelector(
       //   "#loginForm > p > button.button.button-primary.button-lg"

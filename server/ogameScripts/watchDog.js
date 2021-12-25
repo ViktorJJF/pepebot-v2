@@ -12,7 +12,7 @@ async function watchDog(bot, page) {
   );
   while (await bot.hasAction("watchDog")) {
     let watchDogStatus = await start(page, bot, botTelegram);
-    if (watchDogStatus) await timeout(Random(5 * 60 * 1000, 10 * 60 * 1000));
+    if (watchDogStatus) await timeout(Random(3 * 60 * 1000, 5 * 20 * 1000));
   }
   console.log("se terminó el watchdog");
   return;
@@ -25,7 +25,6 @@ async function start(page, bot, botTelegram) {
     let attacked = await bot.watchDog(page);
     console.log(attacked);
     if (attacked) {
-      callMeBot("Te estan atacando llama"); //make telegram phonecall
       var ogameUsername = await bot.getOgameUsername(page);
       await botTelegram.sendTextMessage(
         bot.telegramId, //bot.telegramGroupId
@@ -35,69 +34,77 @@ async function start(page, bot, botTelegram) {
           " te están atacando ⚠️\nverificaré los detalles..."
       );
       var attackDetails = await bot.attackDetail(page);
-      console.log("llego esta respuesta: ", attackDetails);
-      await botTelegram.sendTextMessage(
-        bot.telegramId, //bot.telegramGroupId
-        "⚠️ <b>" +
-          ogameUsername +
-          "</b>" +
-          " tienes " +
-          attackDetails.normal.length +
-          " ataques normales y " +
-          attackDetails.sac.length +
-          " SACS en tu contra"
-      );
-      if (attackDetails.normal.length > 0) {
+      if (attackDetails.normal.length === 0 && attackDetails.sac.length === 0) {
+        await botTelegram.sendTextMessage(
+          bot.telegramId,
+          "parece que solo fue un espionaje"
+        );
+      } else {
+        console.log("llego esta respuesta: ", attackDetails);
+        callMeBot("Te estan atacando llama"); //make telegram phonecall
         await botTelegram.sendTextMessage(
           bot.telegramId, //bot.telegramGroupId
-          "<b>Detalle de Ataques normales</b>"
+          "⚠️ <b>" +
+            ogameUsername +
+            "</b>" +
+            " tienes " +
+            attackDetails.normal.length +
+            " ataques normales y " +
+            attackDetails.sac.length +
+            " SACS en tu contra"
         );
-        attackDetails.normal.forEach(async (attackDetail) => {
-          let shipsDetailMsg = "";
-          attackDetail.ships.forEach((ship) => {
-            shipsDetailMsg += "✔️ " + ship.name + " " + ship.qty + "\n";
-          });
+        if (attackDetails.normal.length > 0) {
           await botTelegram.sendTextMessage(
-            bot.telegramId,
-            "<b>Detalles</b>:\n" +
-              "✅ <b>Jugador hostil:</b> " +
-              attackDetail.hostilePlayer.name +
-              "\n" +
-              "✅ <b>Desde:</b> " +
-              attackDetail.hostilePlayer.origin.planetName +
-              " (" +
-              attackDetail.hostilePlayer.origin.coords +
-              ") (" +
-              (attackDetail.hostilePlayer.origin.type == "moon"
-                ? "luna"
-                : "planeta") +
-              ")\n" +
-              "✅ <b>A tu planeta:</b> " +
-              attackDetail.hostilePlayer.target.planetName +
-              " (" +
-              attackDetail.hostilePlayer.target.coords +
-              ") (" +
-              (attackDetail.hostilePlayer.target.type == "moon"
-                ? "luna"
-                : "planeta") +
-              ")\n" +
-              "🕜 <b>Hora de impacto:</b> " +
-              formatISO9075(attackDetail.hostilePlayer.impactHour) +
-              "\n" +
-              "🕜 <b>Tiempo restante:</b> " +
-              msToTime(attackDetail.hostilePlayer.timeRemaining) +
-              "\n" +
-              "📝 <b>Detalle de Naves:</b>\n" +
-              shipsDetailMsg
+            bot.telegramId, //bot.telegramGroupId
+            "<b>Detalle de Ataques normales</b>"
           );
-        });
-      }
-      if (attackDetails.sac.length > 0) {
-        await timeout(2000);
-        await botTelegram.sendTextMessage(
-          bot.telegramId, //bot.telegramGroupId
-          "<b>Detalle de ataques en SAC</b>\nte mostraré los detalles proximamente jajaj"
-        );
+          attackDetails.normal.forEach(async (attackDetail) => {
+            let shipsDetailMsg = "";
+            attackDetail.ships.forEach((ship) => {
+              shipsDetailMsg += "✔️ " + ship.name + " " + ship.qty + "\n";
+            });
+            await botTelegram.sendTextMessage(
+              bot.telegramId,
+              "<b>Detalles</b>:\n" +
+                "✅ <b>Jugador hostil:</b> " +
+                attackDetail.hostilePlayer.name +
+                "\n" +
+                "✅ <b>Desde:</b> " +
+                attackDetail.hostilePlayer.origin.planetName +
+                " (" +
+                attackDetail.hostilePlayer.origin.coords +
+                ") (" +
+                (attackDetail.hostilePlayer.origin.type == "moon"
+                  ? "luna"
+                  : "planeta") +
+                ")\n" +
+                "✅ <b>A tu planeta:</b> " +
+                attackDetail.hostilePlayer.target.planetName +
+                " (" +
+                attackDetail.hostilePlayer.target.coords +
+                ") (" +
+                (attackDetail.hostilePlayer.target.type == "moon"
+                  ? "luna"
+                  : "planeta") +
+                ")\n" +
+                "🕜 <b>Hora de impacto:</b> " +
+                formatISO9075(attackDetail.hostilePlayer.impactHour) +
+                "\n" +
+                "🕜 <b>Tiempo restante:</b> " +
+                msToTime(attackDetail.hostilePlayer.timeRemaining) +
+                "\n" +
+                "📝 <b>Detalle de Naves:</b>\n" +
+                shipsDetailMsg
+            );
+          });
+        }
+        if (attackDetails.sac.length > 0) {
+          await timeout(2000);
+          await botTelegram.sendTextMessage(
+            bot.telegramId, //bot.telegramGroupId
+            "<b>Detalle de ataques en SAC</b>\nte mostraré los detalles proximamente jajaj"
+          );
+        }
       }
     }
     await bot.closePage(page);

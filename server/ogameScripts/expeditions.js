@@ -49,7 +49,7 @@ async function start(bot, origin, ships, speed) {
     if (expeditionsPossible > 0)
       await botTelegram.sendTextMessage(
         bot.telegramId,
-        `<b>${ogameUsername}</b> estoy empezando a mandar las expediciones...`
+        `<b>${ogameUsername}</b> estoy mandando expediciones...`
       );
     var expeditionNumber = 1;
     while (expeditionsPossible > 0 && (await bot.hasAction("expeditions"))) {

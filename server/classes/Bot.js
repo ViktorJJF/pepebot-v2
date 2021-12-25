@@ -2,7 +2,6 @@ const formatISO9075 = require("date-fns/formatISO9075");
 const BotModel = require("../models/Bots.js");
 const { timeout, Random } = require("../utils/utils.js");
 const config = require("../config");
-const uuidv1 = require("uuid/v1");
 const chronium = require("../classes/Chronium");
 
 module.exports = class Bot {
@@ -68,16 +67,17 @@ module.exports = class Bot {
       console.log(`Empezando Logeooo...`);
       //closing add
       await this.closeAds(page);
-      // console.log("se termino de pasar por closeAds");
-      await page.waitForSelector("#loginRegisterTabs .tabsList li");
-      await page.click("#loginRegisterTabs .tabsList li");
-      await page.screenshot({
-        path: config.BASE_PATH + "/public/screen1.png",
+      console.log("se termino de pasar por closeAds");
+      await page.waitForSelector("#loginRegisterTabs .tabsList li", {
+        timeout: 15000,
       });
+      await page.click("#loginRegisterTabs .tabsList li");
       // await page.click(
       //   "div > #loginRegisterTabs > .tabsList > li:nth-child(1) > span"
       // );
-      await page.waitForSelector('input[type="email"]');
+      await page.waitForSelector('input[type="email"]', {
+        timeout: 15000,
+      });
       await page.click('input[type="email"]');
       await page.type(
         'input[type="email"]',
@@ -87,7 +87,9 @@ module.exports = class Bot {
         }
       );
 
-      await page.waitForSelector('input[type="password"]');
+      await page.waitForSelector('input[type="password"]', {
+        timeout: 15000,
+      });
       await page.click('input[type="password"]');
       await page.type(
         'input[type="password"]',
@@ -96,47 +98,31 @@ module.exports = class Bot {
           delay: this.typingDelay,
         }
       );
-      await page.screenshot({
-        path: config.BASE_PATH + "/public/screen2.png",
-      });
       console.log("aaaa");
-
-      const selector =
-        "#loginForm > p > button.button.button-primary.button-lg";
-
-      const rect = await page.evaluate((selector) => {
-        const element = document.querySelector(selector);
-        if (!element) return null;
-        const { x, y } = element.getBoundingClientRect();
-        return { x, y };
-      }, selector);
-
-      await page.mouse.click(rect.x, rect.y, { clickCount: 1 });
-
-      // await page.waitForSelector(
-      //   "#loginForm > p > button.button.button-primary.button-lg"
-      // );
-      // console.log("bbbb");
-      // await page.evaluate(() => {
-      //   document
-      //     .querySelector(
-      //       "#loginForm > p > button.button.button-primary.button-lg"
-      //     )
-      //     .click();
-      // });
-      // await page.click(
-      //   "#loginForm > p > button.button.button-primary.button-lg"
-      // );
+      await page.waitForSelector(
+        "#loginForm > p > button.button.button-primary.button-lg",
+        {
+          timeout: 15000,
+        }
+      );
+      console.log("bbbb");
+      await page.evaluate(() => {
+        document
+          .querySelector(
+            "#loginForm > p > button.button.button-primary.button-lg"
+          )
+          .click();
+      });
+      await page.click(
+        "#loginForm > p > button.button.button-primary.button-lg"
+      );
       console.log("hemos dado click...");
       // await page.evaluate(() => {
       //   document.querySelector("button[type='submit']").click();
       // });
-      await page.screenshot({
-        path: config.BASE_PATH + "/public/screen3.png",
-      });
       // await page.click("#loginTab > #loginForm > p > .button-primary > span");
       await page.waitForSelector("div > #joinGame > a > .button > span", {
-        timeout: 25000,
+        timeout: 15000,
       });
       await page.evaluate(() => {
         document.querySelector("div > #joinGame > a > .button > span").click();
@@ -146,7 +132,9 @@ module.exports = class Bot {
       // await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
       // await page.click(".open > .rt-tr > .rt-td > .btn > span");
 
-      await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
+      await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span", {
+        timeout: 15000,
+      });
       let pageToClose = page;
       //main page ogame
       page = await this.clickAndWaitForTarget(
@@ -166,7 +154,7 @@ module.exports = class Bot {
   }
 
   async createNewPage(url) {
-    if (!this.browser) this.begin();
+    if (!this.browser) await this.begin();
     let mainMenuUrl =
       url ||
       `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`;
@@ -211,7 +199,9 @@ module.exports = class Bot {
       case "playPage":
         console.log("nos encontramos en vista playPage");
         await page.click("#joinGame>a>button.button");
-        await page.waitForSelector('.rt-td.action-cell>button[type="button"]');
+        await page.waitForSelector('.rt-td.action-cell>button[type="button"]', {
+          timeout: 15000,
+        });
         page = await this.clickAndWaitForTarget(
           '.rt-td.action-cell>button[type="button"]',
           page,
@@ -244,11 +234,13 @@ module.exports = class Bot {
   async watchDog(page) {
     console.log("empezando watchdog");
     var page = page || this.page;
-    console.log("verificando ataques...");
+    console.log(`verificando ataques para ${this.ogameEmail}...`);
     await this.refreshPage(page);
-    await page.waitForSelector("#attack_alert");
+    await page.waitForSelector("#attack_alert", {
+      timeout: 15000,
+    });
     let notAttacked = await page.evaluate(() => {
-      return document.querySelector("#attack_alert.noAttack");
+      return !document.querySelector("#attack_alert.soon");
     });
     if (notAttacked) {
       console.log("no estas siendo atacado");
@@ -269,12 +261,15 @@ module.exports = class Bot {
       "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
       {
         visible: true,
+        timeout: 15000,
       }
     );
     await page.click(
       "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed"
     );
-    await page.waitForSelector("table#eventContent");
+    await page.waitForSelector("table#eventContent", {
+      timeout: 15000,
+    });
     //checking details
     await timeout(3000);
     let attackDetails = {
@@ -403,27 +398,36 @@ module.exports = class Bot {
       await this.goToPage("galaxy", page);
     }
     let galaxyInputSelector = "#galaxy_input";
-    await page.waitForSelector(galaxyInputSelector);
+    await page.waitForSelector(galaxyInputSelector, {
+      timeout: 15000,
+    });
     await page.click(galaxyInputSelector);
     await page.type(galaxyInputSelector, galaxy, {
       delay: this.typingDelay,
     });
     let systemInputSelector =
       "#galaxycomponent > #inhalt > #galaxyHeader #system_input";
-    await page.waitForSelector(systemInputSelector);
+    await page.waitForSelector(systemInputSelector, {
+      timeout: 15000,
+    });
     await page.click(systemInputSelector);
     await page.type(systemInputSelector, system, {
       delay: this.typingDelay,
     });
     //click !vamos!
     await page.waitForSelector(
-      "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
+      "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)",
+      {
+        timeout: 15000,
+      }
     );
     await timeout(1000);
     await page.click(
       "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
     );
-    await page.waitForSelector("tr.row");
+    await page.waitForSelector("tr.row", {
+      timeout: 15000,
+    });
   }
 
   async goToPage(pageName, page) {
@@ -434,7 +438,10 @@ module.exports = class Bot {
         this.currentPage = "galaxy";
         console.log("yendo a vista galaxias");
         await page.waitForSelector(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton",
+          {
+            timeout: 15000,
+          }
         );
         await page.click(
           "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
@@ -444,7 +451,10 @@ module.exports = class Bot {
       case "fleet":
         console.log("yendo a vista flota");
         await page.waitForSelector(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton",
+          {
+            timeout: 15000,
+          }
         );
         await page.click(
           "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
@@ -453,7 +463,10 @@ module.exports = class Bot {
       case "fleetMovement":
         console.log("yendo a vista flota movement");
         await page.waitForSelector(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(9)>span.menu_icon>a"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(9)>span.menu_icon>a",
+          {
+            timeout: 15000,
+          }
         );
         await page.click(
           "#toolbarcomponent > #links > #menuTable > li:nth-child(9)>span.menu_icon>a"
@@ -601,7 +614,9 @@ module.exports = class Bot {
     console.log("se encontro este add: ", adState);
     if (adState) {
       console.log("cerrando add en goToPage");
-      await page.waitForSelector(".openX_int_closeButton > a");
+      await page.waitForSelector(".openX_int_closeButton > a", {
+        timeout: 15000,
+      });
       await page.click(".openX_int_closeButton > a");
     }
     return 0;
@@ -615,13 +630,18 @@ module.exports = class Bot {
   async sendMessageToPlayer(nickname, msg) {
     try {
       await this.page.waitForSelector(
-        "#headerbarcomponent > #bar > ul > li:nth-child(5) > .overlay"
+        "#headerbarcomponent > #bar > ul > li:nth-child(5) > .overlay",
+        {
+          timeout: 15000,
+        }
       );
       await this.page.click(
         "#headerbarcomponent > #bar > ul > li:nth-child(5) > .overlay"
       );
 
-      await this.page.waitForSelector("#searchText");
+      await this.page.waitForSelector("#searchText", {
+        timeout: 15000,
+      });
       await this.page.click("#searchText");
 
       await this.page.type("#searchText", nickname, {
@@ -629,18 +649,27 @@ module.exports = class Bot {
       });
 
       await this.page.waitForSelector(
-        "tbody > tr > .ptb10 > #searchForm > .btn_blue"
+        "tbody > tr > .ptb10 > #searchForm > .btn_blue",
+        {
+          timeout: 15000,
+        }
       );
       await this.page.click("tbody > tr > .ptb10 > #searchForm > .btn_blue");
       await this.page.waitForSelector(
-        "tbody > .alt > .action > .tooltip > .icon"
+        "tbody > .alt > .action > .tooltip > .icon",
+        {
+          timeout: 15000,
+        }
       );
       await this.page.click("tbody > .alt > .action > .tooltip > .icon");
 
       await this.navigationPromise;
 
       await this.page.waitForSelector(
-        "#contentWrapper > #chatContent > .content > .editor_wrap > .new_msg_textarea"
+        "#contentWrapper > #chatContent > .content > .editor_wrap > .new_msg_textarea",
+        {
+          timeout: 15000,
+        }
       );
       await this.page.click(
         "#contentWrapper > #chatContent > .content > .editor_wrap > .new_msg_textarea"
@@ -655,7 +684,10 @@ module.exports = class Bot {
       );
 
       await this.page.waitForSelector(
-        "#contentWrapper > #chatContent > .content > .editor_wrap > .btn_blue"
+        "#contentWrapper > #chatContent > .content > .editor_wrap > .btn_blue",
+        {
+          timeout: 15000,
+        }
       );
       await this.page.click(
         "#contentWrapper > #chatContent > .content > .editor_wrap > .btn_blue"
@@ -676,7 +708,9 @@ module.exports = class Bot {
     ); //check that you opened this page, rather than just checking the url
     const newPage = await newTarget.page(); //get the page object
     // await newPage.once("load",()=>{}); //this doesn't work; wait till page is loaded
-    await newPage.waitForSelector("body"); //wait for page to be loaded
+    await newPage.waitForSelector("body", {
+      timeout: 15000,
+    }); //wait for page to be loaded
     // newPage.on("console", consoleObj => console.log(consoleObj.text()));
     return newPage;
   }
@@ -689,11 +723,9 @@ module.exports = class Bot {
     // await page.click(
     //   "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"
     // );
-    console.log("tomando foto...");
-    await page.screenshot({
-      path: config.BASE_PATH + "/public/screen.png",
+    await page.waitForSelector(".smallplanet", {
+      timeout: 15000,
     });
-    await page.waitForSelector(".smallplanet");
     let planets = await page.$$(".smallplanet");
     let selectedPlanet = planets[Random(0, planets.length - 1)];
     await timeout(1.5 * 1000);
@@ -739,12 +771,15 @@ module.exports = class Bot {
         "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed",
         {
           visible: true,
+          timeout: 15000,
         }
       );
       await page.click(
         "#notificationbarcomponent > #message-wrapper > #messages_collapsed #js_eventDetailsClosed"
       );
-      await page.waitForSelector("table#eventContent");
+      await page.waitForSelector("table#eventContent", {
+        timeout: 15000,
+      });
     }
 
     //checking fleet details
@@ -798,7 +833,9 @@ module.exports = class Bot {
   async getOgameUsername(page) {
     var page = page || this.page;
     let username = "";
-    await page.waitForSelector("li#playerName");
+    await page.waitForSelector("li#playerName", {
+      timeout: 15000,
+    });
     username = await page.evaluate(() => {
       console.log("estoy en esta pagina");
       var username = document.querySelector("li#playerName>span>a").innerText;
@@ -818,7 +855,12 @@ module.exports = class Bot {
   }
   async viejoProfeta(page) {
     async function updateMine(type) {
-      await page.waitForSelector("li.deuteriumSynthesizer>span>button.upgrade");
+      await page.waitForSelector(
+        "li.deuteriumSynthesizer>span>button.upgrade",
+        {
+          timeout: 15000,
+        }
+      );
       switch (type) {
         case "metal":
           await page.click("li.metalMine>span>button.upgrade");

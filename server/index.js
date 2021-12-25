@@ -8,7 +8,7 @@ const cors = require("cors");
 
 const app = express();
 const session = require("express-session"); //session managment
-const MongoStore = require("connect-mongo")(session);
+// const MongoStore = require("connect-mongo")(session);
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
@@ -54,20 +54,20 @@ mongoose.connect(
   }
 );
 
-app.use(
-  session({
-    secret: "ijegoierjgoiemrjgoiem",
-    store: new MongoStore({
-      mongooseConnection: mongoose.connection,
-    }),
-    resave: false,
-    saveUninitialized: true,
-    vcookie: {
-      httpOnly: true,
-      maxAge: 2419200000,
-    }, // configure when sessions expires
-  })
-);
+// app.use(
+//   session({
+//     secret: "ijegoierjgoiemrjgoiem",
+//     store: new MongoStore({
+//       mongooseConnection: mongoose.connection,
+//     }),
+//     resave: false,
+//     saveUninitialized: true,
+//     vcookie: {
+//       httpOnly: true,
+//       maxAge: 2419200000,
+//     }, // configure when sessions expires
+//   })
+// );
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -98,21 +98,17 @@ BotModel.find().exec(async (err, payload) => {
 
     bot.initialize(element);
     bots.addBot(bot);
-    if (
-      (bot.ogameEmail == "viktor.developer96@gmail.com" ||
-        config.environment !== "dev") &&
-      bot.ogameEmail != "carlos.jf.1681@gmail.com"
-    ) {
-      console.log("empezando login");
-      let login = await bot.login(element.ogameEmail, element.ogamePassword);
-      console.log("🚀 Aqui *** -> login", login);
-      console.log("ffffffff");
-      console.log("se termino el loginnnn");
-      if (login) {
-        beginActions(bot);
-      }
-      //daily rutine
+    // if (bot.ogameEmail != "carlos.jf.1681@gmail.com") {
+    console.log("empezando login", bot.ogameEmail);
+    let login = await bot.login(element.ogameEmail, element.ogamePassword);
+    console.log("🚀 Aqui *** -> login", login);
+    console.log("ffffffff");
+    console.log("se termino el loginnnn");
+    if (login) {
+      beginActions(bot);
     }
+    //daily rutine
+    // }
   });
   // beginDailyFleetSave(bots.bots);
   // seed.actions();

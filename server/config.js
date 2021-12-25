@@ -4,7 +4,7 @@
 
 module.exports = {
   environment: "prod",
-  port: (process.env.PORT = process.env.PORT || 3000),
+  port: (process.env.PORT = process.env.PORT || 7000),
   FB_PAGE_TOKEN:
     "EAAFeWyKYN50BAGde7NOFEsLCgIZCzN5k3JD24XO4CqOTCaY506P7oi2a8Ai1qWhhS9zOs53VFWVTMbRJ6E5b5VY4SV5cNZBpatSvCtsZBuxp6AW9sHkUw2dzDOWv9eZC4tvRiUreQlyNKebALzKDoAZCLrRkHwIDuWwWTxZCsAUwZAUgoSCS8Mx",
   SERVER_URL: "https://48791559.ngrok.io",
@@ -26,4 +26,5 @@ module.exports = {
   telegramId: "624818317",
   universe: "s208",
   BASE_PATH: __dirname,
+  PEPEHUNTER_BASE: "http://localhost:7000",
 };

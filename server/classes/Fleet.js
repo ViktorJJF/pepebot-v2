@@ -249,7 +249,7 @@ class Fleet {
       ships.forEach((localShip) => {
         let shipIndex = this.ships.findIndex((ship) => ship.id == localShip.id);
         console.log("el indice es: ", shipIndex);
-        if (this.ships[shipIndex].id !== "214")
+        if (this.ships[shipIndex] && this.ships[shipIndex].id !== "214")
           this.ships[shipIndex].qty = localShip.qty;
       });
     }

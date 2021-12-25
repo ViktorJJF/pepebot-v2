@@ -1,4 +1,5 @@
-const telegram = require("telegram-bot-api");
+process.env.NTBA_FIX_319 = 1;
+const TelegramBot = require("node-telegram-bot-api");
 const dialogflow = require("../Dialogflow");
 const axios = require("../../utils/axios");
 const bots = require("../../classes/Bots.js");
@@ -12,19 +13,13 @@ const { format } = require("date-fns");
 process.on("uncaughtException", (err) => {
   console.log("un error probablemente en telegram: ", err);
 });
-
 let token;
 if (config.environment === "dev")
-  token = "1107562973:AAGpbcw8rPs2lxllhdiA__kRIKDFYKX2XvA";
-else token = "1107562973:AAGpbcw8rPs2lxllhdiA__kRIKDFYKX2XvA";
+  token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
+else token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
 // token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
 try {
-  var api = new telegram({
-    token,
-    updates: {
-      enabled: true,
-    },
-  });
+  var api = new TelegramBot(token, { polling: true });
 
   // api.setWebhook("https://48791559.ngrok.io/api/webhook");
   // sendTextMessage(624818317, "Selecciona tu luna");
@@ -39,18 +34,16 @@ try {
   // ]);
 
   // setPersistentMenu(["Expediciones", "Watchdog", "Scan", "Fleet Save"]);
-  // api.sendMessage({
-  //   chat_id: -339549424,
-  //   text: "Opciones",
-  //   reply_markup: JSON.stringify({
-  //     keyboard: [
-  //       ["🚀 Expediciones", "🚀❌ Cancelar"],
-  //       ["🐶 Watchdog", "🐶❌ Cancelar"],
-  //       ["🔍 Scan", "💤 Fleet Save"],
-  //     ],
-  //     resize_keyboard: true,
-  //   }),
-  // });
+  api.sendMessage(-339549424, "Opciones", {
+    reply_markup: JSON.stringify({
+      keyboard: [
+        ["🚀 Expediciones", "🚀❌ Cancelar"],
+        ["🐶 Watchdog", "🐶❌ Cancelar"],
+        ["🔍 Scan", "💤 Fleet Save"],
+      ],
+      resize_keyboard: true,
+    }),
+  });
   // console.log("enviando mensaje de telegram");
 
   api.on("message", async (message) => {
@@ -62,13 +55,10 @@ try {
     sendTypingOn(sender); //typing on
     if (msg === "id") {
       sendTextMessage(sender, `Tu id es ${sender}`);
+    } else {
+      let result = await dialogflow.sendToDialogFlow(sender, msg);
+      handleDialogFlowResponse(sender, result);
     }
-    let result = await dialogflow.sendToDialogFlow(sender, msg);
-    handleDialogFlowResponse(sender, result);
-    // console.log("respuestas recibidas: ", responses);
-    // for (const response of responses) {
-    //   await sendTextMessage(sender, response);
-    // }
   });
 } catch (error) {
   console.log("algo salio mal en telegram...");
@@ -543,11 +533,7 @@ async function sendTextMessage(recipientId, text) {
   console.log("llego este recipient: ", recipientId);
   // let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
   console.log("se enviara la respuesta: ", text);
-  await api.sendMessage({
-    chat_id: config.telegramId,
-    text: text,
-    parse_mode: "html",
-  });
+  await api.sendMessage("-339549424", text, { parse_mode: "html" });
 }
 
 async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
@@ -724,10 +710,7 @@ function sendGenericMessage(recipientId, elements) {
 
 function sendTypingOn(recipientId) {
   let bot = bots.getBotByTelegramId(recipientId);
-  api.sendChatAction({
-    chat_id: recipientId,
-    action: "typing",
-  });
+  api.sendChatAction(recipientId, "typing");
 }
 
 function isDefined(obj) {

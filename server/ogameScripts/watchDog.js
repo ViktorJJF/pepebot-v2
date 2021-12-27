@@ -12,7 +12,7 @@ async function watchDog(bot, page) {
   );
   while (await bot.hasAction("watchDog")) {
     let watchDogStatus = await start(page, bot, botTelegram);
-    if (watchDogStatus) await timeout(Random(3 * 60 * 1000, 5 * 20 * 1000));
+    if (watchDogStatus) await timeout(Random(3 * 60 * 1000, 4 * 20 * 1000));
   }
   console.log("se terminó el watchdog");
   return;

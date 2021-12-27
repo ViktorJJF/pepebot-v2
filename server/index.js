@@ -98,17 +98,17 @@ BotModel.find().exec(async (err, payload) => {
 
     bot.initialize(element);
     bots.addBot(bot);
-    // if (bot.ogameEmail != "carlos.jf.1681@gmail.com") {
-    console.log("empezando login", bot.ogameEmail);
-    let login = await bot.login(element.ogameEmail, element.ogamePassword);
-    console.log("🚀 Aqui *** -> login", login);
-    console.log("ffffffff");
-    console.log("se termino el loginnnn");
-    if (login) {
-      beginActions(bot);
+    if (bot.ogameEmail != "carlos.jf.1681@gmail.com") {
+      console.log("empezando login", bot.ogameEmail);
+      let login = await bot.login(element.ogameEmail, element.ogamePassword);
+      console.log("🚀 Aqui *** -> login", login);
+      console.log("ffffffff");
+      console.log("se termino el loginnnn");
+      if (login) {
+        beginActions(bot);
+      }
+      //daily rutine
     }
-    //daily rutine
-    // }
   });
   // beginDailyFleetSave(bots.bots);
   // seed.actions();

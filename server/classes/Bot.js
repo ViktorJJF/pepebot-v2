@@ -153,6 +153,140 @@ module.exports = class Bot {
     }
   }
 
+  async goToPlanetMoon(coords, page) {
+    console.log("yendo al planeta/luna: ", coords);
+    await page.waitForSelector("span.planet-koords");
+    await page.evaluate((coords) => {
+      var planetCoords = document.querySelectorAll(".smallplanet");
+      for (let i = 0; i < planetCoords.length; i++) {
+        var planetCoordsText = planetCoords[i]
+          .querySelector("span.planet-koords")
+          .innerText.replace(/[\[\]']+/g, "");
+        if (planetCoordsText == coords) {
+          if (planetCoords[i].querySelector(".moonlink"))
+            planetCoords[i].querySelector(".moonlink").click();
+          else planetCoords[i].querySelector("span.planet-koords").click();
+        }
+      }
+    }, coords);
+    return;
+  }
+
+  async getSolarSystemPlanets(coords, pendingXHR, page) {
+    await this.goToSolarSystem(coords, page);
+    await pendingXHR.waitForAllXhrFinished();
+    let availablePlanetsIndex = await page.evaluate(() => {
+      let indexes = [];
+      Array.from(document.querySelectorAll(".galaxyRow.ctContentRow")).filter(
+        (e, index) => {
+          let activePlanet = e.querySelector(".galaxyCell.cellPlayerName");
+          if (activePlanet) {
+            let span = activePlanet.querySelector("span[rel]");
+            if (
+              span &&
+              (span.classList.contains("status_abbr_active") ||
+                span.classList.contains("status_abbr_outlaw") ||
+                span.classList.contains("status_abbr_honorableTarget"))
+            ) {
+              indexes.push(index);
+            }
+          }
+        }
+      );
+      console.log("🚀 Aqui *** -> indexes", indexes);
+      return indexes;
+    });
+    return availablePlanetsIndex;
+  }
+
+  async spyPlanetMoon(coords, type = "planet", page) {
+    let [galaxy, system, planet] = coords.split(":");
+    //get planets
+    let planetSelector = `.galaxyRow.ctContentRow#galaxyRow${planet}}`;
+    try {
+      await page.waitForSelector("#galaxy_input");
+      await page.waitForSelector(planetSelector);
+      // let planets = await page.$$("tr.row");
+      // await page.waitForSelector(".icon_eye");
+      // await page.waitForSelector(".moon_a");
+      // let planetToSpy = await planets[parseInt(planet) - 1].$(`${planetSelector}`);
+      if (type === "planet") {
+        let planetBeignSpied = await page.$(`${planetSelector} .fleetHostile`);
+        if (!planetBeignSpied) {
+          await page.hover(planetSelector);
+          await page.waitForSelector(`#planet${planet}.galaxyTooltip`);
+          await page.evaluate((planetNumber) => {
+            let options = document.querySelectorAll(
+              `#planet${planetNumber}.galaxyTooltip ul.ListLinks>li`
+            );
+            options.forEach((option) => {
+              if (option.innerText === "Espionaje")
+                return option.querySelector("a").click();
+            });
+            return;
+          }, planet);
+          await page.waitForSelector(`${planetSelector} .fleetHostile`);
+        }
+      }
+      //hover moon
+      let moonToSpy;
+      moonToSpy = await page.$(`td[rel="moon${planet}"]`);
+      if (moonToSpy) {
+        let moonBeignSpied = await page.$(`td.js_moon${planet}>.fleetHostile`);
+        let moonWithActivity = await page.$(`td.js_moon${planet}>.minute15`);
+        // if (!moonBeignSpied && !moonWithActivity) {
+        if (!moonBeignSpied) {
+          await page.hover(`td[rel="moon${planet}"]`);
+          await page.waitForSelector(`#moon${planet}.galaxyTooltip`);
+          await page.evaluate((planetNumber) => {
+            let options = document.querySelectorAll(
+              `#moon${planetNumber}.galaxyTooltip ul.ListLinks>li`
+            );
+            options.forEach((option) => {
+              if (option.innerText === "Espionaje")
+                option.querySelector("a").click();
+            });
+            return;
+          }, planet);
+          //wait for icon
+          await page.waitForSelector(`td.js_moon${planet}>.fleetHostile`);
+        }
+      }
+
+      console.log("se espiara el planeta de posicion: ", parseInt(planet));
+    } catch (error) {
+      console.log("algo salio mal espiando: ", coords);
+      console.log(error);
+      return false;
+    }
+
+    // document.querySelector('#planet3.galaxyTooltip')
+    //document.querySelector('#planet3.galaxyTooltip ul.ListLinks>li:nth-child(2)>a').click()
+    // document.querySelector('#moon3.galaxyTooltip ul.ListLinks>li:nth-child(2)>a').click()
+
+    await timeout(200);
+    return true;
+  }
+
+  async getFleetsFromGalaxyView(page) {
+    let fleetDetails = {
+      fleets: [],
+      slots: {
+        expTotal: null,
+        expInUse: null,
+        all: null,
+        current: null,
+      },
+    };
+    [fleetDetails.slots.current, fleetDetails.slots.all] = await page.evaluate(
+      () => [
+        parseInt(document.querySelector("#slots #slotUsed").innerText),
+        parseInt(document.querySelector("#slots #slotValue").innerText),
+      ]
+    );
+    return fleetDetails;
+  }
+
   async createNewPage(url) {
     if (!this.browser) await this.begin();
     let mainMenuUrl =
@@ -168,67 +302,76 @@ module.exports = class Bot {
   }
 
   async checkLoginStatus(page) {
-    var page = page || this.createNewPage();
-    var currentPage = null;
-    currentPage = await page.evaluate(() => {
-      var selector;
-      selector = document.querySelector("div#toolbarcomponent");
-      if (selector) {
-        console.log("se cumplio mainPage");
-        return "mainPage";
-      }
-      selector = document.querySelector("#joinGame>a>button.button");
-      if (selector) {
-        console.log("se cumplio playoage");
-        return "playPage";
-      }
-      selector = document.querySelector(
-        '.rt-td.action-cell>button[type="button"]'
-      );
-      if (selector) {
-        console.log("se cumplio selecUniversePage");
-        return "selectUniversePage";
-      }
-    });
-    console.log("se verificara en que pagina estamos...");
-    switch (currentPage) {
-      case "mainPage":
-        console.log("no paso nada.. seguimos normal");
-        await this.closePage(page);
-        break;
-      case "playPage":
-        console.log("nos encontramos en vista playPage");
-        await page.click("#joinGame>a>button.button");
-        await page.waitForSelector('.rt-td.action-cell>button[type="button"]', {
-          timeout: 15000,
-        });
-        page = await this.clickAndWaitForTarget(
-          '.rt-td.action-cell>button[type="button"]',
-          page,
-          this.browser
+    try {
+      var page = page || this.createNewPage();
+      var currentPage = null;
+      currentPage = await page.evaluate(() => {
+        var selector;
+        selector = document.querySelector("div#toolbarcomponent");
+        if (selector) {
+          console.log("se cumplio mainPage");
+          return "mainPage";
+        }
+        selector = document.querySelector("#joinGame>a>button.button");
+        if (selector) {
+          console.log("se cumplio playoage");
+          return "playPage";
+        }
+        selector = document.querySelector(
+          '.rt-td.action-cell>button[type="button"]'
         );
-        await this.closePage(page);
-        break;
-      case "selectUniversePage":
-        console.log("nos encontramos en vista universo");
-        console.log("empezaremos el clickAndwait");
-        page = await this.clickAndWaitForTarget(
-          '.rt-td.action-cell>button[type="button"]',
-          page,
-          this.browser
-        );
-        await this.closePage(page);
-        console.log("se termino el click and wait");
-        //main page ogame
-        break;
-      default:
-        console.log("el caso default: a logearse");
-        await this.login(null, null, page);
-        console.log("cambiamos de pagina");
-        break;
+        if (selector) {
+          console.log("se cumplio selecUniversePage");
+          return "selectUniversePage";
+        }
+      });
+      // eliminando ads por siacaso
+      await this.closeAds(page);
+      console.log("se verificara en que pagina estamos...");
+      switch (currentPage) {
+        case "mainPage":
+          console.log("no paso nada.. seguimos normal");
+          await this.closePage(page);
+          break;
+        case "playPage":
+          console.log("nos encontramos en vista playPage");
+          await page.click("#joinGame>a>button.button");
+          await page.waitForSelector(
+            '.rt-td.action-cell>button[type="button"]',
+            {
+              timeout: 15000,
+            }
+          );
+          page = await this.clickAndWaitForTarget(
+            '.rt-td.action-cell>button[type="button"]',
+            page,
+            this.browser
+          );
+          await this.closePage(page);
+          break;
+        case "selectUniversePage":
+          console.log("nos encontramos en vista universo");
+          console.log("empezaremos el clickAndwait");
+          page = await this.clickAndWaitForTarget(
+            '.rt-td.action-cell>button[type="button"]',
+            page,
+            this.browser
+          );
+          await this.closePage(page);
+          console.log("se termino el click and wait");
+          //main page ogame
+          break;
+        default:
+          console.log("el caso default: a logearse");
+          await this.login(null, null, page);
+          console.log("cambiamos de pagina");
+          break;
+      }
+      console.log("se retornara la pagina cerrada");
+      return 0;
+    } catch (error) {
+      console.log("aaaaaa", error);
     }
-    console.log("se retornara la pagina cerrada");
-    return 0;
   }
 
   async watchDog(page) {

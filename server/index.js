@@ -68,8 +68,8 @@ mongoose.connect(
 //     }, // configure when sessions expires
 //   })
 // );
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 passport.serializeUser(function (user_id, done) {
   done(null, user_id);
@@ -102,8 +102,11 @@ BotModel.find().exec(async (err, payload) => {
       console.log("empezando login", bot.ogameEmail);
       let login = await bot.login(element.ogameEmail, element.ogamePassword);
       console.log("🚀 Aqui *** -> login", login);
-      console.log("ffffffff");
       console.log("se termino el loginnnn");
+      const beginSpies = require("./ogameScripts/spyRange");
+      await beginSpies("3:205:7", 100, "moon", bot);
+      let page = await bot.createNewPage();
+      // await bot.filterSpyMessages(page);
       if (login) {
         beginActions(bot);
       }

@@ -182,18 +182,18 @@ async function handleDialogFlowAction(
         }
       } else {
         handleMessages(messages, sender);
-        // let playerId = bot.playerId;
-        // console.log("el playerId es: ", playerId);
-        // const res = await axios(
-        //   "https://pepehunter.herokuapp.com/api/players/" + playerId
-        // );
-        // let playerInfo = res.data.playerInfo;
-        // console.log("informacion de planetas: ", playerInfo);
-        // let planets = [];
-        // playerInfo.planets.forEach((planet) => {
-        //   if (planet.planetType === "planet") planets.push("" + planet.coords);
-        // });
-        // sendQuickReply(sender, "Escribe alguna de estas coordenadas", planets);
+        let playerId = bot.playerId;
+        console.log("el playerId es: ", playerId);
+        const res = await axios(
+          config.PEPEHUNTER_BASE + "/api/players/" + playerId
+        );
+        let playerInfo = res.data.playerInfo;
+        console.log("informacion de planetas: ", playerInfo);
+        let planets = [];
+        playerInfo.planets.forEach((planet) => {
+          if (planet.planetType === "planet") planets.push("" + planet.coords);
+        });
+        sendQuickReply(sender, "Escribe alguna de estas coordenadas", planets);
       }
 
       break;
@@ -295,7 +295,7 @@ async function handleDialogFlowAction(
         while (!playerOff) {
           try {
             const res = await axios(
-              "https://pepehunter.herokuapp.com/api/scan?nickname=" + player
+              config.PEPEHUNTER_BASE + "/api/scan?nickname=" + player
             );
             let playerInfo = res.data.playerInfo;
             if (!playerInfo.hasOwnProperty("planets")) {
@@ -333,12 +333,12 @@ async function handleDialogFlowAction(
         let percents = { on: 0, off: 0, minutes: 0 };
         sendTypingOn(sender);
         axios
-          .get("https://pepehunter.herokuapp.com/api/scan?nickname=" + player)
+          .get(config.PEPEHUNTER_BASE + "/api/scan?nickname=" + player)
           .then(async (res) => {
             let playerInfo = res.data.playerInfo;
             if (!playerInfo.hasOwnProperty("planets"))
               return sendTextMessage(sender, "Ese jugador no existe");
-            let msg = `<b>Información de ${playerInfo.nickname}</b>\n`;
+            let msg = `<b>Información de ${player}</b>\n`;
             playerInfo.planets.forEach((planet, idx) => {
               //calculating percents
               console.log(
@@ -562,9 +562,7 @@ async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
     }
   });
   console.log(inline_keyboard);
-  await api.sendMessage({
-    chat_id: config.environment === "dev" ? recipientId : bot.telegramGroupId,
-    text: text,
+  await api.sendMessage(bot.telegramGroupId, text, {
     parse_mode: "html",
     reply_markup: JSON.stringify({
       inline_keyboard,

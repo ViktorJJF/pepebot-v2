@@ -215,6 +215,8 @@ class Fleet {
             i = -1;
           }
         }
+        // es importante calcular la cantidad de ngc a enviar
+        let ngcToSend = parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots);
         return [
           // {
           //   id: "204",
@@ -229,7 +231,7 @@ class Fleet {
           // },
           {
             id: "203",
-            qty: parseInt((naveGrandeDeCargaTotal * 1) / freeExpSlots),
+            qty: ngcToSend > 2000 ? 2000 : ngcToSend, // maximo 2000 NGC
           },
           {
             id: "210",

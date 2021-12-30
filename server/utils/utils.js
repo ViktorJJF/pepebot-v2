@@ -6,7 +6,7 @@ function timeout(ms) {
   });
 }
 
-let timeTomiliseconds = time => {
+let timeTomiliseconds = (time) => {
   //7:05:15 3:32:40
   [hrs, min, sec] = time.split(":");
   return (
@@ -14,7 +14,7 @@ let timeTomiliseconds = time => {
   );
 };
 
-let timeTomiliseconds2 = duration => {
+let timeTomiliseconds2 = (duration) => {
   //1h:30min 5h 30min
   let matches = duration.match(/\d+/g);
   if (matches === undefined || matches === null) return;
@@ -28,8 +28,8 @@ let timeTomiliseconds2 = duration => {
 let getCloserDurationIndex = (durations, goalDuration) => {
   //all in milliseconds
   if (goalDuration === undefined || goalDuration === null) return;
-  let goalIsGreater = durations.every(e => e < goalDuration);
-  let goalIsLess = durations.every(e => e > goalDuration);
+  let goalIsGreater = durations.every((e) => e < goalDuration);
+  let goalIsLess = durations.every((e) => e > goalDuration);
   if (goalIsGreater) return 1;
   if (goalIsLess) return durations.length;
   let closerDuration, index;
@@ -50,7 +50,7 @@ let getCloserDurationIndex = (durations, goalDuration) => {
   return index + 1;
 };
 
-let msToTime = duration => {
+let msToTime = (duration) => {
   console.log("llego esta duracion: ", duration);
   var milliseconds = parseInt((duration % 1000) / 100),
     seconds = Math.floor((duration / 1000) % 60),
@@ -72,11 +72,16 @@ function Random(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function getFirstNumber(str) {
+  return str.match(/\d+/g).length > 0 ? parseInt(str.match(/\d+/g)[0]) : null;
+}
+
 module.exports = {
   timeout,
   msToTime,
   Random,
   timeTomiliseconds,
   timeTomiliseconds2,
-  getCloserDurationIndex
+  getCloserDurationIndex,
+  getFirstNumber,
 };

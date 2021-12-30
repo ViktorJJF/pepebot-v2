@@ -26,5 +26,5 @@ module.exports = {
   telegramId: "624818317",
   universe: "s208",
   BASE_PATH: __dirname,
-  PEPEHUNTER_BASE: "http://localhost:7000",
+  PEPEHUNTER_BASE: "http://localhost:12000",
 };

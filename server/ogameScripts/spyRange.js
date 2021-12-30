@@ -17,7 +17,7 @@ const botTelegram = require("../chatbot/Telegram/telegramBot");
 async function beginSpies(origin, range, type, bot) {
   try {
     console.log("empezando espionaje");
-    var page = await bot.createNewPage(6000);
+    var page = await bot.createNewPage(null, 6000);
     var ogameUsername = await bot.getOgameUsername(page);
     //check
     const pendingXHR = new PendingXHR(page);
@@ -71,7 +71,7 @@ async function beginSpies(origin, range, type, bot) {
     await bot.closePage(page);
     return;
   } catch (error) {
-    console.log("se dio un error en expeditions..probablemente el logeo");
+    console.log("se dio un error en espionaje..probablemente el logeo");
     console.log("el error es: ", error);
     await bot.checkLoginStatus(page);
     console.log("terminado el error de expeditions");

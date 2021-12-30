@@ -1,6 +1,6 @@
 const formatISO9075 = require("date-fns/formatISO9075");
 const BotModel = require("../models/Bots.js");
-const { timeout, Random } = require("../utils/utils.js");
+const { timeout, Random, getFirstNumber } = require("../utils/utils.js");
 const config = require("../config");
 const chronium = require("../classes/Chronium");
 
@@ -202,10 +202,24 @@ module.exports = class Bot {
   async spyPlanetMoon(coords, type = "planet", page) {
     let [galaxy, system, planet] = coords.split(":");
     //get planets
-    let planetSelector = `.galaxyRow.ctContentRow#galaxyRow${planet}}`;
     try {
       await page.waitForSelector("#galaxy_input");
+      // primero se valida si el jugador a espiar no es muy fuerte (rank)
+      let planetSelector = `.galaxyRow.ctContentRow#galaxyRow${planet}`;
       await page.waitForSelector(planetSelector);
+      let playerSelector = ".cellPlayerName .tooltipRel";
+      let planetElement = await page.$(planetSelector);
+      let playerId = await planetElement.evaluate((e) => {
+        let playerId = e.querySelector("a.sendMail");
+        return playerId ? playerId.getAttribute("data-playerid") : 0;
+      });
+      console.log("🚀 Aqui *** -> playerId", playerId);
+      await page.hover(planetSelector + " .cellPlayerName .tooltipRel");
+      let playerRank = await planetElement.evaluate((e) => {
+        return document.querySelector(`#player${playerId} .rank a`).innerText;
+      });
+
+      console.log("🚀 Aqui *** -> playerRank", playerRank);
       // let planets = await page.$$("tr.row");
       // await page.waitForSelector(".icon_eye");
       // await page.waitForSelector(".moon_a");
@@ -220,7 +234,7 @@ module.exports = class Bot {
               `#planet${planetNumber}.galaxyTooltip ul.ListLinks>li`
             );
             options.forEach((option) => {
-              if (option.innerText === "Espionaje")
+              if (option.innerText.includes("Espionaje"))
                 return option.querySelector("a").click();
             });
             return;
@@ -230,14 +244,18 @@ module.exports = class Bot {
       }
       //hover moon
       let moonToSpy;
-      moonToSpy = await page.$(`td[rel="moon${planet}"]`);
+      moonToSpy = await page.$(`[rel="moon${planet}"]`);
       if (moonToSpy) {
-        let moonBeignSpied = await page.$(`td.js_moon${planet}>.fleetHostile`);
-        let moonWithActivity = await page.$(`td.js_moon${planet}>.minute15`);
+        let moonBeignSpied = await page.$(
+          `[rel="moon${planet}"] .fleetHostile`
+        );
+        let moonWithActivity = await page.$(`[rel="moon${planet}"] .minute15`);
         // if (!moonBeignSpied && !moonWithActivity) {
         if (!moonBeignSpied) {
-          await page.hover(`td[rel="moon${planet}"]`);
-          await page.waitForSelector(`#moon${planet}.galaxyTooltip`);
+          await page.hover(`[rel="moon${planet}"]`);
+          await page.waitForSelector(`#moon${planet}.galaxyTooltip`, {
+            visible: true,
+          });
           await page.evaluate((planetNumber) => {
             let options = document.querySelectorAll(
               `#moon${planetNumber}.galaxyTooltip ul.ListLinks>li`
@@ -249,7 +267,7 @@ module.exports = class Bot {
             return;
           }, planet);
           //wait for icon
-          await page.waitForSelector(`td.js_moon${planet}>.fleetHostile`);
+          await page.waitForSelector(`[rel="moon${planet}"] .fleetHostile`);
         }
       }
 
@@ -266,6 +284,26 @@ module.exports = class Bot {
 
     await timeout(200);
     return true;
+  }
+
+  async getRank(page) {
+    var page = page || this.page;
+    let rank = 0;
+    await page.waitForSelector("#bar", {
+      timeout: 15000,
+    });
+    rank = await page.evaluate(() => {
+      var rank = document.querySelector("#bar > ul > li:nth-child(2)");
+      return rank;
+    });
+    return getFirstNumber(rank);
+  }
+
+  async refreshGalaxyView(pendingXHR, page) {
+    await page.waitForSelector(".btn_blue");
+    await page.click(".btn_blue");
+    await pendingXHR.waitForAllXhrFinished();
+    return;
   }
 
   async getFleetsFromGalaxyView(page) {
@@ -287,13 +325,14 @@ module.exports = class Bot {
     return fleetDetails;
   }
 
-  async createNewPage(url) {
+  async createNewPage(url, timeout) {
+    timeout = timeout || 20 * 1000;
     if (!this.browser) await this.begin();
     let mainMenuUrl =
       url ||
       `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`;
     let page = await this.browser.newPage();
-    page.setDefaultTimeout(20 * 1000);
+    page.setDefaultTimeout(timeout);
     await page.goto(mainMenuUrl, {
       waitUntil: "networkidle0",
       timeout: 0,
@@ -568,7 +607,7 @@ module.exports = class Bot {
     await page.click(
       "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
     );
-    await page.waitForSelector("tr.row", {
+    await page.waitForSelector(".galaxyRow.ctContentRow", {
       timeout: 15000,
     });
   }
@@ -581,13 +620,13 @@ module.exports = class Bot {
         this.currentPage = "galaxy";
         console.log("yendo a vista galaxias");
         await page.waitForSelector(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton",
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton",
           {
             timeout: 15000,
           }
         );
         await page.click(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
+          "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton"
         );
         // await navigationPromise
         break;

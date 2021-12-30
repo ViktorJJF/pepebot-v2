@@ -103,9 +103,9 @@ BotModel.find().exec(async (err, payload) => {
     let login = await bot.login(element.ogameEmail, element.ogamePassword);
     console.log("🚀 Aqui *** -> login", login);
     console.log("se termino el loginnnn");
-    const beginSpies = require("./ogameScripts/spyRange");
-    await beginSpies("3:205:7", 100, "moon", bot);
-    let page = await bot.createNewPage();
+    // const beginSpies = require("./ogameScripts/spyRange");
+    // await beginSpies("3:205:7", 100, "moon", bot);
+    // let page = await bot.createNewPage();
     // await bot.filterSpyMessages(page);
     if (login) {
       beginActions(bot);

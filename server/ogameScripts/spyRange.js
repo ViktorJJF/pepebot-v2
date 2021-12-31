@@ -10,20 +10,24 @@
 const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
 
-const { Random, timeout, msToTime } = require("../utils/utils");
+const { Random, timeout, msToTime, handleError } = require("../utils/utils");
 const { PendingXHR } = require("pending-xhr-puppeteer");
 const botTelegram = require("../chatbot/Telegram/telegramBot");
 
 async function beginSpies(origin, range, type, bot) {
   try {
     console.log("empezando espionaje");
+    let timesSpied = 0; // cantidad de veces espiadas
     var page = await bot.createNewPage(null, 6000);
     var ogameUsername = await bot.getOgameUsername(page);
     //check
     const pendingXHR = new PendingXHR(page);
     let [galaxy, system, planet] = origin.split(":");
-    let beginCoords = parseInt(system) - parseInt(range);
-    let finalCoords = parseInt(system) + parseInt(range);
+    galaxy = 7;
+    let beginCoords = 100;
+    // let beginCoords = parseInt(system) - parseInt(range);
+    let finalCoords = 200;
+    // let finalCoords = parseInt(system) + parseInt(range);
     //go to planet to begin to spy
     await bot.goToPlanetMoon(origin, page);
     for (let i = beginCoords; i <= finalCoords; i++) {
@@ -50,6 +54,8 @@ async function beginSpies(origin, range, type, bot) {
         if (!spyStatus) {
           j--;
           await bot.refreshGalaxyView(pendingXHR, page);
+        } else {
+          timesSpied += 1;
         }
 
         // await timeout(1 * 1000);
@@ -63,7 +69,8 @@ async function beginSpies(origin, range, type, bot) {
         }
       }
     }
-
+    console.log("cantidad de veces espiado: ", timesSpied);
+    bot.setTimesSpied(timesSpied); // se coloca la cantidad de veces espiadas
     await botTelegram.sendTextMessage(
       bot.telegramId,
       `<b>${ogameUsername}</b> terminé de espiar la zona`
@@ -71,11 +78,12 @@ async function beginSpies(origin, range, type, bot) {
     await bot.closePage(page);
     return;
   } catch (error) {
-    console.log("se dio un error en espionaje..probablemente el logeo");
-    console.log("el error es: ", error);
-    await bot.checkLoginStatus(page);
-    console.log("terminado el error de expeditions");
-    return;
+    const errorStatus = handleError(error);
+    if (!errorStatus) {
+      console.log("error desconocido...", error);
+      await bot.checkLoginStatus(page);
+      beginSpies(origin, range, type, bot);
+    }
   }
 }
 

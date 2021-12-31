@@ -1,3 +1,6 @@
+const config = require("../config");
+const axios = require("axios");
+
 function timeout(ms) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -76,6 +79,62 @@ function getFirstNumber(str) {
   return str.match(/\d+/g).length > 0 ? parseInt(str.match(/\d+/g)[0]) : null;
 }
 
+/**
+ * @Description Esta funcion convierte JSON a objeto, caso contrario retorna null
+ */
+
+function isJson(item) {
+  item = typeof item !== "string" ? JSON.stringify(item) : item;
+
+  try {
+    item = JSON.parse(item);
+  } catch (e) {
+    return false;
+  }
+
+  if (typeof item === "object" && item !== null) {
+    return true;
+  }
+  return false;
+}
+
+async function handleError(err) {
+  console.log(err);
+  try {
+    if (isJson(err)) {
+      const parsedErr = JSON.parse(err);
+      if (parsedErr.code === 400) {
+        sendTelegramMessage(config.TELEGRAM_GROUP_ID, parsedErr.message);
+        return true; // error conocido
+      } else {
+        throw new Error();
+      }
+    } else {
+      throw new Error();
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function buildErrObject(code, message) {
+  return JSON.stringify({
+    code,
+    message,
+  });
+}
+
+async function sendTelegramMessage(senderId, message) {
+  try {
+    await axios.post(config.PEPEBOT_BASE + "/api/telegram/message", {
+      senderId,
+      message,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   timeout,
   msToTime,
@@ -84,4 +143,6 @@ module.exports = {
   timeTomiliseconds2,
   getCloserDurationIndex,
   getFirstNumber,
+  handleError,
+  buildErrObject,
 };

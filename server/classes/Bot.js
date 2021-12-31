@@ -1,6 +1,12 @@
 const formatISO9075 = require("date-fns/formatISO9075");
 const BotModel = require("../models/Bots.js");
-const { timeout, Random, getFirstNumber } = require("../utils/utils.js");
+const {
+  timeout,
+  Random,
+  getFirstNumber,
+  buildErrObject,
+  handleError,
+} = require("../utils/utils.js");
 const config = require("../config");
 const chronium = require("../classes/Chronium");
 
@@ -25,6 +31,7 @@ module.exports = class Bot {
     this.currentPage = 0;
     // this.actions = null;
     this.playerId = null;
+    this.timesSpied = 1;
 
     //currentPage
     // 0 -- > mainPage
@@ -156,20 +163,29 @@ module.exports = class Bot {
   async goToPlanetMoon(coords, page) {
     console.log("yendo al planeta/luna: ", coords);
     await page.waitForSelector("span.planet-koords");
-    await page.evaluate((coords) => {
+    let coordsExists = await page.evaluate((coords) => {
+      let coordsExists = false;
       var planetCoords = document.querySelectorAll(".smallplanet");
       for (let i = 0; i < planetCoords.length; i++) {
         var planetCoordsText = planetCoords[i]
           .querySelector("span.planet-koords")
           .innerText.replace(/[\[\]']+/g, "");
         if (planetCoordsText == coords) {
+          coordsExists = true;
           if (planetCoords[i].querySelector(".moonlink"))
             planetCoords[i].querySelector(".moonlink").click();
           else planetCoords[i].querySelector("span.planet-koords").click();
         }
       }
+      return coordsExists;
     }, coords);
-    return;
+    if (!coordsExists) {
+      throw buildErrObject(
+        400,
+        `No tienes un planeta con las coordenadas *${coords}*`
+      );
+    }
+    return coordsExists;
   }
 
   async getSolarSystemPlanets(coords, pendingXHR, page) {
@@ -210,15 +226,22 @@ module.exports = class Bot {
       let playerSelector = ".cellPlayerName .tooltipRel";
       let planetElement = await page.$(planetSelector);
       let playerId = await planetElement.evaluate((e) => {
-        let playerId = e.querySelector("a.sendMail");
+        let playerId = e.querySelector(".cellAction a:nth-child(2)");
         return playerId ? playerId.getAttribute("data-playerid") : 0;
       });
-      console.log("🚀 Aqui *** -> playerId", playerId);
       await page.hover(planetSelector + " .cellPlayerName .tooltipRel");
-      let playerRank = await planetElement.evaluate((e) => {
-        return document.querySelector(`#player${playerId} .rank a`).innerText;
-      });
-
+      let ownRank = await this.getRank(page);
+      let playerRank = await page.evaluate((playerId) => {
+        return parseInt(
+          document.querySelector(`#player${playerId} .rank a`).innerText
+        );
+      }, playerId);
+      // si el rank del jugador es mayor al propio por 5, ignorar
+      const LIMIT = 0;
+      if (playerRank + LIMIT < ownRank) {
+        console.log("jugador fuerte, ignorar");
+        return true;
+      }
       console.log("🚀 Aqui *** -> playerRank", playerRank);
       // let planets = await page.$$("tr.row");
       // await page.waitForSelector(".icon_eye");
@@ -271,19 +294,167 @@ module.exports = class Bot {
         }
       }
 
-      console.log("se espiara el planeta de posicion: ", parseInt(planet));
+      console.log("se espió el planeta de posicion: ", parseInt(planet));
     } catch (error) {
       console.log("algo salio mal espiando: ", coords);
       console.log(error);
       return false;
     }
-
-    // document.querySelector('#planet3.galaxyTooltip')
-    //document.querySelector('#planet3.galaxyTooltip ul.ListLinks>li:nth-child(2)>a').click()
-    // document.querySelector('#moon3.galaxyTooltip ul.ListLinks>li:nth-child(2)>a').click()
-
     await timeout(200);
     return true;
+  }
+  setTimesSpied(qty) {
+    this.timesSpied = qty;
+  }
+  async filterSpyMessages(page) {
+    console.log("empezando a filtrar mensajes");
+    await page.waitForSelector(".comm_menu");
+    await page.click(".comm_menu");
+    let minFleet = 100 * 1000000; //10M
+    let minResources = 20 * 1000000; // 10M
+    // try {
+    //   await page.waitForSelector("#fleetsgenericpage");
+    // } catch (error) {
+    //   console.log("se espero mucho...");
+    // }
+    const { PendingXHR } = require("pending-xhr-puppeteer");
+    const pendingXHR = new PendingXHR(page);
+    await pendingXHR.waitForAllXhrFinished();
+    await page.waitForSelector(".msg");
+    let maxMessagesPages = Math.ceil(this.timesSpied / 10) || 3; // maximo de paginas a revisar
+    console.log("CANTIDAD DE PAGINAS A REVISAR", maxMessagesPages);
+    let i = 0;
+    let fleet, totalResources;
+    while (i < maxMessagesPages) {
+      await pendingXHR.waitForAllXhrFinished();
+      console.log("estoy dentro del bucle: ", i, maxMessagesPages);
+      let messages = await page.$$(".msg");
+      console.log("el tamaño de mensajes: ", messages.length);
+      for (const message of messages) {
+        let messageInfo = await message.evaluate((message) => {
+          var numberPattern = /\d+/g;
+          if (
+            !message
+              .querySelector(".msg_head>span.msg_title")
+              .innerText.includes("Informe de espionaje en")
+          )
+            return; // significa que no es informe de espionaje
+
+          var metalSelector = message
+            .querySelector(".resspan:nth-child(1)")
+            .innerText.replace("Metal", "");
+          var metal = parseFloat(
+            metalSelector
+              .match(numberPattern)
+              .join(metalSelector.includes(".") ? "" : ".")
+          );
+          metal = metalSelector.includes("Mrd")
+            ? metal * 1000000000
+            : metalSelector.includes("M")
+            ? metal * 1000000
+            : metal;
+          console.log("el metal: ", metal);
+          var crystalSelector = message.querySelector(
+            ".resspan:nth-child(2)"
+          ).innerText;
+          var crystal = parseFloat(
+            crystalSelector
+              .match(numberPattern)
+              .join(crystalSelector.includes(".") ? "" : ".")
+          );
+          crystal = crystalSelector.includes("Mrd")
+            ? crystal * 1000000000
+            : crystalSelector.includes("M")
+            ? crystal * 1000000
+            : crystal;
+          console.log("el cristal: ", crystal);
+          var deuteriumSelector = message.querySelector(
+            ".resspan:nth-child(3)"
+          ).innerText;
+          var deuterium = parseFloat(
+            deuteriumSelector
+              .match(numberPattern)
+              .join(deuteriumSelector.includes(".") ? "" : ".")
+          );
+          deuterium = deuteriumSelector.includes("Mrd")
+            ? deuterium * 1000000000
+            : deuteriumSelector.includes("M")
+            ? deuterium * 1000000
+            : deuterium;
+          console.log("el deuterio: ", deuterium);
+          totalResources = metal + crystal + deuterium;
+          //getting fleet
+          var fleetSelector = message.querySelector(
+            ".compacting:nth-child(9) .tooltipLeft"
+          );
+          if (fleetSelector) {
+            fleetSelector = fleetSelector.innerText;
+            var fleet = parseFloat(
+              fleetSelector.match(numberPattern).join(".")
+            );
+            fleet = fleetSelector.includes("Mrd")
+              ? fleet * 1000000000
+              : fleetSelector.includes("M")
+              ? fleet * 1000000
+              : fleet;
+          } else {
+            fleet = 0;
+          }
+          //getting defense
+          var fleetSelector = message.querySelector(
+            ".compacting:nth-child(9) .tooltipLeft"
+          );
+          if (fleetSelector) {
+            fleetSelector = fleetSelector.innerText;
+            var fleet = parseFloat(
+              fleetSelector.match(numberPattern).join(".")
+            );
+            fleet = fleetSelector.includes("Mrd")
+              ? fleet * 1000000000
+              : fleetSelector.includes("M")
+              ? fleet * 1000000
+              : fleet;
+          } else {
+            fleet = 0;
+          }
+          totalResources = totalResources || 0;
+          // console.log("la flota es: ", fleet);
+          console.log("se retornara: ", fleet, totalResources);
+          return {
+            fleet,
+            totalResources,
+          };
+        });
+        if (messageInfo) {
+          ({ fleet, totalResources } = messageInfo);
+          // await timeout(10 * 60 * 1000);
+          console.log("el fleet y recurso: ", fleet, totalResources);
+          // if (fleet < minFleet && totalResources < minResources) {
+          if (fleet < minFleet) {
+            console.log("se procedera a eliminar");
+            await page.waitForSelector("span.fright>a.fright");
+            let deleteMessageButton = await message.$("span.fright>a.fright");
+            await deleteMessageButton.click();
+            await pendingXHR.waitForAllXhrFinished();
+          }
+          await timeout(3 * 1000);
+        }
+      }
+      console.log("cambiando de pagina ...");
+      await page.waitForSelector(".paginator:nth-child(4)");
+      await page.click(".paginator:nth-child(4)");
+      //filtering messages
+      try {
+        console.log("esperando cuerpo de mensajes...");
+        await page.waitForSelector("#fleetsgenericpage");
+      } catch (error) {
+        console.log("se espero mucho...");
+      }
+      //updating index
+      i++;
+    }
+    console.log("se acabo el filtrado de mensajes...");
+    this.setTimesSpied(0); // se reinicia el contador de las veces que se espio
   }
 
   async getRank(page) {
@@ -293,7 +464,9 @@ module.exports = class Bot {
       timeout: 15000,
     });
     rank = await page.evaluate(() => {
-      var rank = document.querySelector("#bar > ul > li:nth-child(2)");
+      var rank = document.querySelector(
+        "#bar > ul > li:nth-child(2)"
+      ).innerText;
       return rank;
     });
     return getFirstNumber(rank);
@@ -580,36 +753,38 @@ module.exports = class Bot {
       await this.goToPage("galaxy", page);
     }
     let galaxyInputSelector = "#galaxy_input";
-    await page.waitForSelector(galaxyInputSelector, {
-      timeout: 15000,
-    });
-    await page.click(galaxyInputSelector);
-    await page.type(galaxyInputSelector, galaxy, {
-      delay: this.typingDelay,
-    });
-    let systemInputSelector =
-      "#galaxycomponent > #inhalt > #galaxyHeader #system_input";
-    await page.waitForSelector(systemInputSelector, {
-      timeout: 15000,
-    });
-    await page.click(systemInputSelector);
-    await page.type(systemInputSelector, system, {
-      delay: this.typingDelay,
-    });
-    //click !vamos!
-    await page.waitForSelector(
-      "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)",
-      {
-        timeout: 15000,
-      }
+    await page.waitForSelector(galaxyInputSelector);
+    let galaxyCurrentValue = await page.evaluate(
+      () => document.querySelector("#galaxy_input").value
     );
-    await timeout(1000);
-    await page.click(
-      "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
+    if (galaxyCurrentValue !== galaxy) {
+      await page.click(galaxyInputSelector);
+      await page.type(galaxyInputSelector, galaxy, {
+        delay: this.typingDelay,
+      });
+    }
+    let systemInputSelector = "#system_input";
+    await page.waitForSelector(systemInputSelector);
+    let systemCurrentValue = await page.evaluate(
+      () => document.querySelector("#system_input").value
     );
-    await page.waitForSelector(".galaxyRow.ctContentRow", {
-      timeout: 15000,
-    });
+    if (systemCurrentValue !== system) {
+      await page.click(systemInputSelector);
+      await page.type(systemInputSelector, system, {
+        delay: this.typingDelay,
+      });
+    }
+    if (galaxyCurrentValue !== galaxy || systemCurrentValue !== system) {
+      //click !vamos!
+      await page.waitForSelector(
+        "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
+      );
+      // await timeout(1000);
+      await page.click(
+        "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
+      );
+    }
+    await page.waitForSelector(".galaxyRow.ctContentRow");
   }
 
   async goToPage(pageName, page) {

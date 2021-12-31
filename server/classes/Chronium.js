@@ -9,11 +9,11 @@ class Chronium {
     let browser;
     if (config.environment === "development") {
       browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
       });
     } else {
       browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         // executablePath: "/usr/bin/firefox",
         // args: [
         //   "--no-sandbox",

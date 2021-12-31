@@ -11,11 +11,11 @@ app.post(`${config.SERVER_URL}/webhook`, (req, res) => {
 });
 
 app.post("/api/telegram/message", (req, res) => {
-  let msg = req.body.message;
-  telegramBot.sendTextMessage(624818317, msg);
+  let { message, senderId } = req.body;
+  telegramBot.sendTextMessage(senderId || config.TELEGRAM_GROUP_ID, message);
   res.json({
     ok: true,
-    msg
+    message,
   });
 });
 

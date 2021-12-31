@@ -18,52 +18,47 @@ if (config.environment === "dev")
   token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
 else token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
 // token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
-try {
-  var api = new TelegramBot(token, { polling: true });
+let api = new TelegramBot(token, { polling: true });
 
-  // api.setWebhook("https://48791559.ngrok.io/api/webhook");
-  // sendTextMessage(624818317, "Selecciona tu luna");
-  // sendQuickReply(624818317, "Selecciona tu luna", [
-  //   "1:122:1",
-  //   "1:122:2",
-  //   "1:122:3",
-  //   "1:122:4",
-  //   "1:122:5",
-  //   "1:122:6",
-  //   "1:122:7"
-  // ]);
+// api.setWebhook("https://48791559.ngrok.io/api/webhook");
+// sendTextMessage(624818317, "Selecciona tu luna");
+// sendQuickReply(624818317, "Selecciona tu luna", [
+//   "1:122:1",
+//   "1:122:2",
+//   "1:122:3",
+//   "1:122:4",
+//   "1:122:5",
+//   "1:122:6",
+//   "1:122:7"
+// ]);
 
-  // setPersistentMenu(["Expediciones", "Watchdog", "Scan", "Fleet Save"]);
-  api.sendMessage(-339549424, "Opciones", {
-    reply_markup: JSON.stringify({
-      keyboard: [
-        ["🚀 Expediciones", "🚀❌ Cancelar"],
-        ["🐶 Watchdog", "🐶❌ Cancelar"],
-        ["🔍 Scan", "💤 Fleet Save"],
-      ],
-      resize_keyboard: true,
-    }),
-  });
-  // console.log("enviando mensaje de telegram");
+// setPersistentMenu(["Expediciones", "Watchdog", "Scan", "Fleet Save"]);
+// api.sendMessage(config.TELEGRAM_GROUP_ID, "Opciones", {
+//   reply_markup: JSON.stringify({
+//     keyboard: [
+//       ["🚀 Expediciones", "🚀❌ Cancelar"],
+//       ["🐶 Watchdog", "🐶❌ Cancelar"],
+//       ["🔍 Scan", "💤 Fleet Save"],
+//     ],
+//     resize_keyboard: true,
+//   }),
+// });
+// console.log("enviando mensaje de telegram");
 
-  api.on("message", async (message) => {
-    let sender = message.from.id;
-    let msg = message.text.replace("/", "");
-    console.log("mensaje completo: ", message);
-    console.log("se recibio el mensaj1e:", msg, ".");
-    console.log("de ", sender);
-    sendTypingOn(sender); //typing on
-    if (msg === "id") {
-      sendTextMessage(sender, `Tu id es ${sender}`);
-    } else {
-      let result = await dialogflow.sendToDialogFlow(sender, msg);
-      handleDialogFlowResponse(sender, result);
-    }
-  });
-} catch (error) {
-  console.log("algo salio mal en telegram...");
-  console.log("el error es: ", error);
-}
+api.on("message", async (message) => {
+  let sender = message.from.id;
+  let msg = message.text.replace("/", "");
+  console.log("mensaje completo: ", message);
+  console.log("se recibio el mensaj1e:", msg, ".");
+  console.log("de ", sender);
+  sendTypingOn(sender); //typing on
+  if (msg === "id") {
+    sendTextMessage(sender, `Tu id es ${sender}`);
+  } else {
+    let result = await dialogflow.sendToDialogFlow(sender, msg);
+    handleDialogFlowResponse(sender, result);
+  }
+});
 
 async function handleDialogFlowResponse(sender, response) {
   let responseText = response.fulfillmentMessages.fulfillmentText;
@@ -533,7 +528,7 @@ async function sendTextMessage(recipientId, text) {
   console.log("llego este recipient: ", recipientId);
   // let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
   console.log("se enviara la respuesta: ", text);
-  await api.sendMessage("-339549424", text, { parse_mode: "html" });
+  await api.sendMessage(config.TELEGRAM_GROUP_ID, text, { parse_mode: "html" });
 }
 
 async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {

@@ -1,5 +1,6 @@
 //new relic
-
+//levantando telegram bot
+require("./chatbot/Telegram/telegramBot");
 const config = require("./config");
 const seed = require("../seed");
 const express = require("express");
@@ -79,8 +80,6 @@ passport.deserializeUser(function (user_id, done) {
   done(null, user_id);
 });
 
-//levantando telegram bot
-require("./chatbot/Telegram/telegramBot");
 app.use("", require("./routes/api/telegram.js"));
 
 //creando instancias
@@ -98,26 +97,28 @@ BotModel.find().exec(async (err, payload) => {
 
     bot.initialize(element);
     bots.addBot(bot);
-    // if (bot.ogameEmail != "carlos.jf.1681@gmail.com") {
-    console.log("empezando login", bot.ogameEmail);
-    let login = await bot.login(element.ogameEmail, element.ogamePassword);
-    console.log("🚀 Aqui *** -> login", login);
-    console.log("se termino el loginnnn");
-    // const beginSpies = require("./ogameScripts/spyRange");
-    // await beginSpies("3:205:7", 100, "moon", bot);
-    // let page = await bot.createNewPage();
-    // await bot.filterSpyMessages(page);
-    if (login) {
-      beginActions(bot);
+    if (bot.ogameEmail != "carlos.jf.1681@gmail.com") {
+      console.log("empezando login", bot.ogameEmail);
+      let login = await bot.login(element.ogameEmail, element.ogamePassword);
+      console.log("🚀 Aqui *** -> login", login);
+      console.log("se termino el loginnnn");
+      const beginSpies = require("./ogameScripts/spyRange");
+      await beginSpies("8:482:7", 100, "planet", bot);
+      await timeout(10 * 1000);
+      let page = await bot.createNewPage();
+      await bot.filterSpyMessages(page);
+      if (login) {
+        beginActions(bot);
+      }
+      //daily rutine
     }
-    //daily rutine
-    // }
   });
   // beginDailyFleetSave(bots.bots);
   // seed.actions();
 });
 
 const routes = require("./routes/api/api.js");
+const { timeout } = require("./utils/utils");
 app.use("/api", routes);
 
 //Handle Production

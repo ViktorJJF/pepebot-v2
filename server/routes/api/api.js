@@ -4,6 +4,7 @@ const bots = require("../../classes/Bots.js");
 const Bot = require("../../classes/Bot");
 const telegramBot = require("../../chatbot/Telegram/telegramBot");
 const ogameApi = require("../../services/ogameApi");
+const spyPlayer = require("../../ogameScripts/spyPlayer");
 
 //Controllers
 const usersController = require("../../controllers/usersController.js");
@@ -170,6 +171,24 @@ router.get("/check-activity", async (req, res) => {
     );
     res.json({ ok: true, msg: "algo salió mal" });
   }
+});
+
+router.post("/webhook/", (req, res) => {
+  console.log("se ingreso al webhook");
+  console.log("llego esta info:");
+  console.log(req.body);
+  // Assume all went well.
+  // You must send back a 200, within 20 seconds
+  res.sendStatus(200);
+});
+
+router.post("/spy/:playerName", (req, res) => {
+  const playerName = req.params.playerName;
+  // spyPlayer(bot.)
+  console.log(req.body);
+  // Assume all went well.
+  // You must send back a 200, within 20 seconds
+  res.sendStatus(200);
 });
 
 router.post("/webhook/", (req, res) => {

@@ -85,7 +85,8 @@ async function start(bot, origin, ships, speed) {
   } catch (error) {
     console.log("se dio un error en expeditions..probablemente el logeo");
     console.log("el error es: ", error);
-    await bot.checkLoginStatus(page);
+    let newPage = await bot.createNewPage();
+    await bot.checkLoginStatus(newPage);
     console.log("terminado el error de expeditions");
     return;
   }
@@ -102,6 +103,7 @@ async function sendExpedition(origin, ships, page, speed) {
   fleet.setOrigin(origin);
   fleet.setDestination(destination.generateCoords());
   fleet.setSpeed(speed);
+  fleet.setType("moon");
   fleet.setMission("expedition");
   // Object.entries(ships).forEach(([key, value]) => {
   //   fleet.addShips(key, value);

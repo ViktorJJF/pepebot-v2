@@ -15,6 +15,7 @@ class Fleet {
     this.duration = null; //1h 2h 1h:30min 40min etc
     this.allResources = null;
     this.allShips = null;
+    this.type = null;
     this.ships = [
       {
         id: "202",
@@ -114,6 +115,9 @@ class Fleet {
   setOrigin(value) {
     this.origin = value;
   }
+  setType(value) {
+    this.type = value;
+  }
   setDestination(value) {
     this.destination = value;
   }
@@ -139,19 +143,25 @@ class Fleet {
     //select origin
     console.log("yendo al origen");
     await this.page.waitForSelector("span.planet-koords");
-    await this.page.evaluate((origin) => {
-      var planetCoords = document.querySelectorAll(".smallplanet");
-      for (let i = 0; i < planetCoords.length; i++) {
-        var planetCoordsText = planetCoords[i]
-          .querySelector("span.planet-koords")
-          .innerText.replace(/[\[\]']+/g, "");
-        if (planetCoordsText == origin) {
-          if (planetCoords[i].querySelector(".moonlink"))
-            planetCoords[i].querySelector(".moonlink").click();
-          else planetCoords[i].querySelector("span.planet-koords").click();
+    await this.page.evaluate(
+      (origin, type = "moon") => {
+        var planetCoords = document.querySelectorAll(".smallplanet");
+        for (let i = 0; i < planetCoords.length; i++) {
+          var planetCoordsText = planetCoords[i]
+            .querySelector("span.planet-koords")
+            .innerText.replace(/[\[\]']+/g, "");
+          if (planetCoordsText == origin) {
+            if (planetCoords[i].querySelector(".moonlink") && type == "moon") {
+              planetCoords[i].querySelector(".moonlink").click();
+            } else {
+              planetCoords[i].querySelector("span.planet-koords").click();
+            }
+          }
         }
-      }
-    }, this.origin);
+      },
+      this.origin,
+      this.type
+    );
     //go to fleet view
     await this.page.waitForSelector(
       "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
@@ -365,6 +375,14 @@ class Fleet {
         });
         await this.page.click("li#button6>a#missionButton6");
         break;
+      case "debris":
+        console.log("se escogio escombros");
+        await this.page.waitForSelector("#dbutton");
+        await this.page.click("#dbutton");
+        await timeout(5 * 1000);
+        await this.page.waitForSelector("#missionButton8");
+        await this.page.click("#missionButton8");
+        break;
       default:
         break;
     }
@@ -380,9 +398,17 @@ class Fleet {
       });
       await this.page.type(
         "input#deuterium",
-        String(dutyRemaining - Random(400000, 600000))
+        String(
+          dutyRemaining - dutyRemaining > 600000
+            ? Random(400000, 600000)
+            : Random(dutyRemaining * 0.1, 600000 * 0.2)
+        )
       );
     }
+    // colocando velocidad
+    await this.page.waitForSelector(
+      "[data-step='" + (this.speed || 1) * 10 + "']"
+    );
     console.log("mandando la flota...");
     await this.page.waitForSelector("a#sendFleet.start.on");
     await this.page.click("a#sendFleet.start.on");

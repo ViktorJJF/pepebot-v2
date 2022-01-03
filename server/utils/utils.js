@@ -135,6 +135,40 @@ async function sendTelegramMessage(senderId, message) {
   }
 }
 
+async function getNearestPlanet(bot, coords) {
+  let currentPlayer = bot.playerId == "102988" ? "Cosaco" : "Chief Orbiter";
+  const playerInfo = (
+    await axios(config.PEPEHUNTER_BASE + "/api/players/by-name", {
+      params: { name: currentPlayer },
+    })
+  ).data.payload;
+  const planets = playerInfo.planets;
+  let selectedCoord = "";
+  let possiblePlanets = [];
+  let hasSameGalaxy = planets.some(
+    (planet) => planet.coords.split(":")[0] === coords.split(":")[0]
+  );
+  if (hasSameGalaxy) {
+    possiblePlanets = planets.filter(
+      (planet) => planet.coords.split(":")[0] === coords.split(":")[0]
+    );
+  } else {
+    possiblePlanets = planets.filter(
+      (planet) =>
+        parseInt(planet.coords.split(":")[0]) - 1 ===
+          parseInt(coords.split(":")[0]) ||
+        parseInt(planet.coords.split(":")[0]) + 1 ===
+          parseInt(coords.split(":")[0])
+    );
+  }
+  selectedCoord = possiblePlanets[Random(0, possiblePlanets.length - 1)].coords;
+  console.log(selectedCoord);
+
+  // let finalCoords = parseInt(system) + parseInt(range);
+  //go to planet to begin to spy
+  return selectedCoord;
+}
+
 module.exports = {
   timeout,
   msToTime,
@@ -145,4 +179,6 @@ module.exports = {
   getFirstNumber,
   handleError,
   buildErrObject,
+  getNearestPlanet,
+  sendTelegramMessage,
 };

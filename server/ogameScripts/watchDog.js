@@ -11,8 +11,12 @@ async function watchDog(bot, page) {
       " empezare a cuidar tu cuenta, para desactivar dime algo como 'pepebot ya no cuides mi cuenta'"
   );
   while (await bot.hasAction("watchDog")) {
-    let watchDogStatus = await start(page, bot, botTelegram);
-    if (watchDogStatus) await timeout(Random(3 * 60 * 1000, 4 * 20 * 1000));
+    try {
+      let watchDogStatus = await start(page, bot, botTelegram);
+      if (watchDogStatus) await timeout(Random(1 * 60 * 1000, 1.5 * 60 * 1000));
+    } catch (error) {
+      console.log(error);
+    }
   }
   console.log("se terminó el watchdog");
   return;

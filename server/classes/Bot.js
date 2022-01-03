@@ -6,9 +6,11 @@ const {
   getFirstNumber,
   buildErrObject,
   handleError,
+  sendTelegramMessage,
 } = require("../utils/utils.js");
 const config = require("../config");
 const chronium = require("../classes/Chronium");
+const { PendingXHR } = require("pending-xhr-puppeteer");
 
 module.exports = class Bot {
   constructor() {
@@ -60,6 +62,9 @@ module.exports = class Bot {
   }
   async begin() {
     console.log("iniciando bot...");
+    // // let browser = chronium.getBrowser();
+    // this.browser = chronium.getBrowser();
+    // // this.browser = await browser.createIncognitoBrowserContext();
     let browser = chronium.getBrowser();
     this.browser = await browser.createIncognitoBrowserContext();
   }
@@ -69,7 +74,10 @@ module.exports = class Bot {
   }
   async login(ogameEmail, ogamePassword, page) {
     try {
-      if (!this.browser) await this.begin();
+      if (!this.browser) {
+        console.log("no existe browser, inicializando");
+        await this.begin();
+      }
       var page = await this.createNewPage(this.LOGIN_URL);
       console.log(`Empezando Logeooo...`);
       //closing add
@@ -161,7 +169,7 @@ module.exports = class Bot {
   }
 
   async goToPlanetMoon(coords, page) {
-    console.log("yendo al planeta/luna: ", coords);
+    console.log("Cambiando a planeta/luna", coords);
     await page.waitForSelector("span.planet-koords");
     let coordsExists = await page.evaluate((coords) => {
       let coordsExists = false;
@@ -172,9 +180,13 @@ module.exports = class Bot {
           .innerText.replace(/[\[\]']+/g, "");
         if (planetCoordsText == coords) {
           coordsExists = true;
-          if (planetCoords[i].querySelector(".moonlink"))
+          if (planetCoords[i].querySelector(".moonlink")) {
             planetCoords[i].querySelector(".moonlink").click();
-          else planetCoords[i].querySelector("span.planet-koords").click();
+            console.log("nos vamos a luna");
+          } else {
+            console.log("nos vamos a planeta");
+            planetCoords[i].querySelector("span.planet-koords").click();
+          }
         }
       }
       return coordsExists;
@@ -184,13 +196,14 @@ module.exports = class Bot {
         400,
         `No tienes un planeta con las coordenadas *${coords}*`
       );
+    } else {
+      await page.waitForSelector("#notificationbarcomponent");
+      console.log("todo en orden");
     }
     return coordsExists;
   }
 
-  async getSolarSystemPlanets(coords, pendingXHR, page) {
-    await this.goToSolarSystem(coords, page);
-    await pendingXHR.waitForAllXhrFinished();
+  async getSolarSystemPlanets(page) {
     let availablePlanetsIndex = await page.evaluate(() => {
       let indexes = [];
       Array.from(document.querySelectorAll(".galaxyRow.ctContentRow")).filter(
@@ -215,34 +228,43 @@ module.exports = class Bot {
     return availablePlanetsIndex;
   }
 
-  async spyPlanetMoon(coords, type = "planet", page) {
+  async spyPlanetMoon(coords, page, type = "planet", checkRank = true) {
+    console.log("🚀 Aqui *** -> coords", coords);
     let [galaxy, system, planet] = coords.split(":");
     //get planets
     try {
+      // await this.goToSolarSystem(coords, page);
+      // await this.waitForAllXhrFinished(page);
       await page.waitForSelector("#galaxy_input");
       // primero se valida si el jugador a espiar no es muy fuerte (rank)
       let planetSelector = `.galaxyRow.ctContentRow#galaxyRow${planet}`;
       await page.waitForSelector(planetSelector);
       let playerSelector = ".cellPlayerName .tooltipRel";
+      await page.waitForSelector(
+        planetSelector + " .cellPlayerName .tooltipRel"
+      );
       let planetElement = await page.$(planetSelector);
-      let playerId = await planetElement.evaluate((e) => {
-        let playerId = e.querySelector(".cellAction a:nth-child(2)");
-        return playerId ? playerId.getAttribute("data-playerid") : 0;
-      });
-      await page.hover(planetSelector + " .cellPlayerName .tooltipRel");
-      let ownRank = await this.getRank(page);
-      let playerRank = await page.evaluate((playerId) => {
-        return parseInt(
-          document.querySelector(`#player${playerId} .rank a`).innerText
-        );
-      }, playerId);
-      // si el rank del jugador es mayor al propio por 5, ignorar
-      const LIMIT = 0;
-      if (playerRank + LIMIT < ownRank) {
-        console.log("jugador fuerte, ignorar");
-        return true;
+      if (checkRank) {
+        let playerId = await planetElement.evaluate((e) => {
+          let playerId = e.querySelector(".cellAction a:nth-child(2)");
+          return playerId ? playerId.getAttribute("data-playerid") : 0;
+        });
+        await page.hover(planetSelector + " .cellPlayerName .tooltipRel");
+        let ownRank = await this.getRank(page);
+        let playerRank = await page.evaluate((playerId) => {
+          return parseInt(
+            document.querySelector(`#player${playerId} .rank a`).innerText
+          );
+        }, playerId);
+        // si el rank del jugador es mayor al propio por 5, ignorar
+        const LIMIT = 0;
+        if (playerRank + LIMIT < ownRank) {
+          console.log("jugador fuerte, ignorar");
+          return true;
+        }
+        console.log("🚀 Aqui *** -> playerRank", playerRank);
       }
-      console.log("🚀 Aqui *** -> playerRank", playerRank);
+
       // let planets = await page.$$("tr.row");
       // await page.waitForSelector(".icon_eye");
       // await page.waitForSelector(".moon_a");
@@ -250,18 +272,24 @@ module.exports = class Bot {
       if (type === "planet") {
         let planetBeignSpied = await page.$(`${planetSelector} .fleetHostile`);
         if (!planetBeignSpied) {
-          await page.hover(planetSelector);
-          await page.waitForSelector(`#planet${planet}.galaxyTooltip`);
-          await page.evaluate((planetNumber) => {
-            let options = document.querySelectorAll(
-              `#planet${planetNumber}.galaxyTooltip ul.ListLinks>li`
-            );
-            options.forEach((option) => {
-              if (option.innerText.includes("Espionaje"))
-                return option.querySelector("a").click();
-            });
-            return;
-          }, planet);
+          console.log("planeta no esta siendo espiado");
+          await page.waitForSelector(
+            planetSelector + " " + `[rel=planet${planet}]`
+          );
+          await page.click(planetSelector + " " + `[rel=planet${planet}]`);
+          // await page.hover(planetSelector + " " + `[rel=planet${planet}]`);
+          // await page.waitForSelector(`#planet${planet}.galaxyTooltip`);
+          // console.log("tratando de hacer click x1");
+          // await page.evaluate((planetNumber) => {
+          //   let options = document.querySelectorAll(
+          //     `#planet${planetNumber}.galaxyTooltip ul.ListLinks>li`
+          //   );
+          //   options.forEach((option) => {
+          //     if (option.innerText.includes("Espionaje"))
+          //       return option.querySelector("a").click();
+          //   });
+          //   return;
+          // }, planet);
           await page.waitForSelector(`${planetSelector} .fleetHostile`);
         }
       }
@@ -275,20 +303,23 @@ module.exports = class Bot {
         let moonWithActivity = await page.$(`[rel="moon${planet}"] .minute15`);
         // if (!moonBeignSpied && !moonWithActivity) {
         if (!moonBeignSpied) {
-          await page.hover(`[rel="moon${planet}"]`);
-          await page.waitForSelector(`#moon${planet}.galaxyTooltip`, {
-            visible: true,
-          });
-          await page.evaluate((planetNumber) => {
-            let options = document.querySelectorAll(
-              `#moon${planetNumber}.galaxyTooltip ul.ListLinks>li`
-            );
-            options.forEach((option) => {
-              if (option.innerText === "Espionaje")
-                option.querySelector("a").click();
-            });
-            return;
-          }, planet);
+          await page.waitForSelector(`[rel="moon${planet}"]`);
+          await page.click(`[rel="moon${planet}"]`);
+          // await page.hover(`[rel="moon${planet}"]`);
+          // await page.waitForSelector(`#moon${planet}.galaxyTooltip`, {
+          //   visible: true,
+          // });
+          // console.log("tratando de hacer click x2");
+          // await page.evaluate((planetNumber) => {
+          //   let options = document.querySelectorAll(
+          //     `#moon${planetNumber}.galaxyTooltip ul.ListLinks>li`
+          //   );
+          //   options.forEach((option) => {
+          //     if (option.innerText === "Espionaje")
+          //       option.querySelector("a").click();
+          //   });
+          //   return;
+          // }, planet);
           //wait for icon
           await page.waitForSelector(`[rel="moon${planet}"] .fleetHostile`);
         }
@@ -298,11 +329,25 @@ module.exports = class Bot {
     } catch (error) {
       console.log("algo salio mal espiando: ", coords);
       console.log(error);
+      // se verifica el estado del login
+      // await this.checkLoginStatus(page);
+      // var newPage = await bot.createNewPage();
+      await this.refreshGalaxyView(page);
+      await this.spyPlanetMoon(coords, page, type, checkRank);
       return false;
     }
     await timeout(200);
     return true;
   }
+
+  /**
+   * @Description Espera a que todas las solicitudes Xhr hayan finalizado para continuar
+   */
+  async waitForAllXhrFinished(page) {
+    const pendingXHR = new PendingXHR(page);
+    await pendingXHR.waitForAllXhrFinished();
+  }
+
   setTimesSpied(qty) {
     this.timesSpied = qty;
   }
@@ -310,7 +355,7 @@ module.exports = class Bot {
     console.log("empezando a filtrar mensajes");
     await page.waitForSelector(".comm_menu");
     await page.click(".comm_menu");
-    let minFleet = 100 * 1000000; //10M
+    let minFleet = 20 * 1000000; //10M
     let minResources = 20 * 1000000; // 10M
     // try {
     //   await page.waitForSelector("#fleetsgenericpage");
@@ -340,6 +385,10 @@ module.exports = class Bot {
           )
             return; // significa que no es informe de espionaje
 
+          let planetWithCoords = message.querySelector(".txt_link").innerText;
+          let playerName = message
+            .querySelector(".compacting span:nth-child(2)")
+            .innerText.trim();
           var metalSelector = message
             .querySelector(".resspan:nth-child(1)")
             .innerText.replace("Metal", "");
@@ -396,48 +445,61 @@ module.exports = class Bot {
               ? fleet * 1000000000
               : fleetSelector.includes("M")
               ? fleet * 1000000
-              : fleet;
+              : fleet * 1000;
           } else {
             fleet = 0;
           }
           //getting defense
-          var fleetSelector = message.querySelector(
-            ".compacting:nth-child(9) .tooltipLeft"
+          var defenseSelector = message.querySelector(
+            ".compacting:nth-child(9) .tooltipRight"
           );
-          if (fleetSelector) {
-            fleetSelector = fleetSelector.innerText;
-            var fleet = parseFloat(
-              fleetSelector.match(numberPattern).join(".")
+          if (defenseSelector) {
+            defenseSelector = defenseSelector.innerText;
+            var defense = parseFloat(
+              defenseSelector.match(numberPattern).join(".")
             );
-            fleet = fleetSelector.includes("Mrd")
-              ? fleet * 1000000000
-              : fleetSelector.includes("M")
-              ? fleet * 1000000
-              : fleet;
+            defense = defenseSelector.includes("Mrd")
+              ? defense * 1000000000
+              : defenseSelector.includes("M")
+              ? defense * 1000000
+              : defense * 1000;
           } else {
-            fleet = 0;
+            defense = 0;
           }
           totalResources = totalResources || 0;
           // console.log("la flota es: ", fleet);
-          console.log("se retornara: ", fleet, totalResources);
-          return {
+          console.log("se retornara: ", {
+            playerName,
+            planetWithCoords,
             fleet,
+            defense,
+            totalResources,
+          });
+          return {
+            playerName,
+            planetWithCoords,
+            fleet,
+            defense,
             totalResources,
           };
         });
         if (messageInfo) {
-          ({ fleet, totalResources } = messageInfo);
           // await timeout(10 * 60 * 1000);
+          console.log("evaluando mensaje ", messageInfo);
           console.log("el fleet y recurso: ", fleet, totalResources);
-          // if (fleet < minFleet && totalResources < minResources) {
-          if (fleet < minFleet) {
-            console.log("se procedera a eliminar");
-            await page.waitForSelector("span.fright>a.fright");
-            let deleteMessageButton = await message.$("span.fright>a.fright");
-            await deleteMessageButton.click();
-            await pendingXHR.waitForAllXhrFinished();
+          if (
+            messageInfo.fleet < minFleet &&
+            messageInfo.totalResources < minResources
+          ) {
+            // if (fleet < minFleet) {
+            console.log("SE procedera a eliminar");
+            // await page.waitForSelector("span.fright>a.fright");
+            // let deleteMessageButton = await message.$("span.fright>a.fright");
+            // await deleteMessageButton.click();
+            // await pendingXHR.waitForAllXhrFinished();
+          } else {
+            console.log("SE CONSERVA");
           }
-          await timeout(3 * 1000);
         }
       }
       console.log("cambiando de pagina ...");
@@ -472,10 +534,10 @@ module.exports = class Bot {
     return getFirstNumber(rank);
   }
 
-  async refreshGalaxyView(pendingXHR, page) {
+  async refreshGalaxyView(page) {
     await page.waitForSelector(".btn_blue");
     await page.click(".btn_blue");
-    await pendingXHR.waitForAllXhrFinished();
+    await this.waitForAllXhrFinished(page);
     return;
   }
 
@@ -505,6 +567,11 @@ module.exports = class Bot {
       url ||
       `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`;
     let page = await this.browser.newPage();
+    // await page.setViewport({
+    //   width: 3440,
+    //   height: 1440,
+    //   deviceScaleFactor: 1,
+    // });
     page.setDefaultTimeout(timeout);
     await page.goto(mainMenuUrl, {
       waitUntil: "networkidle0",
@@ -598,10 +665,18 @@ module.exports = class Bot {
       return !document.querySelector("#attack_alert.soon");
     });
     if (notAttacked) {
+      sendTelegramMessage(
+        "624818317",
+        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE`
+      );
       console.log("no estas siendo atacado");
       return false;
     } else {
       console.log("estas siendo atacado !!");
+      sendTelegramMessage(
+        "624818317",
+        `verificando ataques para ${this.ogameEmail}... - TE ATACAN`
+      );
       return true;
     }
   }
@@ -752,6 +827,7 @@ module.exports = class Bot {
     if (this.currentPage !== "galaxy") {
       await this.goToPage("galaxy", page);
     }
+    await this.waitForAllXhrFinished(page);
     let galaxyInputSelector = "#galaxy_input";
     await page.waitForSelector(galaxyInputSelector);
     let galaxyCurrentValue = await page.evaluate(
@@ -775,6 +851,7 @@ module.exports = class Bot {
       });
     }
     if (galaxyCurrentValue !== galaxy || systemCurrentValue !== system) {
+      console.log("dando click en vamos...");
       //click !vamos!
       await page.waitForSelector(
         "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
@@ -783,7 +860,19 @@ module.exports = class Bot {
       await page.click(
         "#galaxycomponent > #inhalt > #galaxyHeader > form > .btn_blue:nth-child(9)"
       );
+    } else {
+      console.log(
+        "entramos aca: ",
+        galaxyCurrentValue !== galaxy || systemCurrentValue !== system
+      );
+      console.log("entramos aca: ", {
+        galaxyCurrentValue,
+        galaxy,
+        systemCurrentValue,
+        system,
+      });
     }
+    await this.waitForAllXhrFinished(page);
     await page.waitForSelector(".galaxyRow.ctContentRow");
   }
 
@@ -794,6 +883,17 @@ module.exports = class Bot {
       case "galaxy":
         this.currentPage = "galaxy";
         console.log("yendo a vista galaxias");
+        // const buttons = await page.$$(".menubutton");
+        // await page.goto(
+        //   "https://s208-es.ogame.gameforge.com/game/index.php?page=ingame&component=galaxy"
+        // );
+        // for (const button of buttons) {
+        //   let innerText = await button.evaluate((e) => e.innerText);
+        //   console.log("🚀 Aqui *** -> innerText", innerText);
+        //   if (innerText === "Galaxia") {
+        //     await button.click();
+        //   }
+        // }
         await page.waitForSelector(
           "#toolbarcomponent > #links > #menuTable > li:nth-child(9) > .menubutton",
           {

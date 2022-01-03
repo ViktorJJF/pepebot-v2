@@ -10,34 +10,41 @@
 const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
 
-const { Random, timeout, msToTime, handleError } = require("../utils/utils");
-const { PendingXHR } = require("pending-xhr-puppeteer");
+const {
+  Random,
+  timeout,
+  msToTime,
+  handleError,
+  getNearestPlanet,
+} = require("../utils/utils");
 const botTelegram = require("../chatbot/Telegram/telegramBot");
+const axios = require("axios");
+const config = require("../config");
 
-async function beginSpies(origin, range, type, bot) {
+async function beginSpies(bot, from, to, type = "planet") {
   try {
     console.log("empezando espionaje");
     let timesSpied = 0; // cantidad de veces espiadas
-    var page = await bot.createNewPage(null, 6000);
+    var page = await bot.createNewPage();
     var ogameUsername = await bot.getOgameUsername(page);
     //check
-    const pendingXHR = new PendingXHR(page);
-    let [galaxy, system, planet] = origin.split(":");
-    galaxy = 7;
-    let beginCoords = 100;
-    // let beginCoords = parseInt(system) - parseInt(range);
-    let finalCoords = 200;
-    // let finalCoords = parseInt(system) + parseInt(range);
-    //go to planet to begin to spy
-    await bot.goToPlanetMoon(origin, page);
-    for (let i = beginCoords; i <= finalCoords; i++) {
-      console.log("mandando espionaje...");
+    // primero se obtiene el origen mas cercano
+    let nearestCoords = await getNearestPlanet(bot, from, page);
+    console.log("🚀 Aqui *** -> nearestCoords", nearestCoords);
+    await bot.goToPlanetMoon(nearestCoords, page);
+    for (
+      let i = parseInt(from.split(":")[1]);
+      i <= parseInt(to.split(":")[1]);
+      i++
+    ) {
+      let planet = i;
+      let galaxy = from.split(":")[0];
       // Sends new spies
-      let planetsToSpy = await bot.getSolarSystemPlanets(
-        `${galaxy}:${String(i)}:${planet}`,
-        pendingXHR,
-        page
-      );
+      console.log(`OBTENIENDO PLANETAS DE: ${galaxy}:${String(i)}:${planet}`);
+      await bot.goToSolarSystem(`${galaxy}:${String(i)}:${planet}`, page);
+      await timeout(10 * 1000);
+      let planetsToSpy = await bot.getSolarSystemPlanets(page);
+      console.log("🚀 Aqui *** -> planetsToSpy", planetsToSpy);
       let { slots } = await bot.getFleetsFromGalaxyView(page);
       let remainingSlots = slots.all - slots.current;
       for (let j = 0; j < planetsToSpy.length; j++) {
@@ -48,12 +55,13 @@ async function beginSpies(origin, range, type, bot) {
         );
         let spyStatus = await bot.spyPlanetMoon(
           `${galaxy}:${String(i)}:${planetsToSpy[j] + 1}`,
-          type,
-          page
+          page,
+          "moon",
+          true
         );
         if (!spyStatus) {
           j--;
-          await bot.refreshGalaxyView(pendingXHR, page);
+          // await bot.refreshGalaxyView(page);
         } else {
           timesSpied += 1;
         }
@@ -61,7 +69,7 @@ async function beginSpies(origin, range, type, bot) {
         // await timeout(1 * 1000);
         while (remainingSlots === 0) {
           console.log("te quedaste sin slots..");
-          await bot.refreshGalaxyView(pendingXHR, page);
+          await bot.refreshGalaxyView(page);
           slots = (await bot.getFleetsFromGalaxyView(page)).slots;
           remainingSlots = slots.all - slots.current;
           console.log("quedan slots: ", remainingSlots);

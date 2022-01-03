@@ -20,10 +20,14 @@ async function beginExpeditions(
   expeditionDuration = 1
 ) {
   while (await bot.hasAction("expeditions")) {
-    let minSecs = await start(bot, origin, ships, speed);
-    if (minSecs) await timeout(minSecs + 0.1 * 6 * 1000);
-    // Sleep until one of the expedition fleet come back
-    console.log("empezando nueva vuelta...");
+    try {
+      let minSecs = await start(bot, origin, ships, speed);
+      if (minSecs) await timeout(minSecs + 0.1 * 6 * 1000);
+      // Sleep until one of the expedition fleet come back
+      console.log("empezando nueva vuelta...");
+    } catch (error) {
+      console.log("expeditions error 2", error);
+    }
   }
   return;
 }

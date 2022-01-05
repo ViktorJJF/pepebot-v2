@@ -173,6 +173,24 @@ router.get("/check-activity", async (req, res) => {
   }
 });
 
+router.post("/spy-player", async (req, res) => {
+  let { telegramId, playerName, type } = req.body;
+  let bot = bots.getBotByTelegramId(telegramId);
+  if (!bot)
+    return res.json({
+      ok: false,
+      msg: "No hay un bot creado con ese id de usuario",
+    });
+  try {
+    await spyPlayer(bot, playerName, type);
+    res.json({ ok: true, msg: "accion terminada" });
+  } catch (error) {
+    console.log(error);
+    telegramBot.sendTextMessage(user_id, "Al parecer ese jugador no existe");
+    res.json({ ok: true, msg: "algo salió mal" });
+  }
+});
+
 router.post("/webhook/", (req, res) => {
   console.log("se ingreso al webhook");
   console.log("llego esta info:");

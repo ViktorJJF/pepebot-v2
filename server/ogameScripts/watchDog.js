@@ -13,7 +13,8 @@ async function watchDog(bot, page) {
   while (await bot.hasAction("watchDog")) {
     try {
       let watchDogStatus = await start(page, bot, botTelegram);
-      if (watchDogStatus) await timeout(Random(1 * 60 * 1000, 1.5 * 60 * 1000));
+      if (watchDogStatus)
+        await timeout(Random(0.75 * 60 * 1000, 1 * 60 * 1000));
     } catch (error) {
       console.log(error);
     }
@@ -45,7 +46,8 @@ async function start(page, bot, botTelegram) {
         );
       } else {
         console.log("llego esta respuesta: ", attackDetails);
-        callMeBot("Te estan atacando llama"); //make telegram phonecall
+        callMeBot("@ViktorJJF", "Te estan atacando"); //make telegram phonecall
+        callMeBot("@Juancarlosjf", "Te estan atacando"); //make telegram phonecall
         await botTelegram.sendTextMessage(
           bot.telegramId, //bot.telegramGroupId
           "⚠️ <b>" +

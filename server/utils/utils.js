@@ -135,6 +135,17 @@ async function sendTelegramMessage(senderId, message) {
   }
 }
 
+async function sendTelegramMessagePersonal(senderId, message) {
+  try {
+    await axios.post(config.PEPEBOT_BASE + "/api/telegram/v1/message", {
+      senderId,
+      message,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function getNearestPlanet(bot, coords) {
   let currentPlayer = bot.playerId == "102988" ? "Cosaco" : "Chief Orbiter";
   const playerInfo = (
@@ -181,4 +192,5 @@ module.exports = {
   buildErrObject,
   getNearestPlanet,
   sendTelegramMessage,
+  sendTelegramMessagePersonal,
 };

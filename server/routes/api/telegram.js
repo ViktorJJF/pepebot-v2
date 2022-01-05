@@ -19,4 +19,13 @@ app.post("/api/telegram/message", (req, res) => {
   });
 });
 
+app.post("/api/telegram/v1/message", (req, res) => {
+  let { message, senderId } = req.body;
+  telegramBot.sendTextMessagePersonal(senderId, message);
+  res.json({
+    ok: true,
+    message,
+  });
+});
+
 module.exports = app;

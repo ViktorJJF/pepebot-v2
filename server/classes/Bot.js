@@ -7,6 +7,7 @@ const {
   buildErrObject,
   handleError,
   sendTelegramMessage,
+  sendTelegramMessagePersonal,
 } = require("../utils/utils.js");
 const config = require("../config");
 const chronium = require("../classes/Chronium");
@@ -233,8 +234,8 @@ module.exports = class Bot {
     let [galaxy, system, planet] = coords.split(":");
     //get planets
     try {
-      // await this.goToSolarSystem(coords, page);
-      // await this.waitForAllXhrFinished(page);
+      await this.goToSolarSystem(coords, page);
+      await this.waitForAllXhrFinished(page);
       await page.waitForSelector("#galaxy_input");
       // primero se valida si el jugador a espiar no es muy fuerte (rank)
       let planetSelector = `.galaxyRow.ctContentRow#galaxyRow${planet}`;
@@ -665,17 +666,25 @@ module.exports = class Bot {
       return !document.querySelector("#attack_alert.soon");
     });
     if (notAttacked) {
-      sendTelegramMessage(
+      sendTelegramMessagePersonal(
         "624818317",
-        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE`
+        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`
+      );
+      sendTelegramMessagePersonal(
+        "893530350",
+        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`
       );
       console.log("no estas siendo atacado");
       return false;
     } else {
       console.log("estas siendo atacado !!");
-      sendTelegramMessage(
+      sendTelegramMessagePersonal(
         "624818317",
-        `verificando ataques para ${this.ogameEmail}... - TE ATACAN`
+        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`
+      );
+      sendTelegramMessagePersonal(
+        "893530350",
+        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`
       );
       return true;
     }
@@ -1185,10 +1194,22 @@ module.exports = class Bot {
     });
     let planets = await page.$$(".smallplanet");
     let selectedPlanet = planets[Random(0, planets.length - 1)];
+    // let selectedPlanet;
+    // // seleccionando planeta posicion especifica
+    // for (const planet of planets) {
+    //   let innerText = await planet.evaluate(
+    //     (e) => e.querySelector(".planet-koords ").innerText
+    //   );
+    //   if (innerText.includes("5:171:7") || innerText.includes("5:171:8")) {
+    //     console.log("SELECCIONE ESTO: ", innerText);
+    //     selectedPlanet = planet;
+    //   }
+    // }
     await timeout(1.5 * 1000);
     let hasMoon = await selectedPlanet.evaluate((e) =>
       e.querySelector("a.moonlink")
     );
+    // let hasMoon = true;
     if (hasMoon) {
       console.log("tiene luna, se escogera actividad al azar...");
       let randomNumber = Random(0, 1);
@@ -1341,7 +1362,7 @@ module.exports = class Bot {
     //expeditions - watchDog - hunter - dailyFleetSave
     let actions = await this.getActions();
     let actionIndex = actions.findIndex((action) => action.type === actionType);
-    console.log("se retornara: ", actionIndex);
+    console.log("se retornara: ", actionIndex, actions[actionIndex]);
     return actionIndex > -1 ? true : false;
   }
   async getActions() {

@@ -52,7 +52,16 @@ async function spyPlayer(bot, playerName, type = "planet") {
     // console.log("object");
     // await bot.goToSolarSystem(coords, page);
     await timeout(3 * 1000);
-    await bot.spyPlanetMoon(coords, page, type, false);
+    try {
+      // await bot.goToSolarSystem(coords, page);
+      // await bot.waitForAllXhrFinished(page);
+      console.log("antes de espiar...");
+      await bot.spyPlanetMoon(coords, page, type, false);
+    } catch (error) {
+      console.log("ERROR SPY", error);
+      await bot.checkLoginStatus(page);
+      i = i - 1;
+    }
   }
   console.log("ESPIONAJES TERMINADOS!!");
 }

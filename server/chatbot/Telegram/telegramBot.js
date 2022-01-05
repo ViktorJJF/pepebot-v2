@@ -531,6 +531,13 @@ async function sendTextMessage(recipientId, text) {
   await api.sendMessage(config.TELEGRAM_GROUP_ID, text, { parse_mode: "html" });
 }
 
+async function sendTextMessagePersonal(recipientId, text) {
+  console.log("llego este recipient: ", recipientId);
+  // let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
+  console.log("se enviara la respuesta: ", text);
+  await api.sendMessage(recipientId, text, { parse_mode: "html" });
+}
+
 async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
   console.log("llego este recipient: ", recipientId);
   let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
@@ -717,4 +724,4 @@ function isDefined(obj) {
   return true;
 }
 
-module.exports = { sendTextMessage, api };
+module.exports = { sendTextMessage, sendTextMessagePersonal, api };

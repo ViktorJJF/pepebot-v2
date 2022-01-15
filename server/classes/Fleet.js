@@ -197,6 +197,11 @@ class Fleet {
             .querySelector("span.transporterLarge>span")
             .getAttribute("data-value")
         );
+        var explorerTotal = parseInt(
+          document
+            .querySelector("span.explorer>span")
+            .getAttribute("data-value")
+        );
         var cazadorLigeroTotal = parseInt(
           document
             .querySelector("span.fighterLight>span")
@@ -233,12 +238,12 @@ class Fleet {
           //   qty:
           //     parseInt((cazadorLigeroTotal * 1) / freeExpSlots) > 3000
           //       ? 3000
-          //       : parseInt((cazadorLigeroTotal * 1) / freeExpSlots)
+          //       : parseInt((cazadorLigeroTotal * 1) / freeExpSlots),
           // },
-          // {
-          //   id: "202",
-          //   qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots)
-          // },
+          {
+            id: "202",
+            qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots),
+          },
           {
             id: "203",
             qty: ngcToSend > 2000 ? 2000 : ngcToSend, // maximo 2000 NGC
@@ -250,7 +255,7 @@ class Fleet {
           // { id: "215", qty: 1 },
           {
             id: "219",
-            qty: 1,
+            qty: explorerTotal > 0 ? 1 : 0, // solo enviar un explorador
           },
           {
             id: lastBattleShipId,

@@ -20,15 +20,9 @@ const beginActions = require("./ogameScripts/beginActions");
 const chronium = require("./classes/Chronium");
 //Middleware
 
-// parse application/x-www-form-urlencoded
-app.use(
-  bodyParser.urlencoded({
-    extended: false,
-  })
-);
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-// parse application/json
-app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(
   cors({
@@ -97,7 +91,7 @@ BotModel.find().exec(async (err, payload) => {
 
     bot.initialize(element);
     bots.addBot(bot);
-    // if (bot.ogameEmail != "carlos.jf.1681@gmail.com") {
+    // if (bot.ogameEmail != "juancarlosjf@outlook.com.pe") {
     console.log("empezando login", bot.ogameEmail);
     let login = await bot.login(element.ogameEmail, element.ogamePassword);
     // console.log("🚀 Aqui *** -> login", login);

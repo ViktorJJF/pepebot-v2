@@ -26,7 +26,7 @@ module.exports = {
   telegramId: "624818317",
   TELEGRAM_GROUP_ID: "-339549424",
   // TELEGRAM_GROUP_ID: "624818317",
-  universe: "s208",
+  universe: "s183",
   BASE_PATH: __dirname,
   PEPEHUNTER_BASE: "http://localhost:12000",
   PEPEBOT_BASE: "http://localhost:7000",

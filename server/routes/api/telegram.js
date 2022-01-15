@@ -20,7 +20,9 @@ app.post("/api/telegram/message", (req, res) => {
 });
 
 app.post("/api/telegram/v1/message", (req, res) => {
+  console.log("🚀 Aqui *** -> req.body", req.body);
   let { message, senderId } = req.body;
+  console.log("🚀 Aqui *** -> message, senderId", message, senderId);
   telegramBot.sendTextMessagePersonal(senderId, message);
   res.json({
     ok: true,

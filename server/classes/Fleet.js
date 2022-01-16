@@ -26,6 +26,7 @@ class Fleet {
     ];
     this.bot = null;
     this.sentShips = [];
+    this.qtyErrors = 0;
     this.ships = [
       {
         id: "202",
@@ -350,13 +351,19 @@ class Fleet {
     } catch (error) {
       console.log("err: ", error);
       console.log("HACIENDO SOLICITUD DE NUEVO");
-      await this.makeRequest({
-        shipsString,
-        galaxy,
-        system,
-        planet,
-        missionCode,
-      });
+      this.qtyErrors += 1;
+      if (this.qtyErrors <= 3) {
+        await this.makeRequest({
+          shipsString,
+          galaxy,
+          system,
+          planet,
+          missionCode,
+        });
+        this.qtyErrors += 1;
+      } else {
+        throw new Error("Muchos errores");
+      }
     }
   }
 }

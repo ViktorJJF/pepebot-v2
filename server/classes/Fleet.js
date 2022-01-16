@@ -168,9 +168,15 @@ class Fleet {
             .innerText.replace(/[\[\]']+/g, "");
           if (planetCoordsText == origin) {
             if (planetCoords[i].querySelector(".moonlink") && type == "moon") {
-              planetCoords[i].querySelector(".moonlink").click();
+              // no se vuelve a dar click si ya estamos correctos
+              if (!planetCoords[i].querySelector(".moonlink.active")) {
+                planetCoords[i].querySelector(".moonlink").click();
+              }
             } else {
-              planetCoords[i].querySelector("span.planet-koords").click();
+              // no se vuelve a dar click si ya estamos correctos
+              if (!planetCoords[i].querySelector(".active")) {
+                planetCoords[i].querySelector("span.planet-koords").click();
+              }
             }
           }
         }

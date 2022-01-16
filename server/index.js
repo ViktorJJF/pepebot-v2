@@ -109,17 +109,6 @@ BotModel.find().exec(async (err, payload) => {
     } else {
       console.log("No tenia acciones pendientes", bot.ogameEmail);
     }
-
-    // console.log("🚀 Aqui *** -> login", login);
-    // const beginSpies = require("./ogameScripts/spyRange");
-    // await beginSpies(bot, "2:104", "2:300", "moon");
-    // const spyPlayer = require("./ogameScripts/spyPlayer");
-    // await spyPlayer(bot, "Constable Zenith");
-    // // await timeout(10 * 1000);
-    // let page = await bot.createNewPage();
-    // await bot.filterSpyMessages(page);
-    // const { sendAllShipsToDebris } = require("./ogameScripts/scripts");
-    // await sendAllShipsToDebris("2:111:10", 0.1, page, "planet");
     if (login) {
       const cookies = await bot.getFormattedCookies();
       console.log("🚀 Aqui *** -> cookies", cookies);

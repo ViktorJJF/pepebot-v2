@@ -20,7 +20,7 @@ async function watchDog(bot, page) {
       try {
         let watchDogStatus = await start(page, bot);
         if (watchDogStatus)
-          await timeout(Random(0.75 * 60 * 1000, 1 * 60 * 1000));
+          await timeout(Random(1 * 60 * 1000, 1.5 * 60 * 1000));
       } catch (error) {
         console.log(error);
       }

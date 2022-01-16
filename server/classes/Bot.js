@@ -152,7 +152,7 @@ module.exports = class Bot {
       await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span", {
         timeout: 15000,
       });
-      let pageToClose = page;
+      let previousPage = page;
       //main page ogame
       page = await this.clickAndWaitForTarget(
         ".open > .rt-tr > .rt-td > .btn > span",
@@ -161,7 +161,7 @@ module.exports = class Bot {
       );
       // guardando cookies
       this.setCookies(page);
-      await this.closePage(pageToClose);
+      await this.closePage(previousPage);
       await this.closePage(page);
       // await this.closeAds();
       console.log("Logeo finalizado exitosamente");
@@ -626,23 +626,27 @@ module.exports = class Bot {
               timeout: 15000,
             }
           );
+          let previousPage = page;
           page = await this.clickAndWaitForTarget(
             '.rt-td.action-cell>button[type="button"]',
             page,
             this.browser
           );
           this.setCookies(page); // se reingrensan los cookies
+          await this.closePage(previousPage);
           await this.closePage(page);
           break;
         case "selectUniversePage":
           console.log("nos encontramos en vista universo");
           console.log("empezaremos el clickAndwait");
+          let previousPage2 = page;
           page = await this.clickAndWaitForTarget(
             '.rt-td.action-cell>button[type="button"]',
             page,
             this.browser
           );
           this.setCookies(page); // se reingrensan los cookies
+          await this.closePage(previousPage2);
           await this.closePage(page);
           console.log("se termino el click and wait");
           //main page ogame

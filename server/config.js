@@ -37,8 +37,9 @@ module.exports = {
       ? "http://localhost:7000"
       : "https://pepebot-v2.herokuapp.com/",
   // bot test // https://web.telegram.org/z/#5022628038
-  TELEGRAM_TOKEN:
-    process.env.NODE_ENV === "development"
-      ? "5022628038:AAHIAOB6xzN91psrcPwwGwf4f95S2UrM25g"
-      : "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
+  TELEGRAM_TOKEN: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
+  // TELEGRAM_TOKEN:
+  //   process.env.NODE_ENV === "development"
+  //     ? "5022628038:AAHIAOB6xzN91psrcPwwGwf4f95S2UrM25g"
+  //     : "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
 };

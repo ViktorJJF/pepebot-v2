@@ -49,7 +49,7 @@ api.on("message", async (message) => {
   console.log("de ", sender);
   sendTypingOn(sender); //typing on
   if (msg === "id") {
-    sendTextMessage(sender, `Tu id es ${sender}`);
+    sendTextMessage(sender, `Tu id es ${sender}`, true);
   } else {
     let result = await dialogflow.sendToDialogFlow(sender, msg);
     handleDialogFlowResponse(sender, result);
@@ -77,7 +77,7 @@ async function handleDialogFlowResponse(sender, response) {
     );
   } else if (isDefined(responseText)) {
     console.log("se mandara a sendTextMessage");
-    sendTextMessage(sender, responseText);
+    sendTextMessage(sender, responseText, true);
   }
 }
 
@@ -95,7 +95,8 @@ async function handleDialogFlowAction(
   if (!bot) {
     return sendTextMessage(
       sender,
-      "Lo siento pero aun no creaste una instancia mía 😅 debes entrar a mi web"
+      "Lo siento pero aun no creaste una instancia mía 😅 debes entrar a mi web",
+      true
     );
   }
   switch (action) {
@@ -120,7 +121,7 @@ async function handleDialogFlowAction(
       let actions = await bot.getActions();
       console.log("las acciones son estas: ", actions);
       if (actions.length > 0) {
-        await sendTextMessage(sender, "actualmente estoy haciendo esto");
+        await sendTextMessage(sender, "actualmente estoy haciendo esto", true);
         let msg = "";
         actions.forEach((action, index) => {
           msg +=
@@ -137,9 +138,9 @@ async function handleDialogFlowAction(
                 "\n"
               : "✅ Fleet diario (se reinicia a media noche)";
         });
-        sendTextMessage(sender, msg);
+        sendTextMessage(sender, msg, true);
       } else {
-        sendTextMessage(sender, "No estoy haciendo nada 🤷");
+        sendTextMessage(sender, "No estoy haciendo nada 🤷", true);
       }
       break;
     case "beginExpeditionsAction":
@@ -375,6 +376,8 @@ async function handleDialogFlowAction(
                 activity.coords +
                 "]" +
                 (activity.type == "planet" ? "(🌎)" : "(🌘)") +
+                ": " +
+                activity.lastActivity +
                 "\n";
             }
             //calculating percents

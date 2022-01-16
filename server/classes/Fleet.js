@@ -20,11 +20,12 @@ class Fleet {
     this.allResources = null;
     this.allShips = null;
     this.type = null;
-    this.cookies = null;
     this.missions = [
       { name: "expedition", id: "15" },
       { name: "espionage", id: "6" },
     ];
+    this.bot = null;
+    this.sentShips = [];
     this.ships = [
       {
         id: "202",
@@ -142,14 +143,17 @@ class Fleet {
   addShips(shipId, qty) {
     this[shipId] = qty;
   }
-  setCookies(value) {
-    this.cookies = value;
-  }
   SetAllResources() {
     this.allResources = true;
   }
   SetAllShips() {
     this.allShips = true;
+  }
+  setBot(value) {
+    this.bot = value;
+  }
+  getSentShips() {
+    return this.sentShips;
   }
   async sendNow() {
     //select origin
@@ -174,14 +178,6 @@ class Fleet {
       this.origin,
       this.type
     );
-    //go to fleet view
-    await this.page.waitForSelector(
-      "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
-    );
-    await this.page.click(
-      "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
-    );
-    await timeout(1500);
     await this.page.waitForSelector("#planet.planet-header");
     //check if exists ships
     let existsShips = await this.page.evaluate((e) =>
@@ -283,11 +279,10 @@ class Fleet {
       });
     }
 
-    let shipsToSend = []; // return
     let shipsString = ""; // cadena de texto para solicitud
     for (const ship of this.ships) {
       if (ship.qty > 0 || this.allShips) {
-        shipsToSend.push(ship);
+        this.sentShips.push(ship);
         console.log(
           "se colocara esta nave: ",
           ship.name,
@@ -312,34 +307,27 @@ class Fleet {
       missionCode,
     });
     console.log("mandando la flota...");
-    return shipsToSend;
+    return this.getSentShips();
   }
 
-  async makeRequest({
-    shipsString,
-    galaxy,
-    system,
-    planet,
-    missionCode,
-    token,
-  } = {}) {
-    let generatedToken = "";
+  async makeRequest({ shipsString, galaxy, system, planet, missionCode } = {}) {
     try {
       const response = await axios({
         method: "post",
         url: `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=fleetdispatch&action=sendFleet&ajax=1&asJson=1`,
         headers: setCommonHeaders({
           Referer: `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=fleetdispatch`,
-          Cookie: this.cookies,
+          Cookie: this.bot.getFormattedCookies(),
           contentType: "application/x-www-form-urlencoded; charset=UTF-8",
         }),
-        data: `token=${token}${shipsString}&galaxy=${galaxy}&system=${system}&position=${planet}&type=1&metal=0&crystal=0&deuterium=0&prioMetal=1&prioCrystal=2&prioDeuterium=3&mission=${missionCode}&speed=${
+        data: `token=${this.bot.getFleetToken()}${shipsString}&galaxy=${galaxy}&system=${system}&position=${planet}&type=1&metal=0&crystal=0&deuterium=0&prioMetal=1&prioCrystal=2&prioDeuterium=3&mission=${missionCode}&speed=${
           this.speed * 10
-        }&retreatAfterDefenderRetreat=0&union=0&holdingtime=0`,
+        }&retreatAfterDefenderRetreat=0&union=0&holdingtime=1`,
       });
       let data = response.data;
-      generatedToken = data.token; // el token se autocompleta aqui
-      if (data.includes("You need to enable JavaScript to run this app")) {
+      console.log("🚀 Aqui *** -> data", data);
+      this.bot.setFleetToken(data.token); // el token se autocompleta aqui en la instancia del bot
+      if (!data || !data.success) {
         throw new Error("Cookie vencida");
       }
       if (
@@ -351,17 +339,17 @@ class Fleet {
         )
       ) {
         console.log("algo salio mal: ", data.errors);
+      } else {
       }
     } catch (error) {
       console.log("err: ", error);
       console.log("HACIENDO SOLICITUD DE NUEVO");
-      await makeRequest({
+      await this.makeRequest({
         shipsString,
         galaxy,
         system,
         planet,
         missionCode,
-        token: generatedToken,
       });
     }
   }

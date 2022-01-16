@@ -36,6 +36,7 @@ module.exports = class Bot {
     this.timesSpied = 1;
     this.gf_token = null;
     this.cookies = null;
+    this.fleet_token = null;
     //currentPage
     // 0 -- > mainPage
     // 1 -- > Galaxy
@@ -61,6 +62,7 @@ module.exports = class Bot {
     // this.actions = botOjbect.actions;
     this.playerId = botOjbect.playerId;
     this.gf_token = botOjbect.gf_token;
+    this.token_ships = "";
   }
   async begin() {
     console.log("iniciando bot...");
@@ -920,15 +922,21 @@ module.exports = class Bot {
         break;
       case "fleet":
         console.log("yendo a vista flota");
-        await page.waitForSelector(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton",
-          {
-            timeout: 15000,
-          }
-        );
-        await page.click(
-          "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
-        );
+        let isOnFleetPage = await page.evaluate(() => {
+          return Boolean(document.querySelector(".fleetStatus"));
+        });
+        if (!isOnFleetPage) {
+          await page.waitForSelector(
+            "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton",
+            {
+              timeout: 15000,
+            }
+          );
+          await page.click(
+            "#toolbarcomponent > #links > #menuTable > li:nth-child(8) > .menubutton"
+          );
+        }
+
         break;
       case "fleetMovement":
         console.log("yendo a vista flota movement");
@@ -1457,5 +1465,11 @@ module.exports = class Bot {
           }`
       )
       .join(" ");
+  }
+  getFleetToken() {
+    return this.fleet_token;
+  }
+  setFleetToken(value) {
+    this.fleet_token = value;
   }
 };

@@ -103,7 +103,7 @@ function spyCoords(coords) {
       .querySelector("span.transporterLarge>span")
       .getAttribute("data-value")
   );
-  let qtyNGCtoSend = parseInt(qtyNGC / numberExpeditions);
+  let qtyNGCtoSend = Math.ceil(qtyNGC / numberExpeditions);
   let coords = "1:108:8";
   let [galaxy, system, position] = coords.split(":");
   let success = true;

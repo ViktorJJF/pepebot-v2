@@ -196,7 +196,7 @@ function setCommonHeaders({ Referer, Cookie, contentType } = {}) {
     Cookie,
   };
   if (contentType) {
-    headers["Content-Type"];
+    headers["Content-Type"] = contentType;
   }
   return headers;
 }

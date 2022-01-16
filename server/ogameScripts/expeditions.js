@@ -9,6 +9,7 @@
 
 const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
+const config = require("../config");
 
 const {
   Random,
@@ -40,8 +41,9 @@ async function beginExpeditions(
 async function start(bot, origin, ships, speed) {
   try {
     console.log("empezando nueva expedicion");
-    var page = await bot.createNewPage();
-    let cookies = bot.getFormattedCookies(); // es necesario para solicitudes
+    var page = await bot.createNewPage(
+      `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=fleetdispatch`
+    );
     let { fleets, slots } = await bot.getFleets(page);
     console.log("🚀 Aqui *** -> slots", slots);
     console.log("🚀 Aqui *** -> fleets", fleets);
@@ -62,28 +64,29 @@ async function start(bot, origin, ships, speed) {
         true
       );
     var expeditionNumber = 1;
+    let token;
     while (expeditionsPossible > 0 && (await bot.hasAction("expeditions"))) {
-      let shipsToSend = await sendExpedition({
+      // dirigiendo a vista flota para expedicion
+      await bot.goToPage("fleet", page);
+      let sentShips = await sendExpedition({
+        bot,
         origin,
         ships,
         page,
         speed,
-        cookies,
       });
-      let msg = `<b>Expedición nro ${expeditionNumber}\n</b>`;
-      shipsToSend.forEach((shipToSend) => {
-        msg += "✅<b>" + shipToSend.name + ":</b> " + shipToSend.qty + "\n";
-      });
-      console.log("mandando expedicion...");
-      console.log(
-        "las expediciones posibles son: ",
-        expeditionsPossible,
-        " y se restara -1"
-      );
+      // manando mensajes de telegram
+      if (sentShips && sentShips.length > 0) {
+        let msg = `<b>Expedición nro ${expeditionNumber}\n</b>`;
+        sentShips.forEach((sentShip) => {
+          msg += "✅<b>" + sentShip.name + ":</b> " + sentShip.qty + "\n";
+        });
+        sendTelegramMessage(bot.telegramId, msg, true);
+      }
       expeditionsPossible--;
-      sendTelegramMessage(bot.telegramId, msg, true);
       expeditionNumber++;
-      await timeout(Random(1000, 3000));
+
+      await timeout(Random(3, 7) * 1000);
     }
     // If we didn't found any expedition fleet and didn't create any, let's wait 5min
     if (minSecs == bigNum) {
@@ -109,14 +112,12 @@ async function start(bot, origin, ships, speed) {
   }
 }
 
-async function sendExpedition({ origin, ships, page, speed, cookies } = {}) {
+async function sendExpedition({ bot, origin, ships, page, speed } = {}) {
   // if(activateRandomSystem) let randomSystem = Random(minSystem, maxSystem)
   let [galaxy, system, planet] = origin.split(":");
   let destination = new Coordinate(galaxy, system, 16);
   let fleet = new Fleet();
-  console.log("creando nueva pagina");
-  console.log("se termino de crear la nueva pagina");
-  fleet.setCookies(cookies);
+  fleet.setBot(bot);
   fleet.setPage(page);
   fleet.setOrigin(origin);
   fleet.setDestination(destination.generateCoords());

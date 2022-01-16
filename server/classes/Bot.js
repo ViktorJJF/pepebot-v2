@@ -672,13 +672,11 @@ module.exports = class Bot {
     if (notAttacked) {
       sendTelegramMessage(
         "624818317",
-        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`,
-        true
+        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`
       );
       sendTelegramMessage(
         "893530350",
-        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`,
-        true
+        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`
       );
       console.log("no estas siendo atacado");
       return false;
@@ -686,13 +684,11 @@ module.exports = class Bot {
       console.log("estas siendo atacado !!");
       sendTelegramMessage(
         "624818317",
-        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`,
-        true
+        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`
       );
       sendTelegramMessage(
         "893530350",
-        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`,
-        true
+        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`
       );
       return true;
     }

@@ -4,7 +4,11 @@ const {
   timeTomiliseconds,
   timeTomiliseconds2,
   getCloserDurationIndex,
+  setCommonHeaders,
 } = require("../utils/utils.js");
+const config = require("../config");
+const axios = require("axios");
+
 class Fleet {
   constructor() {
     this.page = null; // puppeteer page
@@ -16,6 +20,11 @@ class Fleet {
     this.allResources = null;
     this.allShips = null;
     this.type = null;
+    this.cookies = null;
+    this.missions = [
+      { name: "expedition", id: "15" },
+      { name: "espionage", id: "6" },
+    ];
     this.ships = [
       {
         id: "202",
@@ -132,6 +141,9 @@ class Fleet {
   }
   addShips(shipId, qty) {
     this[shipId] = qty;
+  }
+  setCookies(value) {
+    this.cookies = value;
   }
   SetAllResources() {
     this.allResources = true;
@@ -272,152 +284,86 @@ class Fleet {
     }
 
     let shipsToSend = []; // return
-    if (this.allShips) {
-      let hasEspionageProbe = await this.page.evaluate(() =>
-        document.querySelector(".espionageProbe[data-status='on']")
-      );
-      if (!hasEspionageProbe) return null;
-      await this.page.waitForSelector("a#sendall");
-      await this.page.click("a#sendall");
-      await timeout(500);
-    } else {
-      for (const ship of this.ships) {
-        if (ship.qty > 0 || this.allShips) {
-          shipsToSend.push(ship);
-          console.log(
-            "se colocara esta nave: ",
-            ship.name,
-            " - ",
-            String(ship.qty)
-          );
-          await this.page.click(`li.${ship.type}>input`);
-          await this.page.type(`li.${ship.type}>input`, String(ship.qty));
-          await timeout(800);
-        }
+    let shipsString = ""; // cadena de texto para solicitud
+    for (const ship of this.ships) {
+      if (ship.qty > 0 || this.allShips) {
+        shipsToSend.push(ship);
+        console.log(
+          "se colocara esta nave: ",
+          ship.name,
+          " - ",
+          String(ship.qty)
+        );
+        shipsString += `&am${ship.id}=${ship.qty}`;
       }
     }
-
-    await this.page.evaluate(() => {
-      document
-        .querySelector(
-          ".content > #allornone > .allornonewrap > #continueToFleet2.continue.on > span"
-        )
-        .click();
-    });
-    // await this.page.waitForSelector(
-    //   ".content > #allornone > .allornonewrap > #continueToFleet2.continue.on > span"
-    // );
-    // await this.page.click(
-    //   ".content > #allornone > .allornonewrap > #continueToFleet2.continue.on > span"
-    // );
     let [galaxy, system, planet] = this.destination.split(":");
-    // await timeout(7500);
-    await this.page.waitForSelector("tbody #galaxy", {
-      visible: true,
-    });
-    await this.page.click("input#galaxy");
-    await this.page.type("input#galaxy", galaxy);
-    await timeout(2000);
-    await this.page.click("input#system");
-    await this.page.type("input#system", system);
-    await timeout(2000);
-    await this.page.click("input#position");
-    await this.page.type("input#position", planet);
-    await timeout(2000);
-    // if (this.duration) {
-    //   let speeds = [];
-    //   let speedSelectors = await this.page.$$(".step");
-    //   for (const speedSelector of speedSelectors) {
-    //     await timeout(1000);
-    //     await speedSelector.hover();
-    //     await timeout(500);
-    //     let currentSpeed = await this.page.evaluate(() => {
-    //       return document
-    //         .querySelector("span#duration")
-    //         .innerText.replace(" h", "");
-    //     });
-    //     speeds.push(currentSpeed);
-    //   }
-    //   console.log("las velocidades son: ", speeds);
-    //   speeds = speeds.map((e) => timeTomiliseconds(e));
-    //   let closerDurationIndex = getCloserDurationIndex(
-    //     speeds,
-    //     timeTomiliseconds2(this.duration)
-    //   );
-    //   console.log(
-    //     "lo mejor para ",
-    //     this.duration,
-    //     " es : ",
-    //     speeds[closerDurationIndex]
-    //   );
-    //   //seting speed
-    //   await this.page.click(`.step:nth-child(${closerDurationIndex})`);
-    // } else {
-    //   //seting speed
-    //   await this.page.click(`.step:nth-child(10)`);
-    // }
-    await timeout(5000);
-    // await this.page.waitForSelector("li#button15.on>a#missionButton15");
-    //go to next page
-    // en la nueva actualizacion de ogame no se necesita esto
-    // await this.page.waitForSelector("a#continueToFleet3.continue.on", {
-    //   visible: true,
-    // });
-    // await this.page.waitForSelector("a#continueToFleet3.continue.on");
-    // await this.page.click("a#continueToFleet3.continue.on");
-    switch (this.mission) {
-      case "expedition":
-        console.log("se escogio expedicion");
-        await this.page.waitForSelector("li#button15>a#missionButton15", {
-          visible: true,
-        });
-        await this.page.click("li#button15>a#missionButton15");
-        break;
-      case "espionage":
-        console.log("se escogio espionaje");
-        await this.page.waitForSelector("li#button6>a#missionButton6", {
-          visible: true,
-        });
-        await this.page.click("li#button6>a#missionButton6");
-        break;
-      case "debris":
-        console.log("se escogio escombros");
-        await this.page.waitForSelector("#dbutton");
-        await this.page.click("#dbutton");
-        await timeout(5 * 1000);
-        await this.page.waitForSelector("#missionButton8");
-        await this.page.click("#missionButton8");
-        break;
-      default:
-        break;
-    }
+    let missionCode = this.missions.find((el) => el.name == this.mission).id;
     //if all resources true
     if (this.allResources) {
-      await this.page.waitForSelector("a#allresources>img");
-      await this.page.click("a#allresources>img");
-      let dutyRemaining = await this.page.evaluate(() => {
-        var duty = document.querySelector("input#deuterium").value;
-        duty = parseInt(duty.split(".").join(""));
-        document.querySelector("input#deuterium").value = "";
-        return duty;
-      });
-      await this.page.type(
-        "input#deuterium",
-        String(
-          dutyRemaining - dutyRemaining > 600000
-            ? Random(400000, 600000)
-            : Random(dutyRemaining * 0.1, 600000 * 0.2)
-        )
-      );
     }
     // colocando velocidad
-    await this.page.waitForSelector(
-      "[data-step='" + (this.speed || 1) * 10 + "']"
-    );
+    // solicitud
+    await this.makeRequest({
+      shipsString,
+      galaxy,
+      system,
+      planet,
+      missionCode,
+    });
     console.log("mandando la flota...");
-    await this.page.waitForSelector("a#sendFleet.start.on");
-    await this.page.click("a#sendFleet.start.on");
     return shipsToSend;
+  }
+
+  async makeRequest({
+    shipsString,
+    galaxy,
+    system,
+    planet,
+    missionCode,
+    token,
+  } = {}) {
+    let generatedToken = "";
+    try {
+      const response = await axios({
+        method: "post",
+        url: `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=fleetdispatch&action=sendFleet&ajax=1&asJson=1`,
+        headers: setCommonHeaders({
+          Referer: `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=fleetdispatch`,
+          Cookie: this.cookies,
+          contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        }),
+        data: `token=${token}${shipsString}&galaxy=${galaxy}&system=${system}&position=${planet}&type=1&metal=0&crystal=0&deuterium=0&prioMetal=1&prioCrystal=2&prioDeuterium=3&mission=${missionCode}&speed=${
+          this.speed * 10
+        }&retreatAfterDefenderRetreat=0&union=0&holdingtime=0`,
+      });
+      let data = response.data;
+      generatedToken = data.token; // el token se autocompleta aqui
+      if (data.includes("You need to enable JavaScript to run this app")) {
+        throw new Error("Cookie vencida");
+      }
+      if (
+        !data.success &&
+        !data.errors.find((error) =>
+          error.message.includes(
+            "Error de partida de flota: no se ha podido enviar la flota"
+          )
+        )
+      ) {
+        console.log("algo salio mal: ", data.errors);
+      }
+    } catch (error) {
+      console.log("err: ", error);
+      console.log("HACIENDO SOLICITUD DE NUEVO");
+      await makeRequest({
+        shipsString,
+        galaxy,
+        system,
+        planet,
+        missionCode,
+        token: generatedToken,
+      });
+    }
   }
 }
 

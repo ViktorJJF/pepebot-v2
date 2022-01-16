@@ -41,6 +41,7 @@ async function start(bot, origin, ships, speed) {
   try {
     console.log("empezando nueva expedicion");
     var page = await bot.createNewPage();
+    let cookies = bot.getFormattedCookies(); // es necesario para solicitudes
     let { fleets, slots } = await bot.getFleets(page);
     console.log("🚀 Aqui *** -> slots", slots);
     console.log("🚀 Aqui *** -> fleets", fleets);
@@ -62,7 +63,13 @@ async function start(bot, origin, ships, speed) {
       );
     var expeditionNumber = 1;
     while (expeditionsPossible > 0 && (await bot.hasAction("expeditions"))) {
-      let shipsToSend = await sendExpedition(origin, ships, page, speed);
+      let shipsToSend = await sendExpedition({
+        origin,
+        ships,
+        page,
+        speed,
+        cookies,
+      });
       let msg = `<b>Expedición nro ${expeditionNumber}\n</b>`;
       shipsToSend.forEach((shipToSend) => {
         msg += "✅<b>" + shipToSend.name + ":</b> " + shipToSend.qty + "\n";
@@ -102,13 +109,14 @@ async function start(bot, origin, ships, speed) {
   }
 }
 
-async function sendExpedition(origin, ships, page, speed) {
+async function sendExpedition({ origin, ships, page, speed, cookies } = {}) {
   // if(activateRandomSystem) let randomSystem = Random(minSystem, maxSystem)
   let [galaxy, system, planet] = origin.split(":");
   let destination = new Coordinate(galaxy, system, 16);
   let fleet = new Fleet();
   console.log("creando nueva pagina");
   console.log("se termino de crear la nueva pagina");
+  fleet.setCookies(cookies);
   fleet.setPage(page);
   fleet.setOrigin(origin);
   fleet.setDestination(destination.generateCoords());

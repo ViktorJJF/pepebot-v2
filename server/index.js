@@ -96,15 +96,21 @@ BotModel.find().exec(async (err, payload) => {
     bot.initialize(element);
     bots.addBot(bot);
     // no ejecutar nada mas si estamos en dev
-    if (process.env.NODE_ENV === "development") return;
+    // if (process.env.NODE_ENV === "development") return;
 
     // if (bot.ogameEmail != "juancarlosjf@outlook.com.pe") {
-    console.log("empezando login", bot.ogameEmail);
-    let login = await bot.login(element.ogameEmail, element.ogamePassword);
-    const cookies = await bot.getFormattedCookies();
-    console.log("🚀 Aqui *** -> cookies", cookies);
+    // verificando acciones
+    let login;
+    let actions = await bot.getActions();
+    if (actions.length > 0) {
+      console.log("empezando login", bot.ogameEmail);
+      login = await bot.login(element.ogameEmail, element.ogamePassword);
+      console.log("se termino el loginnnn");
+    } else {
+      console.log("No tenia acciones pendientes", bot.ogameEmail);
+    }
+
     // console.log("🚀 Aqui *** -> login", login);
-    console.log("se termino el loginnnn");
     // const beginSpies = require("./ogameScripts/spyRange");
     // await beginSpies(bot, "2:104", "2:300", "moon");
     // const spyPlayer = require("./ogameScripts/spyPlayer");
@@ -115,6 +121,8 @@ BotModel.find().exec(async (err, payload) => {
     // const { sendAllShipsToDebris } = require("./ogameScripts/scripts");
     // await sendAllShipsToDebris("2:111:10", 0.1, page, "planet");
     if (login) {
+      const cookies = await bot.getFormattedCookies();
+      console.log("🚀 Aqui *** -> cookies", cookies);
       beginActions(bot);
     }
     //daily rutine

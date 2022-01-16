@@ -1,6 +1,5 @@
 //new relic
 //levantando telegram bot
-require("./chatbot/Telegram/telegramBot");
 const config = require("./config");
 const seed = require("../seed");
 const express = require("express");
@@ -74,26 +73,36 @@ passport.deserializeUser(function (user_id, done) {
   done(null, user_id);
 });
 
-app.use("", require("./routes/api/telegram.js"));
+require("./chatbot/Telegram/telegramBot");
+
+app.use("/telegram", require("./routes/api/telegram.js"));
 
 //creando instancias
 const BotModel = require("./models/Bots.js");
 const Bot = require("./classes/Bot");
 const bots = require("./classes/Bots.js");
 
+console.log("ENTORNO: ", process.env.NODE_ENV);
+
 BotModel.find().exec(async (err, payload) => {
   if (err) {
     console.log(err);
   }
+
   await chronium.begin(); //initializing browser
   payload.forEach(async (element) => {
     let bot = new Bot();
 
     bot.initialize(element);
     bots.addBot(bot);
+    // no ejecutar nada mas si estamos en dev
+    if (process.env.NODE_ENV === "development") return;
+
     // if (bot.ogameEmail != "juancarlosjf@outlook.com.pe") {
     console.log("empezando login", bot.ogameEmail);
     let login = await bot.login(element.ogameEmail, element.ogamePassword);
+    const cookies = await bot.getFormattedCookies();
+    console.log("🚀 Aqui *** -> cookies", cookies);
     // console.log("🚀 Aqui *** -> login", login);
     console.log("se termino el loginnnn");
     // const beginSpies = require("./ogameScripts/spyRange");

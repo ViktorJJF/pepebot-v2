@@ -1,33 +1,15 @@
 // const { api } = require("../../chatbot/Telegram/telegramBot");
 const express = require("express");
-const app = express();
-const config = require("../../config");
+const router = express.Router();
 const telegramBot = require("../../chatbot/Telegram/telegramBot");
 
-// We are receiving updates at the route below!
-app.post(`${config.SERVER_URL}/webhook`, (req, res) => {
-  // api.processUpdate(req.body);
-  // res.sendStatus(200);
-});
-
-app.post("/api/telegram/message", (req, res) => {
-  let { message, senderId } = req.body;
-  telegramBot.sendTextMessage(senderId || config.TELEGRAM_GROUP_ID, message);
+router.post("/message", (req, res) => {
+  let { message, senderId, isShared } = req.body;
+  telegramBot.sendTextMessage(senderId, message, isShared);
   res.json({
     ok: true,
     message,
   });
 });
 
-app.post("/api/telegram/v1/message", (req, res) => {
-  console.log("🚀 Aqui *** -> req.body", req.body);
-  let { message, senderId } = req.body;
-  console.log("🚀 Aqui *** -> message, senderId", message, senderId);
-  telegramBot.sendTextMessagePersonal(senderId, message);
-  res.json({
-    ok: true,
-    message,
-  });
-});
-
-module.exports = app;
+module.exports = router;

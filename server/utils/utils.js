@@ -1,5 +1,6 @@
 const config = require("../config");
 const axios = require("axios");
+const Logs = require("../models/Logs");
 
 function timeout(ms) {
   return new Promise((resolve, reject) => {
@@ -124,22 +125,12 @@ function buildErrObject(code, message) {
   });
 }
 
-async function sendTelegramMessage(senderId, message) {
+async function sendTelegramMessage(senderId, message, isShared) {
   try {
-    await axios.post(config.PEPEBOT_BASE + "/api/telegram/message", {
+    await axios.post(config.PEPEBOT_BASE + "/telegram/message", {
       senderId,
       message,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-async function sendTelegramMessagePersonal(senderId, message) {
-  try {
-    await axios.post(config.PEPEBOT_BASE + "/api/telegram/v1/message", {
-      senderId,
-      message,
+      isShared,
     });
   } catch (error) {
     console.log(error);
@@ -180,6 +171,11 @@ async function getNearestPlanet(bot, coords) {
   return selectedCoord;
 }
 
+function log(message, type) {
+  const log = new Logs({ message, type });
+  log.save();
+}
+
 module.exports = {
   timeout,
   msToTime,
@@ -192,5 +188,5 @@ module.exports = {
   buildErrObject,
   getNearestPlanet,
   sendTelegramMessage,
-  sendTelegramMessagePersonal,
+  log,
 };

@@ -13,12 +13,8 @@ const { format } = require("date-fns");
 process.on("uncaughtException", (err) => {
   console.log("un error probablemente en telegram: ", err);
 });
-let token;
-if (config.environment === "dev")
-  token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
-else token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
-// token = "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY";
-let api = new TelegramBot(token, { polling: true });
+
+let api = new TelegramBot(config.TELEGRAM_TOKEN, { polling: true });
 
 // api.setWebhook("https://48791559.ngrok.io/api/webhook");
 // sendTextMessage(624818317, "Selecciona tu luna");
@@ -129,21 +125,21 @@ async function handleDialogFlowAction(
         actions.forEach((action, index) => {
           msg +=
             action.type == "expeditions"
-              ? "✔️ Expediciones automáticas en [" +
+              ? "✅ Expediciones automáticas en [" +
                 action.payload.coords +
                 "] (activo desde " +
                 format(new Date(action.updatedAt), "hh:mm:ss aaa") +
                 " )\n"
               : action.type == "watchDog"
-              ? "✔️ Vigilando cuenta (activo desde " +
+              ? "✅ Vigilando cuenta (activo desde " +
                 format(new Date(action.updatedAt), "hh:mm:ss aaa") +
                 " )" +
                 "\n"
-              : "✔️ Fleet diario (se reinicia a media noche)";
+              : "✅ Fleet diario (se reinicia a media noche)";
         });
         sendTextMessage(sender, msg);
       } else {
-        sendTextMessage(sender, "estoy de vago sin hacer nada 🤔");
+        sendTextMessage(sender, "No estoy haciendo nada 🤷");
       }
       break;
     case "beginExpeditionsAction":
@@ -160,7 +156,8 @@ async function handleDialogFlowAction(
         if (!(await bot.hasAction("expeditions"))) {
           sendTextMessage(
             sender,
-            "Ok, empezaré a hacer expediciones en tu planeta/luna de " + coords
+            "Ok, empezaré a hacer expediciones en tu planeta/luna de " + coords,
+            true
           );
           let ships = [
             { id: 1, qty: 5 },
@@ -172,7 +169,8 @@ async function handleDialogFlowAction(
         } else {
           sendTextMessage(
             sender,
-            "ya tenías activadas las expediones automáticas. Si vas a cambiar de coordenadas, primero dime: '<b>cancela las expediciones</b>'."
+            "ya tenías activadas las expediones automáticas. Si vas a cambiar de coordenadas, primero dime: '<b>cancela las expediciones</b>'.",
+            true
           );
         }
       } else {
@@ -193,25 +191,30 @@ async function handleDialogFlowAction(
 
       break;
     case "stopExpeditionsAction":
-      sendTextMessage(sender, "Ok, dejaré de hacer expediciones");
+      sendTextMessage(sender, "Ok, dejaré de hacer expediciones", true);
       var state = await bot.stopAction("expeditions");
       if (state) {
-        await sendTextMessage(sender, "expediciones desactivadas con éxito...");
+        await sendTextMessage(
+          sender,
+          "expediciones desactivadas con éxito...",
+          true
+        );
       } else {
         await sendTextMessage(
           sender,
-          "ya tenias las <b>expediciones</b> desactivadas"
+          "ya tenias las <b>expediciones</b> desactivadas",
+          true
         );
       }
       break;
     case "beginWatchDogAction":
       if (!(await bot.hasAction("watchDog"))) {
-        sendTextMessage(sender, "Ok, empezaré a vigilar tu cuenta");
+        sendTextMessage(sender, "Ok, empezaré a vigilar tu cuenta", true);
         console.log("se entro al watchdog de telegram");
         await bot.addAction("watchDog");
         watchDog(bot);
       } else {
-        sendTextMessage(sender, "ya tenías el <b>WatchDog</b> activo!");
+        sendTextMessage(sender, "ya tenías el <b>WatchDog</b> activo!", true);
         console.log(" no se entro al watchdog");
       }
       break;
@@ -220,18 +223,21 @@ async function handleDialogFlowAction(
       if (state) {
         await sendTextMessage(
           sender,
-          "<b>FleetSave diario</b> desactivado con éxito (por hoy 😬)..."
+          "<b>FleetSave diario</b> desactivado con éxito (por hoy 😬)...",
+          true
         );
         await sendTextMessage(
           sender,
           "<b>" +
             bot.ogameEmail +
-            ", antes que te quedes dormido</b>, te recomiendo programar un nuevo fleet... escribeme <b>'haz fleet'</b> y sigue los pasos 😇"
+            ", antes que te quedes dormido</b>, te recomiendo programar un nuevo fleet... escribeme <b>'haz fleet'</b> y sigue los pasos 😇",
+          true
         );
       } else {
         await sendTextMessage(
           sender,
-          "algo salió mal y no pude detener el fleetsave de hoy..."
+          "algo salió mal y no pude detener el fleetsave de hoy...",
+          true
         );
       }
       break;
@@ -254,7 +260,8 @@ async function handleDialogFlowAction(
             beginAfter +
             "</b> y tu flota estará en vuelo aproximadamente <b>" +
             duration +
-            "</b>"
+            "</b>",
+          true
         );
         console.log("begin after: ", timeTomiliseconds2(beginAfter));
         console.log("duration: ", timeTomiliseconds2(duration));
@@ -266,7 +273,8 @@ async function handleDialogFlowAction(
         else
           sendTextMessage(
             sender,
-            "Colocaste mal el formato de horas. Acepto valores como: \n<b>1h:3min</b> (horas y minutos)\n<b>3h</b> (solo horas)\n<b>6min</b> (solo minutos)"
+            "Colocaste mal el formato de horas. Acepto valores como: \n<b>1h:3min</b> (horas y minutos)\n<b>3h</b> (solo horas)\n<b>6min</b> (solo minutos)",
+            true
           );
       } else {
         handleMessages(messages, sender);
@@ -274,27 +282,29 @@ async function handleDialogFlowAction(
       break;
     case "offNotifyAction":
       if (parameters.fields.player.stringValue) {
-        var player = parameters.fields.player.stringValue;
+        let player = parameters.fields.player.stringValue;
         await timeout(1000);
         sendTextMessage(
           sender,
-          "Empezando a escanear a <b>" + player + "</b>..."
+          "Empezando a escanear a <b>" + player + "</b>...",
+          true
         );
       }
       if (player) {
         sendTextMessage(
           sender,
-          "vale, te avisaré cuando <b>" + player + "</b> se quede off..."
+          "vale, te avisaré cuando <b>" + player + "</b> se quede off...",
+          true
         );
         let playerOff = false;
         while (!playerOff) {
           try {
-            const res = await axios(
-              config.PEPEHUNTER_BASE + "/api/scan?nickname=" + player
+            const res = await axios.post(
+              config.PEPEHUNTER_BASE + "/api/actions/scan-player" + player
             );
             let playerInfo = res.data.playerInfo;
             if (!playerInfo.hasOwnProperty("planets")) {
-              return sendTextMessage(sender, "Ese jugador no existe");
+              return sendTextMessage(sender, "Ese jugador no existe", true);
             }
             playerInfo.planets.forEach((planet) => {
               if (planet.activities[0].lastActivity == "on") {
@@ -310,37 +320,38 @@ async function handleDialogFlowAction(
           await timeout(1 * 1000); //1min
         }
         if (playerOff)
-          sendTextMessage("<b>" + player + "</b> se quedó <b>off</b>!");
+          sendTextMessage("<b>" + player + "</b> se quedó <b>off</b>!", true);
       }
       handleMessages(messages, sender);
       break;
 
     case "checkPlayerActivitiesAction":
-      if (parameters.fields.player.stringValue) {
-        var player = parameters.fields.player.stringValue;
-        await timeout(1000);
+      let player = parameters.fields.player.stringValue;
+      console.log("el player: ", player);
+      if (player) {
         sendTextMessage(
           sender,
-          "Empezando a escanear a <b>" + player + "</b>..."
+          "Empezando a escanear a <b>" + player + "</b>...",
+          true
         );
-      }
-      if (player) {
         let percents = { on: 0, off: 0, minutes: 0 };
         sendTypingOn(sender);
         axios
-          .get(config.PEPEHUNTER_BASE + "/api/scan?nickname=" + player)
+          .post(config.PEPEHUNTER_BASE + "/api/actions/scan-player", {
+            nickname: player,
+          })
           .then(async (res) => {
+            console.log("🚀 Aqui *** -> res", res.data);
             let playerInfo = res.data.playerInfo;
-            if (!playerInfo.hasOwnProperty("planets"))
-              return sendTextMessage(sender, "Ese jugador no existe");
-            let msg = `<b>Información de ${player}</b>\n`;
-            playerInfo.planets.forEach((planet, idx) => {
-              //calculating percents
-              console.log(
-                "la ultima actividad: ",
-                planet.activities[0].lastActivity
-              );
-              switch (planet.activities[0].lastActivity) {
+            let playerData = res.data.payload.player;
+            let activities = res.data.payload.activities;
+            let msg = `<b>Información de ${
+              playerData.alliance ? "[" + playerData.alliance + "] " : ""
+            }${playerData.playerName}</b> <code>Rank: ${
+              playerData.rank
+            }</code>\n`;
+            for (const activity of activities) {
+              switch (activity.lastActivity) {
                 case "on":
                   console.log("se entro a on");
                   percents.on += 1;
@@ -356,25 +367,16 @@ async function handleDialogFlowAction(
                   percents.minutes += 1;
                   break;
               }
-              //message
               msg +=
                 "<b>" +
-                planet.name +
+                activity.name +
                 "</b> " +
                 "[" +
-                planet.coords +
+                activity.coords +
                 "]" +
-                (planet.planetType == "planet"
-                  ? idx == 0
-                    ? "(principal🌎)"
-                    : "(🌎)"
-                  : "(🌘)") +
-                ": " +
-                (planet.activities.length > 0
-                  ? planet.activities[0].lastActivity
-                  : "Planeta destruido") +
+                (activity.type == "planet" ? "(🌎)" : "(🌘)") +
                 "\n";
-            });
+            }
             //calculating percents
             msg +=
               "📈<b>Resumen</b>\n" +
@@ -384,31 +386,46 @@ async function handleDialogFlowAction(
               percents.off +
               " 🗹<b>Minuteros:</b>" +
               percents.minutes;
-            sendTextMessage(sender, msg);
+            sendTextMessage(sender, msg, true);
             if (percents.on === 0) {
               await timeout(1000);
               sendTextMessage(
                 sender,
-                "<b>" + player + "</b> no tiene actividad por ningún lado!"
+                "<b>" + player + "</b> no tiene actividad por ningún lado!",
+                true
               );
             }
           })
           .catch((err) => {
             console.log("algo salio mal...");
             console.error(err);
+            sendTextMessage(
+              sender,
+              "Probablemente ese jugador no existe 🤷",
+              true
+            );
           });
       }
       handleMessages(messages, sender);
       break;
     case "stopWatchDogAction":
-      await sendTextMessage(sender, "Ok, entonces entrarás a la cuenta 😆");
+      await sendTextMessage(
+        sender,
+        "Ok, entonces entrarás a la cuenta 😆",
+        true
+      );
       var state = await bot.stopAction("watchDog");
       if (state) {
-        await sendTextMessage(sender, "watchDog desactivado con éxito...");
+        await sendTextMessage(
+          sender,
+          "watchDog desactivado con éxito...",
+          true
+        );
       } else {
         await sendTextMessage(
           sender,
-          "ya tenias el <b>watchDog</b> desactivado"
+          "ya tenias el <b>watchDog</b> desactivado",
+          true
         );
       }
       break;
@@ -524,18 +541,15 @@ function handleQuickReply(senderID, quickReply, messageId) {
   sendToDialogFlow(senderID, quickReplyPayload);
 }
 
-async function sendTextMessage(recipientId, text) {
+async function sendTextMessage(recipientId, text, isShared) {
   console.log("llego este recipient: ", recipientId);
   // let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
   console.log("se enviara la respuesta: ", text);
-  await api.sendMessage(config.TELEGRAM_GROUP_ID, text, { parse_mode: "html" });
-}
-
-async function sendTextMessagePersonal(recipientId, text) {
-  console.log("llego este recipient: ", recipientId);
-  // let bot = bots.getBotByTelegramId(recipientId); //bot.telegramGroupId
-  console.log("se enviara la respuesta: ", text);
-  await api.sendMessage(recipientId, text, { parse_mode: "html" });
+  await api.sendMessage(
+    isShared ? config.TELEGRAM_GROUP_ID : recipientId,
+    text,
+    { parse_mode: "html" }
+  );
 }
 
 async function sendQuickReply(recipientId, text, replies, maxColumns = 3) {
@@ -724,4 +738,4 @@ function isDefined(obj) {
   return true;
 }
 
-module.exports = { sendTextMessage, sendTextMessagePersonal, api };
+module.exports = { sendTextMessage, api };

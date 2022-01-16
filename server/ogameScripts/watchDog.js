@@ -1,29 +1,46 @@
-const { Random, timeout, msToTime } = require("../utils/utils");
+const {
+  Random,
+  timeout,
+  msToTime,
+  sendTelegramMessage,
+  log,
+} = require("../utils/utils");
 const formatISO9075 = require("date-fns/formatISO9075");
 const callMeBot = require("../services/callMeBot");
 
 async function watchDog(bot, page) {
-  // await timeout(1 * 60 * 1000);
-  const botTelegram = require("../chatbot/Telegram/telegramBot.js");
-  botTelegram.sendTextMessage(
-    bot.telegramId,
-    bot.ogameEmail +
-      " empezare a cuidar tu cuenta, para desactivar dime algo como 'pepebot ya no cuides mi cuenta'"
-  );
-  while (await bot.hasAction("watchDog")) {
-    try {
-      let watchDogStatus = await start(page, bot, botTelegram);
-      if (watchDogStatus)
-        await timeout(Random(0.75 * 60 * 1000, 1 * 60 * 1000));
-    } catch (error) {
-      console.log(error);
+  try {
+    // await timeout(1 * 60 * 1000);
+    sendTelegramMessage(
+      bot.telegramId,
+      bot.ogameEmail + " empezare a cuidar tu cuenta 🐕",
+      true
+    );
+    while (await bot.hasAction("watchDog")) {
+      try {
+        let watchDogStatus = await start(page, bot);
+        if (watchDogStatus)
+          await timeout(Random(0.75 * 60 * 1000, 1 * 60 * 1000));
+      } catch (error) {
+        console.log(error);
+      }
     }
+    console.log("se terminó el watchdog");
+    return;
+  } catch (error) {
+    console.log("el error: ", error);
+    // algo paso y se salio del bucle sin haber cancelado el watchdog
+    callMeBot("@ViktorJJF", "Se desactivo el watchdog por algún  problema");
+    sendTelegramMessage(
+      bot.telegramId,
+      bot.ogameEmail + " tu watchdog se desactivo por algún problema 🚨🐕",
+      true
+    );
+    log(JSON.stringify(error), "Error");
   }
-  console.log("se terminó el watchdog");
-  return;
 }
 
-async function start(page, bot, botTelegram) {
+async function start(page, bot) {
   try {
     var page = await bot.createNewPage();
     console.log("se encontro la accion watchDog");
@@ -31,7 +48,7 @@ async function start(page, bot, botTelegram) {
     console.log(attacked);
     if (attacked) {
       var ogameUsername = await bot.getOgameUsername(page);
-      await botTelegram.sendTextMessage(
+      await sendTelegramMessage(
         bot.telegramId, //bot.telegramGroupId
         "⚠️ <b>" +
           ogameUsername +
@@ -40,7 +57,7 @@ async function start(page, bot, botTelegram) {
       );
       var attackDetails = await bot.attackDetail(page);
       if (attackDetails.normal.length === 0 && attackDetails.sac.length === 0) {
-        await botTelegram.sendTextMessage(
+        await sendTelegramMessage(
           bot.telegramId,
           "parece que solo fue un espionaje"
         );
@@ -48,7 +65,7 @@ async function start(page, bot, botTelegram) {
         console.log("llego esta respuesta: ", attackDetails);
         callMeBot("@ViktorJJF", "Te estan atacando"); //make telegram phonecall
         callMeBot("@Juancarlosjf", "Te estan atacando"); //make telegram phonecall
-        await botTelegram.sendTextMessage(
+        await sendTelegramMessage(
           bot.telegramId, //bot.telegramGroupId
           "⚠️ <b>" +
             ogameUsername +
@@ -57,19 +74,21 @@ async function start(page, bot, botTelegram) {
             attackDetails.normal.length +
             " ataques normales y " +
             attackDetails.sac.length +
-            " SACS en tu contra"
+            " SACS en tu contra",
+          true
         );
         if (attackDetails.normal.length > 0) {
-          await botTelegram.sendTextMessage(
+          await sendTelegramMessage(
             bot.telegramId, //bot.telegramGroupId
-            "<b>Detalle de Ataques normales</b>"
+            "<b>Detalle de Ataques normales</b>",
+            true
           );
           attackDetails.normal.forEach(async (attackDetail) => {
             let shipsDetailMsg = "";
             attackDetail.ships.forEach((ship) => {
               shipsDetailMsg += "✔️ " + ship.name + " " + ship.qty + "\n";
             });
-            await botTelegram.sendTextMessage(
+            await sendTelegramMessage(
               bot.telegramId,
               "<b>Detalles</b>:\n" +
                 "✅ <b>Jugador hostil:</b> " +
@@ -100,15 +119,17 @@ async function start(page, bot, botTelegram) {
                 msToTime(attackDetail.hostilePlayer.timeRemaining) +
                 "\n" +
                 "📝 <b>Detalle de Naves:</b>\n" +
-                shipsDetailMsg
+                shipsDetailMsg,
+              true
             );
           });
         }
         if (attackDetails.sac.length > 0) {
           await timeout(2000);
-          await botTelegram.sendTextMessage(
+          await sendTelegramMessage(
             bot.telegramId, //bot.telegramGroupId
-            "<b>Detalle de ataques en SAC</b>\nte mostraré los detalles proximamente jajaj"
+            "<b>Detalle de ataques en SAC</b>\nte mostraré los detalles proximamente !!",
+            true
           );
         }
       }

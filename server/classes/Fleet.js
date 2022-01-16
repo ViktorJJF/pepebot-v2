@@ -240,10 +240,10 @@ class Fleet {
           //       ? 3000
           //       : parseInt((cazadorLigeroTotal * 1) / freeExpSlots),
           // },
-          {
-            id: "202",
-            qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots),
-          },
+          // {
+          //   id: "202",
+          //   qty: parseInt((navePequenaDeCargaTotal * 1) / freeExpSlots),
+          // },
           {
             id: "203",
             qty: ngcToSend > 2000 ? 2000 : ngcToSend, // maximo 2000 NGC

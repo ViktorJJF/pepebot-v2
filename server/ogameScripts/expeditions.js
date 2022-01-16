@@ -10,7 +10,12 @@
 const Coordinate = require("../classes/Coordinate");
 const Fleet = require("../classes/Fleet");
 
-const { Random, timeout, msToTime } = require("../utils/utils");
+const {
+  Random,
+  timeout,
+  msToTime,
+  sendTelegramMessage,
+} = require("../utils/utils");
 
 async function beginExpeditions(
   origin,
@@ -33,7 +38,6 @@ async function beginExpeditions(
 }
 
 async function start(bot, origin, ships, speed) {
-  const botTelegram = require("../chatbot/Telegram/telegramBot");
   try {
     console.log("empezando nueva expedicion");
     var page = await bot.createNewPage();
@@ -51,16 +55,17 @@ async function start(bot, origin, ships, speed) {
     let expeditionsPossible = slots.expTotal - slots.expInUse;
     var ogameUsername = await bot.getOgameUsername(page);
     if (expeditionsPossible > 0)
-      await botTelegram.sendTextMessage(
+      await sendTelegramMessage(
         bot.telegramId,
-        `<b>${ogameUsername}</b> estoy mandando expediciones...`
+        `<b>${ogameUsername}</b> estoy mandando expediciones...`,
+        true
       );
     var expeditionNumber = 1;
     while (expeditionsPossible > 0 && (await bot.hasAction("expeditions"))) {
       let shipsToSend = await sendExpedition(origin, ships, page, speed);
       let msg = `<b>Expedición nro ${expeditionNumber}\n</b>`;
       shipsToSend.forEach((shipToSend) => {
-        msg += "✔️<b>" + shipToSend.name + ":</b> " + shipToSend.qty + "\n";
+        msg += "✅<b>" + shipToSend.name + ":</b> " + shipToSend.qty + "\n";
       });
       console.log("mandando expedicion...");
       console.log(
@@ -69,7 +74,7 @@ async function start(bot, origin, ships, speed) {
         " y se restara -1"
       );
       expeditionsPossible--;
-      botTelegram.sendTextMessage(bot.telegramId, msg);
+      sendTelegramMessage(bot.telegramId, msg, true);
       expeditionNumber++;
       await timeout(Random(1000, 3000));
     }
@@ -77,11 +82,12 @@ async function start(bot, origin, ships, speed) {
     if (minSecs == bigNum) {
       minSecs = 6 * 1000;
     }
-    await botTelegram.sendTextMessage(
+    await sendTelegramMessage(
       bot.telegramId,
       `<b>${ogameUsername}</b> acabo de completar todas las expediciones ... esperare a que la siguiente expedición vuelva dentro de ${msToTime(
         minSecs
-      )} `
+      )} `,
+      true
     );
     await bot.closePage(page);
     bot.closeSession(); //closing session
@@ -109,10 +115,6 @@ async function sendExpedition(origin, ships, page, speed) {
   fleet.setSpeed(speed);
   fleet.setType("moon");
   fleet.setMission("expedition");
-  // Object.entries(ships).forEach(([key, value]) => {
-  //   fleet.addShips(key, value);
-  // });
-  // fleet.setDuration(expeditionDuration);
   return await fleet.sendNow();
 }
 

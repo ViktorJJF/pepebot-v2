@@ -26,8 +26,19 @@ module.exports = {
   telegramId: "624818317",
   TELEGRAM_GROUP_ID: "-339549424",
   // TELEGRAM_GROUP_ID: "624818317",
-  universe: "s183",
+  SERVER: "s183",
   BASE_PATH: __dirname,
-  PEPEHUNTER_BASE: "http://localhost:12000",
-  PEPEBOT_BASE: "http://localhost:7000",
+  PEPEHUNTER_BASE:
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:3000"
+      : "https://pepehunter-v2.herokuapp.com",
+  PEPEBOT_BASE:
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:7000"
+      : "https://pepebot-v2.herokuapp.com/",
+  // bot test // https://web.telegram.org/z/#5022628038
+  TELEGRAM_TOKEN:
+    process.env.NODE_ENV === "development"
+      ? "5022628038:AAHIAOB6xzN91psrcPwwGwf4f95S2UrM25g"
+      : "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
 };

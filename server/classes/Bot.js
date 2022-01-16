@@ -35,7 +35,8 @@ module.exports = class Bot {
     // this.actions = null;
     this.playerId = null;
     this.timesSpied = 1;
-
+    this.gf_token = null;
+    this.cookies = null;
     //currentPage
     // 0 -- > mainPage
     // 1 -- > Galaxy
@@ -60,6 +61,7 @@ module.exports = class Bot {
     this.currentPage = 0;
     // this.actions = botOjbect.actions;
     this.playerId = botOjbect.playerId;
+    this.gf_token = botOjbect.gf_token;
   }
   async begin() {
     console.log("iniciando bot...");
@@ -114,29 +116,27 @@ module.exports = class Bot {
           delay: this.typingDelay,
         }
       );
-      console.log("aaaa");
-      await page.waitForSelector(
-        "#loginForm > p > button.button.button-primary.button-lg",
-        {
-          timeout: 15000,
+
+      // el inicio de sesion es mediante cookie
+      await page.evaluate((token) => {
+        console.log("el token: ", token);
+        function setCookie(name, value, days) {
+          let expires = "";
+          if (days) {
+            let date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            expires = `; expires=${date.toUTCString()}`;
+          }
+          document.cookie = `${name}=${value || ""}${expires}; path=/`;
         }
+        setCookie("gf-token-production", token, 7);
+        console.log("COOKIE AGREGADO!");
+        return true;
+      }, this.gf_token);
+      await page.goto(
+        `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`
       );
-      console.log("bbbb");
-      await page.evaluate(() => {
-        document
-          .querySelector(
-            "#loginForm > p > button.button.button-primary.button-lg"
-          )
-          .click();
-      });
-      await page.click(
-        "#loginForm > p > button.button.button-primary.button-lg"
-      );
-      console.log("hemos dado click...");
-      // await page.evaluate(() => {
-      //   document.querySelector("button[type='submit']").click();
-      // });
-      // await page.click("#loginTab > #loginForm > p > .button-primary > span");
+
       await page.waitForSelector("div > #joinGame > a > .button > span", {
         timeout: 15000,
       });
@@ -158,6 +158,8 @@ module.exports = class Bot {
         page,
         this.browser
       );
+      // guardando cookies
+      this.setCookies(page);
       await this.closePage(pageToClose);
       await this.closePage(page);
       // await this.closeAds();
@@ -566,7 +568,7 @@ module.exports = class Bot {
     if (!this.browser) await this.begin();
     let mainMenuUrl =
       url ||
-      `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`;
+      `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`;
     let page = await this.browser.newPage();
     // await page.setViewport({
     //   width: 3440,
@@ -611,6 +613,7 @@ module.exports = class Bot {
       switch (currentPage) {
         case "mainPage":
           console.log("no paso nada.. seguimos normal");
+          this.setCookies(page); // se reingrensan los cookies
           await this.closePage(page);
           break;
         case "playPage":
@@ -627,6 +630,7 @@ module.exports = class Bot {
             page,
             this.browser
           );
+          this.setCookies(page); // se reingrensan los cookies
           await this.closePage(page);
           break;
         case "selectUniversePage":
@@ -637,6 +641,7 @@ module.exports = class Bot {
             page,
             this.browser
           );
+          this.setCookies(page); // se reingrensan los cookies
           await this.closePage(page);
           console.log("se termino el click and wait");
           //main page ogame
@@ -958,7 +963,7 @@ module.exports = class Bot {
       await page.waitForResponse((response) => {
         return (
           response.url() ===
-            `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1` &&
+            `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1` &&
           response.status() === 200
         );
       });
@@ -1014,7 +1019,7 @@ module.exports = class Bot {
       await this.page.waitForResponse((response) => {
         return (
           response.url() ===
-            `https://${config.universe}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1` &&
+            `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1` &&
           response.status() === 200
         );
       });
@@ -1434,5 +1439,24 @@ module.exports = class Bot {
       console.log("algo salio mal en stopaction:", error);
       return;
     }
+  }
+
+  async setCookies(page) {
+    this.cookies = await page.cookies();
+  }
+
+  async getCookies() {
+    return this.cookies;
+  }
+
+  getFormattedCookies() {
+    return this.cookies
+      .map(
+        (cookie, index) =>
+          `${cookie.name}=${cookie.value}${
+            index !== this.cookies.length - 1 ? ";" : ""
+          }`
+      )
+      .join(" ");
   }
 };

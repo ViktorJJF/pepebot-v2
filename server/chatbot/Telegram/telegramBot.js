@@ -480,7 +480,7 @@ async function handleMessage(message, sender) {
     case "text": //text
       for (const text of message.text.text) {
         if (text !== "") {
-          await sendTextMessage(sender, text);
+          await sendTextMessage(sender, text, true);
         }
       }
       break;

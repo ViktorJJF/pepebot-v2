@@ -6,41 +6,41 @@ const config = require("../config.js");
 const logout = (req, res) => {
   req.logout();
   res.json({
-    ok: true
+    ok: true,
   });
 };
 const getUser = (req, res) => {
-  if (req.isAuthenticated()) {
-    console.log("el usuario esta autenticado");
-    return res.json({
-      ok: true,
-      payload: req.user
-    });
-  }
+  // if (req.isAuthenticated()) {
+  //   console.log("el usuario esta autenticado");
+  //   return res.json({
+  //     ok: true,
+  //     payload: req.user
+  //   });
+  // }
   return res.json({
     ok: false,
     err: {
-      message: "Usuario no logeado"
-    }
+      message: "Usuario no logeado",
+    },
   });
 };
 const list = (req, res) => {
   User.find({
-    status: true
+    status: true,
   })
     .sort({
-      last_name: "desc"
+      last_name: "desc",
     })
     .exec((err, payload) => {
       if (err) {
         return res.status(400).json({
           ok: false,
-          err
+          err,
         });
       }
       res.json({
         ok: true,
-        payload
+        payload,
       });
     });
 };
@@ -52,7 +52,7 @@ const create = async (req, res) => {
     password: await bcrypt.hash(body.password, config.saltRounds),
     email: body.email,
     img: body.img,
-    role: body.role
+    role: body.role,
   });
 
   user.save((err, payload) => {
@@ -61,19 +61,19 @@ const create = async (req, res) => {
         return res.status(400).json({
           ok: false,
           message: "El usuario estaba registrado",
-          err
+          err,
         });
       }
       return res.status(400).json({
         ok: false,
         message: "Algo salió mal",
-        err
+        err,
       });
     }
     res.json({
       ok: true,
       message: "Usuario creado con éxito",
-      payload
+      payload,
     });
   });
 };
@@ -88,7 +88,7 @@ const update = async (req, res) => {
     id,
     body,
     {
-      new: true
+      new: true,
     },
     (err, payload) => {
       if (err) {
@@ -96,19 +96,19 @@ const update = async (req, res) => {
           return res.status(400).json({
             ok: false,
             message: "El usuario estaba registrado",
-            err
+            err,
           });
         }
         return res.status(400).json({
           ok: false,
           message: "Algo salió mal",
-          err
+          err,
         });
       }
       res.json({
         ok: true,
         message: "Usuario actualizado con éxito",
-        payload
+        payload,
       });
     }
   );
@@ -136,13 +136,13 @@ const deletes = (req, res) => {
       return res.status(400).json({
         ok: false,
         message: "Algo salió mal",
-        err
+        err,
       });
     }
     res.json({
       ok: true,
       message: "Usuario eliminado con éxito",
-      payload
+      payload,
     });
   });
 };
@@ -152,22 +152,22 @@ const login = (req, res) => {
   console.log("llego este login: ", email, password);
   User.findOne(
     {
-      email
+      email,
     },
     (err, userDB) => {
       if (err) {
         return res.status(400).json({
           ok: false,
           message: "Algo salió mal",
-          err
+          err,
         });
       }
       if (!userDB) {
         return res.status(400).json({
           ok: false,
           err: {
-            message: "El usuario con ese correo no existe"
-          }
+            message: "El usuario con ese correo no existe",
+          },
         });
       }
       let passwordIsValid = bcrypt.compareSync(password, userDB.password);
@@ -175,22 +175,22 @@ const login = (req, res) => {
         return res.status(400).json({
           ok: false,
           err: {
-            message: "Contraseña incorrecta"
-          }
+            message: "Contraseña incorrecta",
+          },
         });
       }
       let token = jwt.sign(
         {
-          usuario: userDB
+          usuario: userDB,
         },
         config.seed,
         {
-          expiresIn: config.expiresIn
+          expiresIn: config.expiresIn,
         }
       );
       console.log("antes del inicio: ", userDB._id);
       console.log("el usuario del login es: ", userDB);
-      req.login(userDB, err => {
+      req.login(userDB, (err) => {
         if (err) {
           return console.log(err);
         }
@@ -200,7 +200,7 @@ const login = (req, res) => {
         ok: true,
         message: "Bienvenido",
         user: userDB,
-        token
+        token,
       });
     }
   );
@@ -213,5 +213,5 @@ module.exports = {
   deletes,
   login,
   getUser,
-  logout
+  logout,
 };

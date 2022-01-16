@@ -133,9 +133,12 @@ app.use("/api", routes);
 //static folder
 app.use(express.static(__dirname + "/public"));
 //Handle SPA
-app.get(/.*/, (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+app.get("/", (req, res) => {
+  res.status(200).json({ ok: true, msg: "Bot andando" });
 });
+// app.get(/.*/, (req, res) => {
+//   res.sendFile(__dirname + "/public/index.html");
+// });
 // }
 process.env.PORT = config.port;
 app.listen(process.env.PORT, () => {

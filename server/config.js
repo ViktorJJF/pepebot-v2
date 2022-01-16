@@ -35,7 +35,7 @@ module.exports = {
   PEPEBOT_BASE:
     process.env.NODE_ENV === "development"
       ? "http://localhost:7000"
-      : "https://pepebot-v2.herokuapp.com/",
+      : "https://pepebot-v2.herokuapp.com",
   // bot test // https://web.telegram.org/z/#5022628038
   TELEGRAM_TOKEN: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
   // TELEGRAM_TOKEN:

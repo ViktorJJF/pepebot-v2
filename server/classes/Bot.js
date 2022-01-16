@@ -7,7 +7,6 @@ const {
   buildErrObject,
   handleError,
   sendTelegramMessage,
-  sendTelegramMessagePersonal,
 } = require("../utils/utils.js");
 const config = require("../config");
 const chronium = require("../classes/Chronium");
@@ -671,25 +670,29 @@ module.exports = class Bot {
       return !document.querySelector("#attack_alert.soon");
     });
     if (notAttacked) {
-      sendTelegramMessagePersonal(
+      sendTelegramMessage(
         "624818317",
-        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`
+        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`,
+        true
       );
-      sendTelegramMessagePersonal(
+      sendTelegramMessage(
         "893530350",
-        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`
+        `verificando ataques para ${this.ogameEmail}... - SIN ATAQUE ✅`,
+        true
       );
       console.log("no estas siendo atacado");
       return false;
     } else {
       console.log("estas siendo atacado !!");
-      sendTelegramMessagePersonal(
+      sendTelegramMessage(
         "624818317",
-        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`
+        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`,
+        true
       );
-      sendTelegramMessagePersonal(
+      sendTelegramMessage(
         "893530350",
-        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`
+        `verificando ataques para ${this.ogameEmail}... - TE ATACAN 🚨`,
+        true
       );
       return true;
     }

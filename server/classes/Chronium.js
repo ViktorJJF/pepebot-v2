@@ -17,11 +17,11 @@ class Chronium {
       browser = await puppeteer.launch({
         headless: true,
         // executablePath: "/usr/bin/firefox",
-        // args: [
-        //   "--no-sandbox",
-        //   "--disable-setuid-sandbox",
-        //   "--disable-dev-shm-usage",
-        // ],
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+        ],
       });
     }
     console.log("se termino el inicio");

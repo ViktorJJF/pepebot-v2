@@ -86,7 +86,7 @@ async function start(bot, origin, ships, speed) {
       expeditionsPossible--;
       expeditionNumber++;
 
-      await timeout(Random(8, 12) * 1000);
+      await timeout(Random(12, 16) * 1000);
     }
     // If we didn't found any expedition fleet and didn't create any, let's wait 5min
     if (minSecs == bigNum) {

@@ -118,26 +118,42 @@ module.exports = class Bot {
         }
       );
 
-      // el inicio de sesion es mediante cookie
-      await page.evaluate((token) => {
-        console.log("el token: ", token);
-        function setCookie(name, value, days) {
-          let expires = "";
-          if (days) {
-            let date = new Date();
-            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-            expires = `; expires=${date.toUTCString()}`;
-          }
-          document.cookie = `${name}=${value || ""}${expires}; path=/`;
+      // // el inicio de sesion es mediante cookie
+      // await page.evaluate((token) => {
+      //   console.log("el token: ", token);
+      //   function setCookie(name, value, days) {
+      //     let expires = "";
+      //     if (days) {
+      //       let date = new Date();
+      //       date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      //       expires = `; expires=${date.toUTCString()}`;
+      //     }
+      //     document.cookie = `${name}=${value || ""}${expires}; path=/`;
+      //   }
+      //   setCookie("gf-token-production", token, 7);
+      //   console.log("COOKIE AGREGADO!");
+      //   return true;
+      // }, this.gf_token);
+      // await page.goto(
+      //   `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`
+      // );
+      await page.waitForSelector(
+        "#loginForm > p > button.button.button-primary.button-lg",
+        {
+          timeout: 15000,
         }
-        setCookie("gf-token-production", token, 7);
-        console.log("COOKIE AGREGADO!");
-        return true;
-      }, this.gf_token);
-      await page.goto(
-        `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`
       );
-
+      console.log("bbbb");
+      await page.evaluate(() => {
+        document
+          .querySelector(
+            "#loginForm > p > button.button.button-primary.button-lg"
+          )
+          .click();
+      });
+      await page.click(
+        "#loginForm > p > button.button.button-primary.button-lg"
+      );
       await page.waitForSelector("div > #joinGame > a > .button > span", {
         timeout: 15000,
       });

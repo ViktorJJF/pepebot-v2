@@ -31,6 +31,9 @@ let botsSchema = new Schema(
     telegramId: {
       type: String,
     },
+    telegramUsername: {
+      type: String,
+    },
     ogameEmail: {
       type: String,
       unique: true,

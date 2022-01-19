@@ -98,24 +98,26 @@ BotModel.find().exec(async (err, payload) => {
     // no ejecutar nada mas si estamos en dev
     // if (process.env.NODE_ENV === "development") return;
 
-    // if (bot.ogameEmail != "juancarlosjf@outlook.com.pe") {
-    // verificando acciones
-    let login;
-    let actions = await bot.getActions();
-    if (actions.length > 0) {
-      console.log("empezando login", bot.ogameEmail);
-      login = await bot.login(element.ogameEmail, element.ogamePassword);
-      console.log("se termino el loginnnn");
-    } else {
-      console.log("No tenia acciones pendientes", bot.ogameEmail);
+    if (bot.ogameEmail != "juancarlosjf@outlook.com.pe") {
+      // verificando acciones
+      let login;
+      let actions = await bot.getActions();
+      if (actions.length > 0) {
+        console.log("empezando login", bot.ogameEmail);
+        login = await bot.login(element.ogameEmail, element.ogamePassword);
+        console.log("se termino el loginnnn");
+        const page = await bot.createNewPage();
+        console.log(await bot.getShipsAvailable(page));
+      } else {
+        console.log("No tenia acciones pendientes", bot.ogameEmail);
+      }
+      if (login) {
+        const cookies = await bot.getFormattedCookies();
+        console.log("🚀 Aqui *** -> cookies", cookies);
+        beginActions(bot);
+      }
+      //daily rutine
     }
-    if (login) {
-      const cookies = await bot.getFormattedCookies();
-      console.log("🚀 Aqui *** -> cookies", cookies);
-      beginActions(bot);
-    }
-    //daily rutine
-    // }
   });
   // beginDailyFleetSave(bots.bots);
   // seed.actions();

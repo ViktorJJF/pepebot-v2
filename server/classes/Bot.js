@@ -11,6 +11,7 @@ const {
 const config = require("../config");
 const chronium = require("../classes/Chronium");
 const { PendingXHR } = require("pending-xhr-puppeteer");
+const callMeBot = require("../services/callMeBot");
 
 module.exports = class Bot {
   constructor() {
@@ -168,6 +169,8 @@ module.exports = class Bot {
       return true;
     } catch (error) {
       console.log("aaaaa", error);
+      // timbrarme
+      callMeBot(config.TELEGRAM_OWN_USERNAME, "Error en logeo");
       return false;
     }
   }
@@ -1450,6 +1453,19 @@ module.exports = class Bot {
       console.log("algo salio mal en stopaction:", error);
       return;
     }
+  }
+  /**
+   * @Description Obtiene los datos naves del planeta actual. Se dirigirá a vista flota
+   */
+  async getShipsAvailable(page) {
+    page = page || this.page;
+    await this.goToPage("fleet", page);
+    await timeout(30 * 1000);
+    let response = await page.evaluate(() => {
+      console.log("la cantidad: ", window["shipsOnPlanet"]);
+      return window["shipsOnPlanet"];
+    });
+    return response;
   }
 
   async setCookies(page) {

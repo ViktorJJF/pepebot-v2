@@ -78,6 +78,18 @@ function spyCoords(coords) {
 // expeditions
 
 (async () => {
+  let coords = "2:123:8";
+  var battleShips = document.querySelectorAll("#battleships>ul#military>li");
+  for (let i = battleShips.length - 2; i > -1; i--) {
+    let lastBattleShipQty = parseInt(
+      battleShips[i].querySelector("span>span").getAttribute("data-value")
+    );
+    if (lastBattleShipQty > 0) {
+      var lastBattleShipId = battleShips[i].getAttribute("data-technology");
+      i = -1;
+    }
+  }
+
   function timeout(ms) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -103,8 +115,7 @@ function spyCoords(coords) {
       .querySelector("span.transporterLarge>span")
       .getAttribute("data-value")
   );
-  let qtyNGCtoSend = Math.ceil(qtyNGC / numberExpeditions);
-  let coords = "1:108:8";
+  let qtyNGCtoSend = Math.ceil(qtyNGC / 3);
   let [galaxy, system, position] = coords.split(":");
   let success = true;
   while (success) {
@@ -136,7 +147,7 @@ function spyCoords(coords) {
     );
     myHeaders.append("Accept-Language", "en,en-US;q=0.9,es-ES;q=0.8,es;q=0.7");
 
-    var raw = `token=${token}&am203=${qtyNGCtoSend}&am210=1&am219=1&galaxy=${galaxy}&system=${system}&position=16&type=1&metal=0&crystal=0&deuterium=0&prioMetal=1&prioCrystal=2&prioDeuterium=3&mission=15&speed=10&retreatAfterDefenderRetreat=0&union=0&holdingtime=1`;
+    var raw = `token=${token}&am203=${qtyNGCtoSend}&am${lastBattleShipId}=1&am210=1&am219=1&galaxy=${galaxy}&system=${system}&position=16&type=1&metal=0&crystal=0&deuterium=0&prioMetal=1&prioCrystal=2&prioDeuterium=3&mission=15&speed=10&retreatAfterDefenderRetreat=0&union=0&holdingtime=1`;
 
     var requestOptions = {
       method: "POST",
@@ -167,7 +178,7 @@ function spyCoords(coords) {
       console.log("err: ", error);
     }
     console.log("FLOTA ENVIADA!!");
-    await timeout(Random(2, 5) * 1000);
+    await timeout(Random(1, 1) * 1000);
   }
   console.log("FIN - ENVIE TODAS LAS EXPEDICIONES");
 })();

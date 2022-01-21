@@ -23,11 +23,19 @@ async function beginExpeditions(
   ships,
   bot,
   speed = 1,
-  expeditionDuration = 1
+  expeditionDuration = 1,
+  isSpecial = false
 ) {
   while (await bot.hasAction("expeditions")) {
     try {
-      let minSecs = await start(bot, origin, ships, speed);
+      let minSecs = await start(
+        bot,
+        origin,
+        ships,
+        speed,
+        expeditionDuration,
+        isSpecial
+      );
       if (minSecs) await timeout(minSecs + 30 * 1000);
       // Sleep until one of the expedition fleet come back
       console.log("empezando nueva vuelta...");
@@ -38,7 +46,7 @@ async function beginExpeditions(
   return;
 }
 
-async function start(bot, origin, ships, speed) {
+async function start(bot, origin, ships, speed, expeditionDuration, isSpecial) {
   try {
     console.log("empezando nueva expedicion");
     var page = await bot.createNewPage(
@@ -74,6 +82,8 @@ async function start(bot, origin, ships, speed) {
         ships,
         page,
         speed,
+        expeditionDuration,
+        isSpecial,
       });
       // manando mensajes de telegram
       if (sentShips && sentShips.length > 0) {
@@ -86,7 +96,7 @@ async function start(bot, origin, ships, speed) {
       expeditionsPossible--;
       expeditionNumber++;
 
-      await timeout(Random(1, 3) * 1000);
+      await timeout(Random(1, 1) * 1000);
     }
     // If we didn't found any expedition fleet and didn't create any, let's wait 5min
     if (minSecs == bigNum) {
@@ -112,11 +122,21 @@ async function start(bot, origin, ships, speed) {
   }
 }
 
-async function sendExpedition({ bot, origin, ships, page, speed } = {}) {
+async function sendExpedition({
+  bot,
+  origin,
+  ships,
+  page,
+  speed,
+  expeditionDuration,
+  isSpecial,
+} = {}) {
+  console.log("🚀 Aqui *** -> isSpecial", isSpecial);
   // if(activateRandomSystem) let randomSystem = Random(minSystem, maxSystem)
   let [galaxy, system, planet] = origin.split(":");
   let destination = new Coordinate(galaxy, system, 16);
   let fleet = new Fleet();
+  fleet.setIsSpecial(isSpecial);
   fleet.setBot(bot);
   fleet.setPage(page);
   fleet.setOrigin(origin);

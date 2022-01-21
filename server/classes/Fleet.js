@@ -27,6 +27,7 @@ class Fleet {
     this.bot = null;
     this.sentShips = [];
     this.qtyErrors = 0;
+    this.isSpecial = false; // si es true, las expediciones seran en sistemas cercanos pero no en mismo
     this.ships = [
       {
         id: "202",
@@ -143,6 +144,9 @@ class Fleet {
   }
   addShips(shipId, qty) {
     this[shipId] = qty;
+  }
+  setIsSpecial(value) {
+    this.isSpecial = value;
   }
   SetAllResources() {
     this.allResources = true;
@@ -300,6 +304,18 @@ class Fleet {
       }
     }
     let [galaxy, system, planet] = this.destination.split(":");
+    system = parseInt(system);
+    if (this.isSpecial) {
+      console.log("empezando expedicion especial");
+      // randomeando sistema cercano
+      let randomSign = Random(1, 2);
+      if (randomSign === 1) {
+        system = system > 444 ? system : system + Random(1, 5);
+      } else {
+        system = system < 6 ? system : system - Random(1, 5);
+      }
+    }
+    console.log("🚀 Aqui *** -> system", system);
     let missionCode = this.missions.find((el) => el.name == this.mission).id;
     //if all resources true
     if (this.allResources) {

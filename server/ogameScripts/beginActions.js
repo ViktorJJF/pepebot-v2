@@ -3,7 +3,7 @@ const beginFleetSave = require("./fleetSave.js");
 const beginExpeditions = require("./expeditions.js");
 const beginWatchdog = require("./watchDog.js");
 
-beginActions = async bot => {
+beginActions = async (bot) => {
   let actions = await bot.getActions();
   console.log("las acciones son:", actions);
   for (const action of actions) {
@@ -11,9 +11,16 @@ beginActions = async bot => {
       case "expeditions":
         let ships = [
           { id: 1, qty: 5 },
-          { id: 9, qty: 10 }
+          { id: 9, qty: 10 },
         ];
-        beginExpeditions(action.payload.coords, ships, bot);
+        beginExpeditions(
+          action.payload.coords,
+          ships,
+          bot,
+          1,
+          1,
+          action.payload.isSpecial
+        );
         break;
       case "watchDog":
         beginWatchdog(bot);

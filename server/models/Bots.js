@@ -8,6 +8,7 @@ var actionsSchema = new mongoose.Schema(
     active: { type: Boolean, default: false },
     payload: {
       coords: String,
+      isSpecial: Boolean,
     },
   },
   {

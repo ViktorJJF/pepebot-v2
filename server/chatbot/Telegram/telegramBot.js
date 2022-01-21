@@ -149,24 +149,36 @@ async function handleDialogFlowAction(
         "los parametros son estos: ",
         JSON.stringify(parameters.fields)
       );
+      let isSpecial = parameters.fields.special.stringValue ? true : false;
       if (parameters.fields.cooords.stringValue) {
         var coords = parameters.fields.cooords.stringValue;
         console.log("🚀 Aqui *** -> coords", coords);
       }
       if (coords) {
         if (!(await bot.hasAction("expeditions"))) {
-          sendTextMessage(
-            sender,
-            "Ok, empezaré a hacer expediciones en tu planeta/luna de " + coords,
-            true
-          );
+          if (isSpecial) {
+            sendTextMessage(
+              sender,
+              "🚀 Ok, empezaré a hacer expediciones especiales en tu planeta/luna de " +
+                coords,
+              true
+            );
+          } else {
+            sendTextMessage(
+              sender,
+              "Ok, empezaré a hacer expediciones en tu planeta/luna de " +
+                coords,
+              true
+            );
+          }
+
           let ships = [
             { id: 1, qty: 5 },
             { id: 9, qty: 10 },
           ];
           // var coords = "9:999:9";
-          await bot.addAction("expeditions", { coords: coords });
-          beginExpeditions(coords, ships, bot);
+          await bot.addAction("expeditions", { coords: coords, isSpecial });
+          beginExpeditions(coords, ships, bot, 1, 1, isSpecial);
         } else {
           sendTextMessage(
             sender,
@@ -304,6 +316,7 @@ async function handleDialogFlowAction(
               config.PEPEHUNTER_BASE + "/api/actions/scan-player" + player
             );
             let playerInfo = res.data.playerInfo;
+            console.log("🚀 Aqui *** -> playerInfo", playerInfo);
             if (!playerInfo.hasOwnProperty("planets")) {
               return sendTextMessage(sender, "Ese jugador no existe", true);
             }
@@ -372,6 +385,9 @@ async function handleDialogFlowAction(
                 "<b>" +
                 activity.name +
                 "</b> " +
+                (activity.coords === playerData.mainPlanet
+                  ? "(Principal) "
+                  : "") +
                 "[" +
                 activity.coords +
                 "]" +

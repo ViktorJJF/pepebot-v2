@@ -1439,6 +1439,7 @@ module.exports = class Bot {
       );
       actionToUpdate.active = true;
       actionToUpdate.payload.coords = payload.coords;
+      actionToUpdate.payload.isSpecial = payload.isSpecial;
       await botModel.save();
       console.log("se recibio este action:", type);
       return true;

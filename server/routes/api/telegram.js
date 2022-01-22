@@ -5,7 +5,7 @@ const telegramBot = require("../../chatbot/Telegram/telegramBot");
 
 router.post("/message", (req, res) => {
   let { message, senderId, isShared } = req.body;
-  telegramBot.sendTextMessage(senderId, message, isShared);
+  await telegramBot.sendTextMessage(senderId, message, isShared);
   res.json({
     ok: true,
     message,

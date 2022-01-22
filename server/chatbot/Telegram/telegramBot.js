@@ -100,6 +100,31 @@ async function handleDialogFlowAction(
     );
   }
   switch (action) {
+    case "search_off_players_in_range.action":
+      console.log("se entro al action search offs");
+      let from = parameters.fields.from.stringValue;
+      let to = parameters.fields.to.stringValue;
+      if (from && to) {
+        axios
+          .post(config.PEPEHUNTER_BASE + "/api/actions/search-off-player", {
+            from,
+            to,
+          })
+          .then((res) => {
+            sendTextMessage(
+              sender,
+              `🔍 Buscaré a los dormidos desde ${from} hasta ${to}`,
+              true
+            );
+          })
+          .catch((err) => {
+            console.log(err);
+            sendTextMessage(sender, `Algo pasó y no pude completar la acción`);
+          });
+      } else {
+        handleMessages(messages, sender);
+      }
+      break;
     case "loginOgameBotAction":
       console.log("se entro al action login");
       console.log("los parametros son:", parameters);

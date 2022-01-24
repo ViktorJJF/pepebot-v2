@@ -55,7 +55,7 @@ let botsSchema = new Schema(
     proxy: {
       type: String,
     },
-    playerId: String,
+    playerId: Number, // id de ogame en el universo del bot
     actions: [actionsSchema],
     gf_token: String,
   },

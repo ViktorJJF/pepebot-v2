@@ -106,8 +106,6 @@ BotModel.find().exec(async (err, payload) => {
       console.log("empezando login", bot.ogameEmail);
       login = await bot.login(element.ogameEmail, element.ogamePassword);
       console.log("se termino el loginnnn");
-      const page = await bot.createNewPage();
-      console.log(await bot.getShipsAvailable(page));
     } else {
       console.log("No tenia acciones pendientes", bot.ogameEmail);
     }

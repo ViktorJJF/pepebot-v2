@@ -6,14 +6,14 @@ class Bots {
     this.bots.push(newBot);
   }
   deleteBot(id) {
-    let index = this.bots.findIndex(bot => bot._id == id);
+    let index = this.bots.findIndex((bot) => bot._id == id);
     this.bots.splice(index, 1);
   }
   getBot(id, msg) {
     console.log("vengo de : ", msg);
     console.log("se recibio este id: ", id);
     console.log("se buscara dentro de esto: ", this.bots.length);
-    return this.bots.find(bot => {
+    return this.bots.find((bot) => {
       console.log(
         "primera vuelta: ",
         typeof bot._id,
@@ -26,7 +26,10 @@ class Bots {
     });
   }
   getBotByTelegramId(telegramId) {
-    return this.bots.find(bot => bot.telegramId == telegramId);
+    return this.bots.find((bot) => bot.telegramId == telegramId);
+  }
+  getBotByPlayerId(playerId) {
+    return this.bots.find((bot) => bot.playerId == playerId);
   }
 }
 

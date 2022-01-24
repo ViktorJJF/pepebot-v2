@@ -137,6 +137,16 @@ async function sendTelegramMessage(senderId, message, isShared) {
   }
 }
 
+async function sendTelegramMessageBroadcast(message) {
+  try {
+    await axios.post(config.PEPEBOT_BASE + "/telegram/message/broadcast", {
+      message,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function getNearestPlanet(bot, coords) {
   let currentPlayer = bot.playerId == "102988" ? "Cosaco" : "Chief Orbiter";
   const playerInfo = (
@@ -215,4 +225,5 @@ module.exports = {
   sendTelegramMessage,
   log,
   setCommonHeaders,
+  sendTelegramMessageBroadcast,
 };

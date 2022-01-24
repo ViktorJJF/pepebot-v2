@@ -32,6 +32,7 @@ router.get("/bots/:id/begin", botsController.begin);
 router.get("/bots/:id/stop", botsController.stop);
 router.get("/bots/:id/actions", botsController.listActions);
 router.post("/bots/:id/actions", botsController.actions);
+router.post("/autowatchdog", botsController.autoWatchdog);
 router.get("/bots/:id/stop-action/:actionid", botsController.stopAction);
 router.post("/bots/telegram", botsController.testTelegram);
 

@@ -8,17 +8,18 @@ const { msToTime } = require("../utils/utils");
 const beginExpeditions = require("../ogameScripts/expeditions");
 const watchDog = require("../ogameScripts/watchDog");
 const botTelegram = require("../chatbot//Telegram/telegramBot");
+const callMeBot = require("../services/callMeBot");
 const list = (req, res) => {
   Bot.find().exec((err, payload) => {
     if (err) {
       return res.status(400).json({
         ok: false,
-        err
+        err,
       });
     }
     res.json({
       ok: true,
-      payload
+      payload,
     });
   });
 };
@@ -27,12 +28,12 @@ const listByUser = (req, res) => {
     if (err) {
       return res.status(400).json({
         ok: false,
-        err
+        err,
       });
     }
     res.json({
       ok: true,
-      payload
+      payload,
     });
   });
 };
@@ -41,12 +42,12 @@ const getOne = (req, res) => {
     if (err) {
       return res.status(400).json({
         ok: "false",
-        err
+        err,
       });
     }
     res.json({
       ok: true,
-      payload
+      payload,
     });
   });
 };
@@ -56,7 +57,7 @@ const create = async (req, res) => {
   let actions = [
     { type: "expeditions", active: false },
     { type: "watchDog", active: false },
-    { type: "dailyFleetSave", active: false }
+    { type: "dailyFleetSave", active: false },
   ];
   let bot = new Bot({
     server: body.server,
@@ -68,7 +69,7 @@ const create = async (req, res) => {
     state: body.state,
     userId: req.user ? user._id : body.userId,
     proxy: body.proxy,
-    actions
+    actions,
   });
 
   console.log("se creara el bot con la siguiente info:", bot);
@@ -79,13 +80,13 @@ const create = async (req, res) => {
         return res.status(400).json({
           ok: false,
           message: "El bot ya estaba registrado",
-          err
+          err,
         });
       }
       return res.status(400).json({
         ok: false,
         message: "Algo salió mal",
-        err
+        err,
       });
     }
     //adding bot to local class
@@ -95,7 +96,7 @@ const create = async (req, res) => {
     res.json({
       ok: true,
       message: "Bot creado con éxito",
-      payload
+      payload,
     });
   });
 };
@@ -106,7 +107,7 @@ const update = async (req, res) => {
     id,
     req.body,
     {
-      new: true
+      new: true,
     },
     (err, payload) => {
       if (err) {
@@ -114,19 +115,19 @@ const update = async (req, res) => {
           return res.status(400).json({
             ok: false,
             message: "El bot estaba registrado",
-            err
+            err,
           });
         }
         return res.status(400).json({
           ok: false,
           message: "Algo salió mal",
-          err
+          err,
         });
       }
       res.json({
         ok: true,
         message: "Bot actualizado con éxito",
-        payload
+        payload,
       });
       //updating bot instance
       let bot = bots.getBot(String(payload._id), "update");
@@ -142,13 +143,13 @@ const deletes = (req, res) => {
       return res.status(400).json({
         ok: false,
         message: "Algo salió mal",
-        err
+        err,
       });
     }
     res.json({
       ok: true,
       message: "Bot eliminado con éxito",
-      payload
+      payload,
     });
     //delete bot instance
     console.log("antes las instancias del bot eran:", bots);
@@ -165,17 +166,17 @@ const stop = async (req, res) => {
   Bot.findByIdAndUpdate(
     { _id: botId },
     {
-      state: false
+      state: false,
     },
     {
-      new: true
+      new: true,
     },
     (err, payload) => {
       if (err) {
         return res.status(400).json({
           ok: false,
           message: "Algo salió mal",
-          err
+          err,
         });
       }
       res.json({ ok: true, msg: "Bot detenido con éxito" });
@@ -205,7 +206,7 @@ const actions = async (req, res) => {
   if (!bot)
     return res.json({
       ok: false,
-      msg: "Hay un bot creado con ese id de usuario"
+      msg: "Hay un bot creado con ese id de usuario",
     });
   switch (action) {
     case "scan":
@@ -248,16 +249,39 @@ const actions = async (req, res) => {
       }
       var ships = [
         { id: 1, qty: 5 },
-        { id: 9, qty: 10 }
+        { id: 9, qty: 10 },
       ];
       return res.json({
         ok: true,
         msg: "Empezando a hacer expediciones",
-        actionId
+        actionId,
       });
       break;
     default:
       break;
+  }
+};
+
+const autoWatchdog = async (req, res) => {
+  try {
+    // buscar datos del bot
+    let bot = bots.getBotByPlayerId(req.body.playerId);
+    console.log("🚀 Aqui *** -> bots", bots);
+    if (!bot)
+      return res.json({
+        ok: false,
+        msg: "No hay un bot creado con ese id de usuario",
+      });
+    console.log("ejecutando watchDog");
+    if (!(await bot.hasAction("watchDog"))) {
+      await bot.addAction("watchDog");
+      watchDog(bot);
+    }
+    return res.json({ ok: true, msg: "Empezando watchdog..." });
+  } catch (error) {
+    // si algo sale mal, llamarme
+    console.log(error);
+    callMeBot("@ViktorJJF", "Problema con autowatchdog");
   }
 };
 
@@ -296,7 +320,7 @@ const testOgameLogin = async (req, res) => {
     res.json({
       ok: true,
       msg: "Sesión en ogame iniciada correctamente",
-      payload: { loginStatus }
+      payload: { loginStatus },
     });
   else
     res
@@ -318,7 +342,8 @@ module.exports = {
   stopAction,
   listActions,
   testOgameLogin,
-  testTelegram
+  testTelegram,
+  autoWatchdog,
 };
 
 //action functions

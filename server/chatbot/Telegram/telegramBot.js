@@ -100,6 +100,30 @@ async function handleDialogFlowAction(
     );
   }
   switch (action) {
+    case "watcher_player_off.action":
+      let nickname = parameters.fields.nickname.stringValue;
+      if (nickname) {
+        axios
+          .post(config.PEPEHUNTER_BASE + "/api/actions/watch-player", {
+            playerName: nickname,
+            isWatch: true,
+            telegramUsername: bot.getTelegramUsername(),
+          })
+          .then((res) => {
+            sendTextMessage(
+              sender,
+              `👁️ Ok. Te timbraré cuando ${nickname} esté 💤`,
+              true
+            );
+          })
+          .catch((err) => {
+            console.log(err);
+            sendTextMessage(sender, `Algo pasó y no pude completar la acción`);
+          });
+      } else {
+        handleMessages(messages, sender);
+      }
+      break;
     case "search_off_players_in_range.action":
       console.log("se entro al action search offs");
       let from = parameters.fields.from.stringValue;

@@ -50,6 +50,7 @@ module.exports = class Bot {
     this.language = botOjbect.language;
     this.telegramGroupId = botOjbect.telegramGroupId;
     this.telegramId = botOjbect.telegramId;
+    this.telegramUsername = botOjbect.telegramUsername;
     this.ogameEmail = botOjbect.ogameEmail;
     this.ogamePassword = botOjbect.ogamePassword;
     this.state = botOjbect.state;
@@ -1098,7 +1099,7 @@ module.exports = class Bot {
 
   async closeAds(page) {
     console.log("entrando a closeAds");
-    var page = page;
+    page = page || this.page;
     await timeout(2700);
     let hasCookie = await page.evaluate(() => {
       return Boolean(document.querySelector(".cookiebanner5:nth-child(2)"));
@@ -1107,18 +1108,27 @@ module.exports = class Bot {
     if (hasCookie) {
       await page.click(".cookiebanner5:nth-child(2)");
     }
-
     let adState = await page.evaluate(() => {
       let ad = document.querySelector(".openX_int_closeButton > a");
       return ad;
     });
-    console.log("se encontro este add: ", adState);
+    let secondAd = await page.evaluate(() => {
+      let ad = document.querySelector(
+        ".openX_interstitial .openX_int_closeButton a"
+      );
+      return ad;
+    });
+    console.log("se encontro este add: ", adState, secondAd);
     if (adState) {
       console.log("cerrando add en goToPage");
-      await page.waitForSelector(".openX_int_closeButton > a", {
-        timeout: 15000,
-      });
-      await page.click(".openX_int_closeButton > a");
+      await this.page.waitForSelector(".openX_int_closeButton > a");
+      await this.page.click(".openX_int_closeButton > a");
+    }
+    if (secondAd) {
+      await this.page.waitForSelector(
+        ".openX_interstitial .openX_int_closeButton a"
+      );
+      await this.page.click(".openX_interstitial .openX_int_closeButton a");
     }
     return 0;
   }
@@ -1491,6 +1501,10 @@ module.exports = class Bot {
 
   async getCookies() {
     return this.cookies;
+  }
+
+  getTelegramUsername() {
+    return this.telegramUsername;
   }
 
   getFormattedCookies() {

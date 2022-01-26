@@ -9,7 +9,9 @@ let callMebot = (telegramUsername, msg) => {
   axios
     .get(url)
     .then((res) => {
-      console.log("LLamada de telegram realizada con exito");
+      console.log(
+        `LLamada de telegram realizada con exito a ${telegramUsername}`
+      );
     })
     .catch((err) => {
       console.error("Algo salio mal con la llamada de telegram: ", err);

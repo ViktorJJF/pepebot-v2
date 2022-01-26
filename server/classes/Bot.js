@@ -1116,18 +1116,17 @@ module.exports = class Bot {
       let ad = document.querySelector(
         ".openX_interstitial .openX_int_closeButton a"
       );
+      if (ad) {
+        ad.click();
+      }
       return ad;
     });
     console.log("se encontro este add: ", adState, secondAd);
     if (adState) {
       console.log("cerrando add en goToPage");
-      await page.waitForSelector(".openX_int_closeButton > a");
       await page.click(".openX_int_closeButton > a");
     }
     if (secondAd) {
-      await page.waitForSelector(
-        ".openX_interstitial .openX_int_closeButton a"
-      );
       await page.click(".openX_interstitial .openX_int_closeButton a");
     }
     return 0;

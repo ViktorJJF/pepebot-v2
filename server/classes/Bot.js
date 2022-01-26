@@ -1226,7 +1226,7 @@ module.exports = class Bot {
     return newPage;
   }
   async refreshPage(page) {
-    var page = page || this.page;
+    page = page || this.page;
     console.log("refrescando ogame a las : ", formatISO9075(new Date()));
     // await page.waitForSelector(
     //   "#links > #menuTable > li:nth-child(1) > .menubutton > .textlabel"

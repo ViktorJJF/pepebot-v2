@@ -25,6 +25,7 @@ module.exports = {
   expiresIn: "24h",
   telegramId: "624818317",
   TELEGRAM_GROUP_ID: "-339549424",
+  TELEGRAM_OWN_USERNAME: "@ViktorJJF",
   // TELEGRAM_GROUP_ID: "624818317",
   SERVER: "s183",
   BASE_PATH: __dirname,

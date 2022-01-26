@@ -1110,7 +1110,10 @@ module.exports = class Bot {
     }
     let adState = await page.evaluate(() => {
       let ad = document.querySelector(".openX_int_closeButton > a");
-      return ad;
+      if (ad) {
+        ad.click();
+      }
+      return true;
     });
     let secondAd = await page.evaluate(() => {
       let ad = document.querySelector(
@@ -1122,10 +1125,6 @@ module.exports = class Bot {
       return true;
     });
     console.log("se encontro este add: ", adState, secondAd);
-    if (adState) {
-      console.log("cerrando add en goToPage");
-      await page.click(".openX_int_closeButton > a");
-    }
     return 0;
   }
 

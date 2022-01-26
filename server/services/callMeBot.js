@@ -13,6 +13,7 @@ let callMebot = (telegramUsername, msg) => {
       console.log(
         `LLamada de telegram realizada con exito a ${telegramUsername}`
       );
+      console.log("🚀 MOTIVO DE LLAMADA: ", msg);
     })
     .catch((err) => {
       console.error("Algo salio mal con la llamada de telegram: ", err);

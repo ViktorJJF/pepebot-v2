@@ -1116,7 +1116,7 @@ module.exports = class Bot {
       let ad = document.querySelector(
         ".openX_interstitial .openX_int_closeButton a"
       );
-      if (add) {
+      if (ad) {
         add.click();
       }
       return true;

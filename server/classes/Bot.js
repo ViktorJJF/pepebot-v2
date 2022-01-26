@@ -1116,9 +1116,6 @@ module.exports = class Bot {
       let ad = document.querySelector(
         ".openX_interstitial .openX_int_closeButton a"
       );
-      if (ad) {
-        ad.click();
-      }
       return ad;
     });
     console.log("se encontro este add: ", adState, secondAd);

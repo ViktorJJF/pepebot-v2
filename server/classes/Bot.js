@@ -1117,7 +1117,7 @@ module.exports = class Bot {
         ".openX_interstitial .openX_int_closeButton a"
       );
       if (ad) {
-        add.click();
+        ad.click();
       }
       return true;
     });

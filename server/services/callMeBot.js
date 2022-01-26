@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 let callMebot = (telegramUsername, msg) => {
+  console.log("🚀 MOTIVO DE LLAMADA: ", msg);
   // let telegramUsername = "@ViktorJJF";
   // let telegramUsername = "@Juancarlosjf";
   let url = `http://api.callmebot.com/start.php?source=web&user=${telegramUsername}&text=${encodeURI(

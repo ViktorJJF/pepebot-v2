@@ -187,7 +187,7 @@ module.exports = class Bot {
     } catch (error) {
       console.log("aaaaa", error);
       // timbrarme
-      callMeBot(config.TELEGRAM_OWN_USERNAME, "Error en logeo");
+      // callMeBot(config.TELEGRAM_OWN_USERNAME, "Error en logeo");
       return false;
     }
   }

@@ -7,6 +7,8 @@ const {
 } = require("../utils/utils");
 const formatISO9075 = require("date-fns/formatISO9075");
 const callMeBot = require("../services/callMeBot");
+const { makePhoneCall } = require("../services/twilioCalls");
+const config = require("../config");
 
 async function watchDog(bot, page) {
   try {
@@ -30,7 +32,8 @@ async function watchDog(bot, page) {
   } catch (error) {
     console.log("el error: ", error);
     // algo paso y se salio del bucle sin haber cancelado el watchdog
-    callMeBot("@ViktorJJF", "Se desactivo el watchdog por algún  problema");
+    // callMeBot("@ViktorJJF", "Se desactivo el watchdog por algún  problema");
+    makePhoneCall(config.OWN_PHONE_NUMBER);
     sendTelegramMessage(
       bot.telegramId,
       bot.ogameEmail + " tu watchdog se desactivo por algún problema 🚨🐕",
@@ -53,7 +56,8 @@ async function start(page, bot) {
         "⚠️ <b>" +
           ogameUsername +
           "</b>" +
-          " te están atacando ⚠️\nverificaré los detalles..."
+          " te están atacando ⚠️\nverificaré los detalles...",
+        true
       );
       var attackDetails = await bot.attackDetail(page);
       if (attackDetails.normal.length === 0 && attackDetails.sac.length === 0) {
@@ -63,8 +67,10 @@ async function start(page, bot) {
         );
       } else {
         console.log("llego esta respuesta: ", attackDetails);
-        callMeBot("@ViktorJJF", "Te estan atacando"); //make telegram phonecall
-        callMeBot("@Juancarlosjf", "Te estan atacando"); //make telegram phonecall
+        // callMeBot("@ViktorJJF", "Te estan atacando"); //make telegram phonecall
+        // callMeBot("@Juancarlosjf", "Te estan atacando"); //make telegram phonecall
+        makePhoneCall("+51951342603");
+        makePhoneCall(config.OWN_PHONE_NUMBER);
         await sendTelegramMessage(
           bot.telegramId, //bot.telegramGroupId
           "⚠️ <b>" +

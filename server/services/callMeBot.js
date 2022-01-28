@@ -20,6 +20,6 @@ let callMebot = (telegramUsername, msg) => {
     });
 };
 
-// callMebot(undefined, "Error en logeo");
+// callMebot("@Juancarlosjf", "Error en logeo");
 
 module.exports = callMebot;

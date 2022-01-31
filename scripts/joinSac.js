@@ -79,7 +79,7 @@ async function startToRetardAttack(
   while (continueRetarding) {
     await joinProbeToSac(sacId, speed, objetiveCoords, isMoon);
     console.log("ATAQUE RETARDADO!");
-    await timeout(parseInt(timeRemaining * MAX_RETARD_PERCENT));
+    await timeout(parseInt(timeRemaining * MAX_RETARD_PERCENT) - 3);
     console.log("EMPEZANDO A ENVIAR NUEVA SONDA");
   }
 }

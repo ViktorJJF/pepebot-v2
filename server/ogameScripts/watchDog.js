@@ -63,14 +63,24 @@ async function start(page, bot) {
       if (attackDetails.normal.length === 0 && attackDetails.sac.length === 0) {
         await sendTelegramMessage(
           bot.telegramId,
-          "parece que solo fue un espionaje"
+          "parece que solo fue un espionaje",
+          true
         );
       } else {
         console.log("llego esta respuesta: ", attackDetails);
         // callMeBot("@ViktorJJF", "Te estan atacando"); //make telegram phonecall
         // callMeBot("@Juancarlosjf", "Te estan atacando"); //make telegram phonecall
-        makePhoneCall("+51951342603");
-        makePhoneCall(config.OWN_PHONE_NUMBER);
+        if (
+          attackDetails.normal.ships.filter(
+            (ship) => ship.name === "Sonda de espionaje"
+          ).length === attackDetails.normal.ships.length
+        ) {
+          // hacer algo si solo se trata de sondas
+        } else {
+          // timbrar
+          makePhoneCall("+51951342603");
+          makePhoneCall(config.OWN_PHONE_NUMBER);
+        }
         await sendTelegramMessage(
           bot.telegramId, //bot.telegramGroupId
           "⚠️ <b>" +

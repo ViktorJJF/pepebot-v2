@@ -37,8 +37,6 @@ module.exports = {
   PEPEBOT_BASE: "http://localhost:7000",
   // bot test // https://web.telegram.org/z/#5022628038
   TELEGRAM_TOKEN: "1070317592:AAE3c9b5EexG76uzResutG2_Qd0C9Xm4yWY",
-  TWILIO_ACCOUNT_SID: "AC6e6b1f3b6a84fb6863932b5903ca553d",
-  TWILIO_AUTH_TOKEN: "dd20f28d771c88ceca222f61f86e4ed4",
   // TELEGRAM_TOKEN:
   //   process.env.NODE_ENV === "development"
   //     ? "5022628038:AAHIAOB6xzN91psrcPwwGwf4f95S2UrM25g"

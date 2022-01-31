@@ -1,0 +1,12 @@
+{
+    "success": false,
+    "errors": [
+        {
+            "message": "Error de partida de flota: no se ha podido enviar la flota. Int\u00e9ntalo de nuevo m\u00e1s tarde.",
+            "error": 140043
+        }
+    ],
+    "token": "00122bd1500a8d9ae3935e6c98147208",
+    "components": [],
+    "newAjaxToken": "00122bd1500a8d9ae3935e6c98147208"
+}

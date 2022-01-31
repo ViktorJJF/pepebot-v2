@@ -1,6 +1,7 @@
 const config = require("../config");
-var accountSid = config.TWILIO_ACCOUNT_SID; // Your Account SID from www.twilio.com/console
-var authToken = config.TWILIO_AUTH_TOKEN; // Your Auth Token from www.twilio.com/console
+const callMebot = require("./callMeBot");
+var accountSid = process.env.TWILIO_ACCOUNT_SID; // Your Account SID from www.twilio.com/console
+var authToken = process.env.TWILIO_AUTH_TOKEN; // Your Auth Token from www.twilio.com/console
 
 const client = require("twilio")(accountSid, authToken, {
   lazyLoading: true,
@@ -19,12 +20,13 @@ const makePhoneCall = async (number) => {
       .catch((err) => {
         console.log(err);
         reject(err);
+        callMebot(config.TELEGRAM_OWN_USERNAME, "Error en llamada twilio");
       });
   });
 };
 
 // (async () => {
-//   console.log(await makePhoneCall("+51951342603"));
+//   console.log(await makePhoneCall("+51983724476"));
 // })();
 
 module.exports = {

@@ -65,7 +65,7 @@ async function spyCoords(coords, type = "planet") {
 
     var raw = `mission=6&galaxy=${galaxy}&system=${system}&position=${position}&type=${
       type === "planet" ? "1" : "3"
-    }&shipCount=15&token=${token}`;
+    }&shipCount=10&token=${token}`;
 
     var requestOptions = {
       method: "POST",
@@ -105,9 +105,9 @@ async function spyCoords(coords, type = "planet") {
 
 async function spyPlayerPlanets(nickname) {
   let planets = await getPlayerPlanets(nickname);
-  let galaxiesToExclude = [1, 2];
+  let galaxiesToExclude = [1];
   for (const planet of planets) {
-    if (!galaxiesToExclude.includes(planet.galaxy)) {
+    if (!galaxiesToExclude.includes(planet.galaxy) || planet.coords) {
       await spyCoords(planet.coords, "planet");
       console.log("SONDA ENVIADA A: ", planet.coords);
       await timeout(Random(1, 2) * 1000);

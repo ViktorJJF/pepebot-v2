@@ -67,12 +67,17 @@ module.exports = class Bot {
     this.token_ships = "";
   }
   async begin() {
-    console.log("iniciando bot...");
-    // // let browser = chronium.getBrowser();
-    // this.browser = chronium.getBrowser();
-    // // this.browser = await browser.createIncognitoBrowserContext();
-    let browser = chronium.getBrowser();
-    this.browser = await browser.createIncognitoBrowserContext();
+    try {
+      console.log("iniciando bot...");
+      // // let browser = chronium.getBrowser();
+      // this.browser = chronium.getBrowser();
+      // // this.browser = await browser.createIncognitoBrowserContext();
+      let browser = chronium.getBrowser();
+      this.browser = await browser.createIncognitoBrowserContext();
+    } catch (error) {
+      console.log("ERROR EN BEGIN: ", error);
+      await this.begin();
+    }
   }
   async closeSession() {
     await this.browser.close();
@@ -119,43 +124,39 @@ module.exports = class Bot {
           delay: this.typingDelay,
         }
       );
+      // se escoge el tipo de inicio de sesion
+      if (process.env.NODE_ENV === "development") {
+        await page.waitForSelector(
+          "#loginForm > p > button.button.button-primary.button-lg",
+          {
+            timeout: 15000,
+          }
+        );
+        await page.click(
+          "#loginForm > p > button.button.button-primary.button-lg"
+        );
+      } else {
+        // inicio de sesion con cookies
+        await page.evaluate((token) => {
+          console.log("el token: ", token);
+          function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+              let date = new Date();
+              date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+              expires = `; expires=${date.toUTCString()}`;
+            }
+            document.cookie = `${name}=${value || ""}${expires}; path=/`;
+          }
+          setCookie("gf-token-production", token, 7);
+          console.log("COOKIE AGREGADO!");
+          return true;
+        }, this.gf_token);
+        await page.goto(
+          `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`
+        );
+      }
 
-      // // el inicio de sesion es mediante cookie
-      // await page.evaluate((token) => {
-      //   console.log("el token: ", token);
-      //   function setCookie(name, value, days) {
-      //     let expires = "";
-      //     if (days) {
-      //       let date = new Date();
-      //       date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      //       expires = `; expires=${date.toUTCString()}`;
-      //     }
-      //     document.cookie = `${name}=${value || ""}${expires}; path=/`;
-      //   }
-      //   setCookie("gf-token-production", token, 7);
-      //   console.log("COOKIE AGREGADO!");
-      //   return true;
-      // }, this.gf_token);
-      // await page.goto(
-      //   `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`
-      // );
-      await page.waitForSelector(
-        "#loginForm > p > button.button.button-primary.button-lg",
-        {
-          timeout: 15000,
-        }
-      );
-      console.log("bbbb");
-      await page.evaluate(() => {
-        document
-          .querySelector(
-            "#loginForm > p > button.button.button-primary.button-lg"
-          )
-          .click();
-      });
-      await page.click(
-        "#loginForm > p > button.button.button-primary.button-lg"
-      );
       await page.waitForSelector("div > #joinGame > a > .button > span", {
         timeout: 15000,
       });

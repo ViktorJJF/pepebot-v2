@@ -5,6 +5,7 @@ const Bot = require("../../classes/Bot");
 const telegramBot = require("../../chatbot/Telegram/telegramBot");
 const ogameApi = require("../../services/ogameApi");
 const spyPlayer = require("../../ogameScripts/spyPlayer");
+const { makePhoneCall } = require("../../services/twilioCalls");
 
 //Controllers
 const usersController = require("../../controllers/usersController.js");
@@ -199,6 +200,25 @@ router.post("/webhook/", (req, res) => {
   // Assume all went well.
   // You must send back a 200, within 20 seconds
   res.sendStatus(200);
+});
+
+router.post("/webhook/", (req, res) => {
+  console.log("se ingreso al webhook");
+  console.log("llego esta info:");
+  console.log(req.body);
+  // Assume all went well.
+  // You must send back a 200, within 20 seconds
+  res.sendStatus(200);
+});
+
+router.post("/test-phone-call", async (req, res) => {
+  try {
+    await makePhoneCall(req.body.number);
+    res.status(200).json({ ok: true, msg: "Llamada realizada exitosamente" });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ ok: false, msg: "Error en la llamada" });
+  }
 });
 
 router.post("/spy/:playerName", (req, res) => {

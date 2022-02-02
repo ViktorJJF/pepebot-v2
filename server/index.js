@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV === "development") {
+  require("dotenv").config();
+}
 //new relic
 //levantando telegram bot
 const config = require("./config");

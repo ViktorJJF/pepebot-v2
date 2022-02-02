@@ -1334,12 +1334,14 @@ module.exports = class Bot {
       slots.expInUse = parseInt(
         document
           .querySelector("#slots>.fleft:nth-child(2)>span")
-          .innerText.match(/([^\/]+$)/)[0]
+          .innerText.innerText.replace("Expediciones: ", "")
+          .split("/")[0]
       );
       slots.expTotal = parseInt(
         document
           .querySelector("#slots>.fleft:nth-child(2)>span")
-          .innerText.match(/([^\/]+$)/)[0]
+          .innerText.innerText.replace("Expediciones: ", "")
+          .split("/")[1]
       );
       return {
         fleets,

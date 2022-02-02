@@ -108,8 +108,8 @@ async function spyPlayerPlanets(nickname) {
   let galaxiesToExclude = [1];
   for (const planet of planets) {
     if (!galaxiesToExclude.includes(planet.galaxy) || planet.coords) {
-      await spyCoords(planet.coords, "planet");
-      console.log("SONDA ENVIADA A: ", planet.coords);
+      // await spyCoords(planet.coords, "planet");
+      // console.log("SONDA ENVIADA A: ", planet.coords);
       await timeout(Random(1, 2) * 1000);
       if (planet.moon) {
         console.log("SONDA ENVIADA A LUNA: ", planet.coords);

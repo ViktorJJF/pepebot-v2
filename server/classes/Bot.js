@@ -1334,7 +1334,7 @@ module.exports = class Bot {
       slots.expInUse = parseInt(
         document
           .querySelector("#slots>.fleft:nth-child(2)>span")
-          .innerText.match(/([0-9])/)[0]
+          .innerText.match(/([^\/]+$)/)[0]
       );
       slots.expTotal = parseInt(
         document

@@ -265,7 +265,7 @@ class Fleet {
           // },
           {
             id: "203",
-            qty: ngcToSend > 2000 ? 2000 : ngcToSend, // maximo 2000 NGC
+            qty: ngcToSend > 3000 ? 3000 : ngcToSend, // maximo 2000 NGC
           },
           {
             id: "210",

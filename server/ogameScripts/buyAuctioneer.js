@@ -12,7 +12,7 @@ var interval = setInterval(() => {
 }, 900);
 
 var buyInterval = setInterval(() => {
-  if (document.querySelector("a.currentPlayer").innerText != "Jose Cuervo") {
+  if (document.querySelector("a.currentPlayer").innerText != "Nabucodonosor") {
     document.querySelector("a.js_sliderMetalMax").click();
     if (document.querySelector("a.pay")) {
       document.querySelector("a.pay").click();

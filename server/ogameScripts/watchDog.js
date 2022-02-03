@@ -71,9 +71,11 @@ async function start(page, bot) {
         // callMeBot("@ViktorJJF", "Te estan atacando"); //make telegram phonecall
         // callMeBot("@Juancarlosjf", "Te estan atacando"); //make telegram phonecall
         if (
-          attackDetails.normal.ships.filter(
-            (ship) => ship.name === "Sonda de espionaje"
-          ).length === attackDetails.normal.ships.length
+          attackDetails.normal.every(
+            (el) =>
+              el.ships.filter((ship) => ship.name === "Sonda de espionaje")
+                .length === el.ships.length
+          )
         ) {
           // hacer algo si solo se trata de sondas
         } else {

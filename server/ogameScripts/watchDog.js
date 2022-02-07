@@ -77,7 +77,7 @@ async function start(page, bot) {
           // hacer algo si solo se trata de sondas
         } else {
           // timbrar
-          // makePhoneCall("+51951342603");
+          makePhoneCall("+51951342603");
           makePhoneCall(config.OWN_PHONE_NUMBER);
         }
         await sendTelegramMessage(
@@ -146,6 +146,7 @@ async function start(page, bot) {
             "<b>Detalle de ataques en SAC</b>\nte mostraré los detalles proximamente !!",
             true
           );
+          makePhoneCall("+51951342603");
           makePhoneCall(config.OWN_PHONE_NUMBER);
         }
       }

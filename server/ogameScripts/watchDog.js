@@ -71,16 +71,14 @@ async function start(page, bot) {
         // callMeBot("@ViktorJJF", "Te estan atacando"); //make telegram phonecall
         // callMeBot("@Juancarlosjf", "Te estan atacando"); //make telegram phonecall
         if (
-          attackDetails.normal.every(
-            (el) =>
-              el.ships.filter((ship) => ship.name === "Sonda de espionaje")
-                .length === el.ships.length
+          attackDetails.normal.every((el) =>
+            el.ships.every((ship) => ship.name === "Sonda de espionaje")
           )
         ) {
           // hacer algo si solo se trata de sondas
         } else {
           // timbrar
-          makePhoneCall("+51951342603");
+          // makePhoneCall("+51951342603");
           makePhoneCall(config.OWN_PHONE_NUMBER);
         }
         await sendTelegramMessage(
@@ -149,6 +147,7 @@ async function start(page, bot) {
             "<b>Detalle de ataques en SAC</b>\nte mostraré los detalles proximamente !!",
             true
           );
+          makePhoneCall(config.OWN_PHONE_NUMBER);
         }
       }
     }

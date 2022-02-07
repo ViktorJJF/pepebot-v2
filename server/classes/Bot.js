@@ -156,7 +156,7 @@ module.exports = class Bot {
           `https://${config.SERVER}-es.ogame.gameforge.com/game/index.php?page=ingame&component=overview&relogin=1`
         );
       }
-
+      await this.closeAds(page);
       await page.waitForSelector("div > #joinGame > a > .button > span", {
         timeout: 15000,
       });
@@ -167,7 +167,7 @@ module.exports = class Bot {
 
       // await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
       // await page.click(".open > .rt-tr > .rt-td > .btn > span");
-
+      await this.closeAds(page);
       await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span", {
         timeout: 15000,
       });

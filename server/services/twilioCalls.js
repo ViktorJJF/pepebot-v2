@@ -27,9 +27,9 @@ const makePhoneCall = async (number) => {
   });
 };
 
-(async () => {
-  console.log(await makePhoneCall("+51983724476"));
-})();
+// (async () => {
+//   console.log(await makePhoneCall("+51983724476"));
+// })();
 
 module.exports = {
   makePhoneCall,

@@ -15,6 +15,8 @@ const makePhoneCall = async (number) => {
         to: number,
         url: "http://demo.twilio.com/docs/voice.xml",
         from: `(252) 429-5033`, //numero del bot
+        timeout: 15,
+        timeLimit: 15,
       })
       .then((call) => resolve(call.sid))
       .catch((err) => {
@@ -25,9 +27,9 @@ const makePhoneCall = async (number) => {
   });
 };
 
-// (async () => {
-//   console.log(await makePhoneCall("+51983724476"));
-// })();
+(async () => {
+  console.log(await makePhoneCall("+51983724476"));
+})();
 
 module.exports = {
   makePhoneCall,

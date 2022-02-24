@@ -645,6 +645,10 @@ module.exports = class Bot {
         case "playPage":
           console.log("nos encontramos en vista playPage");
           await page.click("#joinGame>a>button.button");
+          await page.waitForSelector(".rt-td.server-name-cell", {
+            timeout: 15000,
+          });
+          await page.click(".rt-td.server-name-cell");
           await page.waitForSelector(
             '.rt-td.action-cell>button[type="button"]',
             {

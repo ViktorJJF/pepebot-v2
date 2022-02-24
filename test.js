@@ -246,7 +246,7 @@ function successOgameMessage() {
 // expeditions
 
 (async () => {
-  let coords = "2:123:8";
+  let coords = "4:497:15";
   var battleShips = document.querySelectorAll("#battleships>ul#military>li");
   for (let i = battleShips.length - 2; i > -1; i--) {
     let lastBattleShipQty = parseInt(
@@ -272,7 +272,7 @@ function successOgameMessage() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  let token = "";
+  let ogameToken = "";
   let numberExpeditions = parseInt(
     document
       .querySelector("#slots>.fleft:nth-child(2)>span")
@@ -283,7 +283,7 @@ function successOgameMessage() {
       .querySelector("span.transporterLarge>span")
       .getAttribute("data-value")
   );
-  let qtyNGCtoSend = Math.ceil(qtyNGC / 3);
+  let qtyNGCtoSend = Math.ceil(qtyNGC / 10);
   let [galaxy, system, position] = coords.split(":");
   let success = true;
   while (success) {
@@ -315,7 +315,7 @@ function successOgameMessage() {
     );
     myHeaders.append("Accept-Language", "en,en-US;q=0.9,es-ES;q=0.8,es;q=0.7");
 
-    var raw = `token=${token}&am203=${qtyNGCtoSend}&am${lastBattleShipId}=1&am210=1&am219=1&galaxy=${galaxy}&system=${system}&position=16&type=1&metal=0&crystal=0&deuterium=0&prioMetal=1&prioCrystal=2&prioDeuterium=3&mission=15&speed=10&retreatAfterDefenderRetreat=0&union=0&holdingtime=1`;
+    var raw = `token=${ogameToken}&am203=${qtyNGCtoSend}&am${lastBattleShipId}=1&am210=1&am219=1&galaxy=${galaxy}&system=${system}&position=16&type=1&metal=0&crystal=0&deuterium=0&prioMetal=1&prioCrystal=2&prioDeuterium=3&mission=15&speed=10&retreatAfterDefenderRetreat=0&union=0&holdingtime=1`;
 
     var requestOptions = {
       method: "POST",
@@ -330,7 +330,7 @@ function successOgameMessage() {
         requestOptions
       );
       let data = await response.json();
-      token = data.token;
+      ogameToken = data.token;
       if (
         !data.success &&
         !data.errors.find((error) =>

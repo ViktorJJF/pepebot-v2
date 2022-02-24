@@ -168,6 +168,10 @@ module.exports = class Bot {
       // await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span");
       // await page.click(".open > .rt-tr > .rt-td > .btn > span");
       await this.closeAds(page);
+      await page.waitForSelector(".rt-td.server-name-cell", {
+        timeout: 15000,
+      });
+      await page.click(".rt-td.server-name-cell");
       await page.waitForSelector(".open > .rt-tr > .rt-td > .btn > span", {
         timeout: 15000,
       });
